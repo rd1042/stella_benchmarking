@@ -11,12 +11,12 @@ def process_omega_file(long_sim_name):
     the growth rate from the phi2_vs_kxky entry in the .out.nc file."""
     omega_filename = long_sim_name + ".omega"
     omega_file = open(omega_filename, "r")
-    data=np.loadtxt(omega_filename,dtype='float')
+    omega_data=np.loadtxt(omega_filename,dtype='float')
     omega_file.close()
 
     # Find the number of unique kx, kx, and construct omega-related arrays with dims (kx.ky)
-    kx_array = np.array(sorted(set(data[:,2])))
-    ky_array = np.array(sorted(set(data[:,1])))
+    kx_array = np.array(sorted(set(omega_data[:,2])))
+    ky_array = np.array(sorted(set(omega_data[:,1])))
     if ((len(kx_array) * len(ky_array)) > 1):
         freqom_kxky = np.zeros((len(kx_array), len(ky_array)))
         gammaom_kxky = np.zeros((len(kx_array), len(ky_array)))
@@ -55,12 +55,12 @@ def process_omega_file(long_sim_name):
         return [kx_array, ky_array, freqom_kxky, gammaom_kxky, gamma_p2_kxky]
     else:
         outnc_t, phi2 = extract_data_from_ncdf((long_sim_name + ".out.nc"), "t", "phi2")
-        freqom_final = data[-1, 3]
-        gammaom_final = data[-1, 4]
+        freqom_final = omega_data[-1, 3]
+        gammaom_final = omega_data[-1, 4]
 
-        return outnc_t, freqom_final, gammaom_final, data[:,3], data[:,4]
+        return outnc_t, freqom_final, gammaom_final, omega_data[:,3], omega_data[:,4]
 
-def plot_omega_t_for_sim(sim_longname, ax1, ax2):
+def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label):
     """ """
     outnc_t, freqom_final, gammaom_final, freqom, gammaom = process_omega_file(sim_longname)
     print("freqom_final, gammaom_final = ", freqom_final, gammaom_final)
@@ -71,26 +71,84 @@ def plot_omega_t_for_sim(sim_longname, ax1, ax2):
     # of the frequencuy and gamma data
     gamma_llim = (np.min(gammaom_half)); gamma_ulim = (np.max(gammaom_half))
     freq_llim = (np.min(freqom_half)); freq_ulim = np.max(freqom_half)
-    ax1.plot(outnc_t[1:], freqom[:])
-    ax2.plot(outnc_t[1:], gammaom[:])
+    ax1.plot(outnc_t[1:], freqom[:], label=sim_label)
+    ax2.plot(outnc_t[1:], gammaom[:], label=sim_label)
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
-def make_comparison_plots(sim_longnames, labels):
+def plot_phi_z_for_sim(ax1, sim_longname, sim_label):
+    """ """
+    final_fields_filename = sim_longname + ".final_fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## final_fields_data = z, z-zed0, aky, akx, real(phi), imag(phi), real(apar), imag(apar), z_eqarc-zed0, kperp2
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    z = final_fields_data[:,0]
+
+    aky = final_fields_data[:,2]; akx = final_fields_data[:,3]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_phi = final_fields_data[:,4]; imag_phi = final_fields_data[:,5]
+
+    ## Check values are finite
+    if not(np.all(np.isfinite(real_phi)) and np.all(np.isfinite(imag_phi))):
+        print("Error! phi contains non-finite values")
+        sys.exit()
+
+    ## Combine real and imaginary parts to get abs_phi
+    # If real and imaginary parts are large, it's possible that they'll
+    # become non-finite when we square them. To avoid, perform some normalisation first
+    normalisation = np.max(abs(real_phi))
+    real_phi = real_phi/normalisation
+    imag_phi = imag_phi/normalisation
+    abs_phi = np.sqrt(real_phi*real_phi + imag_phi*imag_phi)
+
+    ## Normalise s.t. max(abs_phi) = 1
+    abs_phi = abs_phi/np.max(abs_phi)
+
+    # Plot
+    ax1.plot(z/np.pi, abs_phi, label=sim_label)
+
+    return
+
+def get_cmiller_new_normal_result():
+    """ """
+    print("ONLY PARTIALLY IMPLEMENTED!")
+    sys.exit()
+    folder = "../gs2_sims_linear/cmiller_new_normal/"
+    outnc_name = folder + "cmiller_new_normal_0.0000.out.nc"
+    try:
+        t, omega = extract_data_from_ncdf(outnc_name, "t", "omega_average")
+    except KeyError:
+        t, omega = extract_data_from_ncdf(outnc_name, "t", "omegaavg")
+    freqom_final = omega[-1].real
+    gammaom_final = omega[-1].imag
+    freq = omega[:].real
+    gamma = omega[:].imag
+
+    return t, freqom_final, gammaom_final, freq, gamma
+
+def make_comparison_plots(sim_longnames, sim_labels, save_name):
     """Compare multiple simulations which have a single common input. Create the following
     plots:
     1) omega(t)
     2) Normalised phi2(z)
     """
-
+    print("In make_comparison_plots")
     ## Plot of omega(t)
-    fig1 = plt.figure()
+    fig1 = plt.figure(figsize=[10, 12])
     ax11 = fig1.add_subplot(211)
     ax12 = fig1.add_subplot(212, sharex=ax11)
 
     ## Plot of phi2(t)
-    fig2 = plt.figure()
-    ax21 = fig2.add_subplot(211)
-    ax22 = fig2.add_subplot(212, sharex=ax21)
+    fig2 = plt.figure(figsize=[8, 8])
+    ax21 = fig2.add_subplot(111)
     gamma_vals = []
     freq_vals = []
 
@@ -99,8 +157,11 @@ def make_comparison_plots(sim_longnames, labels):
     freq_llims = []
     freq_ulims = []
 
-    for sim_longname in sim_longnames:
-        gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim = plot_omega_t_for_sim(sim_longname, ax11, ax12)
+    for sim_idx, sim_longname in enumerate(sim_longnames):
+        sim_label = sim_labels[sim_idx]
+        gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
+            freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label)
+        plot_phi_z_for_sim(ax21, sim_longname, sim_label)
         gamma_llims.append(gamma_llim)
         gamma_ulims.append(gamma_ulim)
         freq_llims.append(freq_llim)
@@ -108,6 +169,7 @@ def make_comparison_plots(sim_longnames, labels):
         gamma_vals.append(gammaom_final)
         freq_vals.append(freqom_final)
 
+    print("Plotted omega")
     ## Set lims based on sim data
     gamma_llim = np.min(np.array(gamma_llims))
     gamma_ulim = np.max(np.array(gamma_ulims))
@@ -115,13 +177,17 @@ def make_comparison_plots(sim_longnames, labels):
     freq_ulim = np.max(np.array(freq_ulims))
     ax11.set_ylim(freq_llim, freq_ulim)
     ax12.set_ylim(gamma_llim, gamma_ulim)
-    for ax in [ax11, ax12, ax21, ax22]:
+    ax21.set_ylim(-0.05, 1.05)
+    ax12.set_xlabel(r"$t$")
+    ax11.set_ylabel(r"$\omega$")
+    ax12.set_ylabel(r"$\gamma$")
+    ax21.set_xlabel(r"$z/\pi$")
+    ax21.set_ylabel(r"$\vert \phi \vert$")
+    for ax in [ax11, ax12, ax21]:
         ax.grid(True)
-    fig = plt.figure()
-    ax1 = fig.add_subplot(211)
-    ax2 = fig.add_subplot(212, sharex=ax1)
+        ax.legend(loc="best")
     fig1.savefig(save_name + "_omega.eps")
     fig2.savefig(save_name + "_phi2.eps")
-    fig1.close()
-    fig2.close()
+    plt.close(fig1)
+    plt.close(fig2)
     return

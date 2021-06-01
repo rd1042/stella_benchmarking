@@ -1,0 +1,10 @@
+postprocessing_tools/__pycache__/
+
+*.out.nc
+*.geometry
+*.input 
+*.output
+*.error
+*.fluxes
+*.eps
+*/mat/
