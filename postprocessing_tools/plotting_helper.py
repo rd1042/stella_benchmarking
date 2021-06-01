@@ -3,6 +3,11 @@
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import cycle
+
+## Define linestyles
+linestyles1=cycle(["-", "--", "-."])
+linestyles2=cycle(["-", "--", "-."])
 
 def process_omega_file(long_sim_name):
     """The .omega file contains columns t, ky, kx, re(omega), im(omega), av re(omega), av im(omega).
@@ -69,10 +74,11 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label):
     gammaom_half = gammaom[half_len:]
     # Get an estimate for the ylims by looking at the max/min of the second half
     # of the frequencuy and gamma data
+    linestyle=next(linestyles1)
     gamma_llim = (np.min(gammaom_half)); gamma_ulim = (np.max(gammaom_half))
     freq_llim = (np.min(freqom_half)); freq_ulim = np.max(freqom_half)
-    ax1.plot(outnc_t[1:], freqom[:], label=sim_label)
-    ax2.plot(outnc_t[1:], gammaom[:], label=sim_label)
+    ax1.plot(outnc_t[1:], freqom[:], label=sim_label, ls=linestyle)
+    ax2.plot(outnc_t[1:], gammaom[:], label=sim_label, ls=linestyle)
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
 def plot_phi_z_for_sim(ax1, sim_longname, sim_label):
@@ -113,7 +119,8 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label):
     abs_phi = abs_phi/np.max(abs_phi)
 
     # Plot
-    ax1.plot(z/np.pi, abs_phi, label=sim_label)
+    linestyle=next(linestyles2)
+    ax1.plot(z/np.pi, abs_phi, label=sim_label, ls=linestyle)
 
     return
 
