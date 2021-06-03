@@ -26,8 +26,10 @@ if __name__ == "__main__":
                         0.025,
                         0.03
                         ]
+    gs2_pickle = "gs2_beta_scan/omega_values.pickle"
 
     make_beta_scan_plots(stella_sim_longnames,
                          stella_beta_vals,
                           "./test_cbc_beta_scan",
+                          gs2_pickle=gs2_pickle
                          )

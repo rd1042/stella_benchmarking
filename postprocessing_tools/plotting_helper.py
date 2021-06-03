@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
 import sys
+import pickle
 
 ## Define linestyles
 linestyles1=cycle(["-", "--", "-.", ":"])
@@ -121,7 +122,8 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[]):
     plt.close(fig2)
     return
 
-def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[]):
+def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
+                         gs2_pickle=None):
     """ """
     ## Plot of omega(t)
     fig1 = plt.figure(figsize=[10, 12])
@@ -172,15 +174,31 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[]):
     ax11.set_ylabel(r"$\omega$")
     ax12.set_ylabel(r"$\gamma$")
 
-    ax21.plot(beta_vals, freq_vals)
-    ax22.plot(beta_vals, gamma_vals)
+
+    ax21.plot(beta_vals, freq_vals, label="stella")
+    ax22.plot(beta_vals, gamma_vals, label="stella")
+    ax21.scatter(beta_vals, freq_vals, c="black", s=15., marker="x")
+    ax22.scatter(beta_vals, gamma_vals, c="black", s=15., marker="x")
+    if gs2_pickle is not None:
+        myfile = open(gs2_pickle, 'rb')
+        gs2_dict = pickle.load(myfile)  # contains 'beta', 'frequency', 'growth rate'
+        myfile.close()
+        gs2_beta = gs2_dict['beta']; gs2_frequency=gs2_dict['frequency']; gs2_growth_rate = gs2_dict['growth rate']
+        # Sort the beta vals into ascending order
+        gs2_beta = np.array(gs2_beta).flatten()
+        sort_idxs = np.argsort(gs2_beta)
+        gs2_beta = np.array(gs2_beta)[sort_idxs]
+        gs2_frequency = np.array(gs2_frequency)[sort_idxs]
+        gs2_growth_rate = np.array(gs2_growth_rate)[sort_idxs]
+        ax21.plot(gs2_beta, gs2_frequency, label="GS2")
+        ax22.plot(gs2_beta, gs2_growth_rate, label="GS2")
+
     ax21.set_ylabel(r"$\omega$")
     ax22.set_ylabel(r"$\gamma$")
     ax22.set_xlabel(r"$\beta$")
 
     for ax in [ax11, ax12, ax21, ax22]:
         ax.grid(True)
-    for ax in [ax11, ax12]:
         ax.legend(loc="best")
 
     fig1.savefig(save_name + "_omega_t.eps")
