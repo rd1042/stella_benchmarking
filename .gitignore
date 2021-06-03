@@ -8,3 +8,7 @@ postprocessing_tools/__pycache__/
 *.fluxes
 *.eps
 */mat/
+*.species.input
+*.scratch
+*.err
+*slurm*
