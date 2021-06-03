@@ -35,7 +35,7 @@
 
 &parameters
  zeff = 1.0
- beta = 0.015
+ beta = 0.01
  vnew_ref = 0.01
  rhostar = 0.01
 /
@@ -74,7 +74,7 @@
 &knobs
  fphi =   1.0
  fapar =  1.0
- fbpar = 1.0
+ fbpar = 0.0
  stream_implicit = .false. 
  mirror_implicit = .false.
  zed_upwind = 0.02
