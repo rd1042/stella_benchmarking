@@ -109,6 +109,28 @@ def get_phiz_data(sim_longname, sim_type="stella"):
 
     return theta, real_phi, imag_phi
 
+def get_aparz_data(sim_longname, sim_type="stella"):
+    """ """
+    if sim_type == "stella":
+        theta, real_apar, imag_apar = get_aparz_data_stella(sim_longname)
+    elif sim_type == "gs2":
+        theta, real_apar, imag_apar = get_aparz_data_gs2(sim_longname)
+    else:
+        print("sim_type not recognised!")
+
+    return theta, real_apar, imag_apar
+
+def get_bparz_data(sim_longname, sim_type="stella"):
+    """ """
+    if sim_type == "stella":
+        theta, real_bpar, imag_bpar = get_bparz_data_stella(sim_longname)
+    elif sim_type == "gs2":
+        theta, real_bpar, imag_bpar = get_bparz_data_gs2(sim_longname)
+    else:
+        print("sim_type not recognised!")
+
+    return theta, real_bpar, imag_bpar
+
 def get_phiz_data_stella(sim_longname):
     """ """
     final_fields_filename = sim_longname + ".final_fields"
@@ -139,3 +161,68 @@ def get_phiz_data_gs2(sim_longname):
         print("(len(phi) > 1) or (len(phi[0]) > 1), aborting")
     phi = phi[0,0,:]
     return theta, phi.real, phi.imag
+
+
+def get_aparz_data_stella(sim_longname):
+    """ """
+    final_fields_filename = sim_longname + ".final_fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## final_fields_data = z, z-zed0, aky, akx, real(apar), imag(apar), real(apar), imag(apar),
+    ## real(bpar), imag(bpar), z_eqarc-zed0, kperp2
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    z = final_fields_data[:,0]
+
+    aky = final_fields_data[:,2]; akx = final_fields_data[:,3]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_apar = final_fields_data[:,6]; imag_apar = final_fields_data[:,7]
+    return z, real_apar, imag_apar
+
+def get_aparz_data_gs2(sim_longname):
+    """ """
+    theta, apar = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","apar")
+    if ((len(apar) > 1) or (len(apar[0]) > 1)):
+        print("apar= ", apar)
+        print("(len(apar) > 1) or (len(apar[0]) > 1), aborting")
+    apar = apar[0,0,:]
+    return theta, apar.real, apar.imag
+
+def get_bparz_data_stella(sim_longname):
+    """ """
+    final_fields_filename = sim_longname + ".final_fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## final_fields_data = z, z-zed0, aky, akx, real(bpar), imag(bpar), real(bpar), imag(bpar),
+    ## real(bpar), imag(bpar), z_eqarc-zed0, kperp2
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    z = final_fields_data[:,0]
+
+    aky = final_fields_data[:,2]; akx = final_fields_data[:,3]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_bpar = final_fields_data[:,6]; imag_bpar = final_fields_data[:,7]
+    return z, real_bpar, imag_bpar
+
+def get_bparz_data_gs2(sim_longname):
+    """ """
+    theta, bpar = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","bpar")
+    if ((len(bpar) > 1) or (len(bpar[0]) > 1)):
+        print("bpar= ", bpar)
+        print("(len(bpar) > 1) or (len(bpar[0]) > 1), aborting")
+    bpar = bpar[0,0,:]
+    return theta, bpar.real, bpar.imag

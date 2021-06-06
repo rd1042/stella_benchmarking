@@ -1,6 +1,6 @@
 """ """
 
-from extract_sim_data import get_omega_data, get_phiz_data
+from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
@@ -55,9 +55,59 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
 
     return
 
+def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
+    """ """
+
+    theta, real_apar, imag_apar = get_aparz_data(sim_longname, sim_type=sim_type)
+    ## Check values are finite
+    if not(np.all(np.isfinite(real_apar)) and np.all(np.isfinite(imag_apar))):
+        print("Error! apar contains non-finite values")
+        sys.exit()
+
+    ## Combine real and imaginary parts to get abs_apar
+    # If real and imaginary parts are large, it's possible that they'll
+    # become non-finite when we square them. To avoid, perform some normalisation first
+    normalisation = np.max(abs(real_apar))
+    real_apar = real_apar/normalisation
+    imag_apar = imag_apar/normalisation
+    abs_apar = np.sqrt(real_apar*real_apar + imag_apar*imag_apar)
+
+    ## Normalise s.t. max(abs_apar) = 1
+    abs_apar = abs_apar/np.max(abs_apar)
+    # Plot
+    linestyle=next(linestyles2)
+    ax1.plot(theta/np.pi, abs_apar, label=sim_label, ls=linestyle)
+
+    return
+
+def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
+    """ """
+
+    theta, real_bpar, imag_bpar = get_bparz_data(sim_longname, sim_type=sim_type)
+    ## Check values are finite
+    if not(np.all(np.isfinite(real_bpar)) and np.all(np.isfinite(imag_bpar))):
+        print("Error! bpar contains non-finite values")
+        sys.exit()
+
+    ## Combine real and imaginary parts to get abs_bpar
+    # If real and imaginary parts are large, it's possible that they'll
+    # become non-finite when we square them. To avoid, perform some normalisation first
+    normalisation = np.max(abs(real_bpar))
+    real_bpar = real_bpar/normalisation
+    imag_bpar = imag_bpar/normalisation
+    abs_bpar = np.sqrt(real_bpar*real_bpar + imag_bpar*imag_bpar)
+
+    ## Normalise s.t. max(abs_bpar) = 1
+    abs_bpar = abs_bpar/np.max(abs_bpar)
+    # Plot
+    linestyle=next(linestyles2)
+    ax1.plot(theta/np.pi, abs_bpar, label=sim_label, ls=linestyle)
+
+    return
 
 
-def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[]):
+def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
+                          plot_apar=False, plot_bpar=False):
     """Compare multiple simulations which have a single common input. Create the following
     plots:
     1) omega(t)
@@ -71,6 +121,12 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[]):
     ## Plot of |phi|(t)
     fig2 = plt.figure(figsize=[8, 8])
     ax21 = fig2.add_subplot(111)
+    if plot_apar:
+        fig3 = plt.figure(figsize=[8, 8])
+        ax31 = fig3.add_subplot(111)
+    if plot_bpar:
+        fig4 = plt.figure(figsize=[8, 8])
+        ax41 = fig4.add_subplot(111)
     gamma_vals = []
     freq_vals = []
 
@@ -93,6 +149,10 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[]):
         gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
             freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
         plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type)
+        if plot_apar:
+            plot_apar_z_for_sim(ax31, sim_longname, sim_label, sim_type=sim_type)
+        if plot_bpar:
+            plot_bpar_z_for_sim(ax41, sim_longname, sim_label, sim_type=sim_type)
         gamma_llims.append(gamma_llim)
         gamma_ulims.append(gamma_ulim)
         freq_llims.append(freq_llim)
@@ -113,11 +173,28 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[]):
     ax12.set_ylabel(r"$\gamma$")
     ax21.set_xlabel(r"$\theta/\pi$")
     ax21.set_ylabel(r"$\vert \phi \vert$")
-    for ax in [ax11, ax12, ax21]:
+    axes = [ax11, ax12, ax21]
+    if plot_apar:
+        axes.append(ax31)
+        ax31.set_ylim(-0.05, 1.05)
+        ax31.set_xlabel(r"$\theta/\pi$")
+        ax31.set_ylabel(r"$\vert A_\parallel \vert$")
+    if plot_bpar:
+        axes.append(ax41)
+        ax41.set_ylim(-0.05, 1.05)
+        ax41.set_xlabel(r"$\theta/\pi$")
+        ax41.set_ylabel(r"$\vert B_\parallel \vert$")
+    for ax in axes:
         ax.grid(True)
         ax.legend(loc="best")
     fig1.savefig(save_name + "_omega.eps")
-    fig2.savefig(save_name + "_phi2.eps")
+    fig2.savefig(save_name + "_phi.eps")
+    if plot_apar:
+        fig3.savefig(save_name + "_apar.eps")
+        plt.close(fig3)
+    if plot_bpar:
+        fig4.savefig(save_name + "_bpar.eps")
+        plt.close(fig4)
     plt.close(fig1)
     plt.close(fig2)
     return
