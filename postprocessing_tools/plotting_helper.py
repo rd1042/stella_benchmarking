@@ -105,7 +105,6 @@ def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
 
     return
 
-
 def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
                           plot_apar=False, plot_bpar=False):
     """Compare multiple simulations which have a single common input. Create the following
@@ -161,10 +160,10 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
         freq_vals.append(freqom_final)
 
     ## Set lims based on sim data
-    gamma_llim = np.min(np.array(gamma_llims))
-    gamma_ulim = np.max(np.array(gamma_ulims))
-    freq_llim = np.min(np.array(freq_llims))
-    freq_ulim = np.max(np.array(freq_ulims))
+    gamma_llim = np.min(np.array(gamma_llims))/1.1
+    gamma_ulim = np.max(np.array(gamma_ulims))*1.1
+    freq_llim = np.min(np.array(freq_llims))/1.1
+    freq_ulim = np.max(np.array(freq_ulims))*1.1
     ax11.set_ylim(freq_llim, freq_ulim)
     ax12.set_ylim(gamma_llim, gamma_ulim)
     ax21.set_ylim(-0.05, 1.05)
