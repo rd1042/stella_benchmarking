@@ -60,12 +60,8 @@ def analyse_fbpar0_results():
     return
 
 
-def plot_geometry():
+def plot_gmvus(stella_outnc_longname):
     """ """
-    stella_outnc_longname = "stella_beta0.001_fbpar0/input.out.nc"
-    gs2_outnc_longname = "gs2_beta_scan_fbpar0/_0.0010.out.nc"
-    #view_ncdf_variables(stella_outnc_longname)
-    #view_ncdf_variables(gs2_outnc_longname)
     t, z, mu, vpa, gds2, gds21, gds22, bmag, gradpar, gvmus = extract_data_from_ncdf(stella_outnc_longname,
                                     "t", 'zed', "mu", "vpa", 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar', 'gvmus')
     #print("len(t)", "len(z), len(mu), len(vpa) = ", len(t), len(z), len(mu), len(vpa))
@@ -74,27 +70,50 @@ def plot_geometry():
     #sys.exit()
 
     ## Code to plot g for stella
-    # gvmus = gvmus[-1]   # spec, mu, vpa
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(211)
-    # ax2 = fig.add_subplot(212)
-    # counter=0
-    #
-    # for mu_idx in range(0, len(mu)):
-    #     counter += 1
-    #     g_ion_vpa = gvmus[0, mu_idx, :]
-    #     g_electron_vpa = gvmus[1, mu_idx, :]
-    #     ax1.plot(vpa, g_ion_vpa)
-    #     ax2.plot(vpa, g_electron_vpa)
-    #
-    #     if counter == 5:
-    #         plt.show()
-    #         fig = plt.figure()
-    #         ax1 = fig.add_subplot(211)
-    #         ax2 = fig.add_subplot(212)
-    #         counter=0
-    #
-    # plt.show()
+    gvmus = gvmus[-1]   # spec, mu, vpa
+    fig = plt.figure(figsize=[10,10])
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+    counter=0
+
+    for mu_idx in range(0, len(mu)):
+        counter += 1
+        g_ion_vpa = gvmus[0, mu_idx, :]
+        g_electron_vpa = gvmus[1, mu_idx, :]
+        ax1.plot(vpa, g_ion_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+        ax2.plot(vpa, g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+
+        if counter == 5:
+            for ax in [ax1, ax2]:
+                ax.grid(True)
+                ax.legend(loc="best")
+            ax2.set_xlabel("vpa")
+            ax1.set_ylabel(r"$g_{ion}$")
+            ax2.set_ylabel(r"$g_{electron}$")
+            plt.show()
+            fig = plt.figure(figsize=[10,10])
+            ax1 = fig.add_subplot(211)
+            ax2 = fig.add_subplot(212)
+            counter=0
+
+    for ax in [ax1, ax2]:
+        ax.grid(True)
+        ax.legend(loc="best")
+    ax2.set_xlabel("vpa")
+    ax1.set_ylabel(r"$g_{ion}$")
+    ax2.set_ylabel(r"$g_{electron}$")
+    plt.show()
+
+def plot_geometry():
+    """ """
+    stella_outnc_longname = "stella_beta0.001_fbpar0/input.out.nc"
+    gs2_outnc_longname = "gs2_beta_scan_fbpar0/_0.0010.out.nc"
+    #view_ncdf_variables(stella_outnc_longname)
+    #view_ncdf_variables(gs2_outnc_longname)
+    plot_gmvus(stella_outnc_longname)
+
+    sys.exit()
+
     time, theta, gs2_energy, gs2_lambda = extract_data_from_ncdf(gs2_outnc_longname,
                                      't', 'theta', 'energy', 'lambda')
     print("len(time), len(theta), len(energy), len(lambda) = ", len(time), len(theta), len(gs2_energy), len(gs2_lambda))
@@ -154,6 +173,38 @@ def plot_geometry():
 
     return
 
+
+def make_low_beta_plots():
+    """ """
+    gs2_sim = "gs2_beta_scan_fbpar0/_0.0000"
+    #gs2_sim = "gs2_beta_scan_fbpar0/_0.0010"
+    sim1 = "stella_beta0_fbpar0/input"
+    sim2 = "stella_beta0.00001_fbpar0/input"
+
+    make_comparison_plots([
+                           gs2_sim,
+                           sim1,
+                           sim2,
+                           ],
+                          [
+                           "gs2 beta=0",
+                           #"gs2 beta=0.001",
+                           "beta=0",
+                           "beta=0.0001",
+                           ],
+                          "./low_beta",
+                          sim_types=[
+                                     "gs2",
+                                     "stella",
+                                     "stella",
+                                     ],
+                           plot_apar=False,
+                           )
+    plot_gmvus(sim2 + ".out.nc")
+
+    return
+
+
 if __name__ == "__main__":
     ## Compare
     stella_sim_longnames = [
@@ -207,4 +258,5 @@ if __name__ == "__main__":
     #                      gs2_pickle=gs2_pickle
     #                      )
     # analyse_fbpar0_results()
-    plot_geometry()
+    #plot_geometry()
+    make_low_beta_plots()
