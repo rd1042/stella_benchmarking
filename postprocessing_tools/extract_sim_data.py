@@ -215,7 +215,7 @@ def get_bparz_data_stella(sim_longname):
         print("Not currently supported")
         sys.exit()
 
-    real_bpar = final_fields_data[:,6]; imag_bpar = final_fields_data[:,7]
+    real_bpar = final_fields_data[:,8]; imag_bpar = final_fields_data[:,9]
     return z, real_bpar, imag_bpar
 
 def get_bparz_data_gs2(sim_longname):

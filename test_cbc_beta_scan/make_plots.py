@@ -59,15 +59,61 @@ def analyse_fbpar0_results():
 
     return
 
+def analyse_fapar0_results():
+    """Compare omega(t) and phi(z), apar(z)
+    between GS2 and stella results """
+
+    print("Hello world")
+    beta_strs = [
+                 "0.00001",
+                 "0.001",
+                 "0.002",
+                 "0.010",
+                 ]
+    stella_sim_longnames = [
+                            "stella_beta0.00001_fapar0/input",
+                            "stella_beta0.001_fapar0/input",
+                            "stella_beta0.002_fapar0/input",
+                            "stella_beta0.010_fapar0/input",
+                            ]
+    gs2_sim_longnames = [
+                            "gs2_beta_scan_fapar0/_0.00001",
+                            "gs2_beta_scan_fapar0/_0.0010",
+                            "gs2_beta_scan_fapar0/_0.0020",
+                            "gs2_beta_scan_fapar0/_0.0100",
+                            ]
+    # for beta_idx in range(0, len(beta_strs)):
+    #     stella_sim_longname = stella_sim_longnames[beta_idx]
+    #     gs2_sim_longname = gs2_sim_longnames[beta_idx]
+    #     beta_str = beta_strs[beta_idx]
+    #     make_comparison_plots([
+    #                            stella_sim_longname,
+    #                            gs2_sim_longname,
+    #                            ],
+    #                           [
+    #                            "stella",
+    #                            "GS2",
+    #                            ],
+    #                           "./beta_" + beta_str + "_fapar0",
+    #                           sim_types=[
+    #                                      "stella",
+    #                                      "gs2",
+    #                                      ],
+    #                            plot_bpar=True,
+    #                            )
+
+    plot_gmvus("stella_beta0.001_fapar0/input.out.nc")
+    return
+
 
 def plot_gmvus(stella_outnc_longname):
     """ """
     t, z, mu, vpa, gds2, gds21, gds22, bmag, gradpar, gvmus = extract_data_from_ncdf(stella_outnc_longname,
                                     "t", 'zed', "mu", "vpa", 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar', 'gvmus')
-    #print("len(t)", "len(z), len(mu), len(vpa) = ", len(t), len(z), len(mu), len(vpa))
+    print("len(t)", "len(z), len(mu), len(vpa) = ", len(t), len(z), len(mu), len(vpa))
     #print("gvmus.shape = ", gvmus.shape)
 
-    #sys.exit()
+    sys.exit()
 
     ## Code to plot g for stella
     gvmus = gvmus[-1]   # spec, mu, vpa
@@ -258,5 +304,6 @@ if __name__ == "__main__":
     #                      gs2_pickle=gs2_pickle
     #                      )
     # analyse_fbpar0_results()
-    #plot_geometry()
-    make_low_beta_plots()
+    # plot_geometry()
+    # make_low_beta_plots()
+    analyse_fapar0_results()
