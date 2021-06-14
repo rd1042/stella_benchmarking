@@ -31,6 +31,8 @@
 &physics_flags
  full_flux_surface = .false.
  nonlinear = .false.
+ include_parallel_streaming = .false.
+ include_mirror = .false.
 /
 
 &parameters
@@ -81,7 +83,7 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 100000
+ nstep = 10000
 /
 &species_knobs
  nspec= 2
