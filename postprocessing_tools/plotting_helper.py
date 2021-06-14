@@ -1,6 +1,7 @@
 """ """
 
 from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
+from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
@@ -16,7 +17,7 @@ linestyles2=cycle(["-", "--", "-.", ":"])
 
 def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
     """ """
-    time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data(sim_longname, sim_type=sim_type)
+    time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data(sim_longname, sim_type)
     print("freqom_final, gammaom_final = ", freqom_final, gammaom_final)
     half_len = int(len(time)/2)
     freqom_half = freqom[half_len:]
@@ -33,7 +34,7 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
 def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     """ """
 
-    theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type=sim_type)
+    theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
     ## Check values are finite
     if not(np.all(np.isfinite(real_phi)) and np.all(np.isfinite(imag_phi))):
         print("Error! phi contains non-finite values")
@@ -58,7 +59,7 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
 def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     """ """
 
-    theta, real_apar, imag_apar = get_aparz_data(sim_longname, sim_type=sim_type)
+    theta, real_apar, imag_apar = get_aparz_data(sim_longname, sim_type)
     ## Check values are finite
     if not(np.all(np.isfinite(real_apar)) and np.all(np.isfinite(imag_apar))):
         print("Error! apar contains non-finite values")
@@ -83,7 +84,7 @@ def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
 def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     """ """
 
-    theta, real_bpar, imag_bpar = get_bparz_data(sim_longname, sim_type=sim_type)
+    theta, real_bpar, imag_bpar = get_bparz_data(sim_longname, sim_type)
     ## Check values are finite
     if not(np.all(np.isfinite(real_bpar)) and np.all(np.isfinite(imag_bpar))):
         print("Error! bpar contains non-finite values")
@@ -281,5 +282,90 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     fig2.savefig(save_name + "_omega_beta.eps")
     plt.close(fig1)
     plt.close(fig2)
+
+    return
+
+
+def plot_gmvus(stella_outnc_longname, which="gvpa"):
+    """ """
+    t, z, mu, vpa, gds2, gds21, gds22, bmag, gradpar, gvmus = extract_data_from_ncdf(stella_outnc_longname,
+                                    "t", 'zed', "mu", "vpa", 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar', 'gvmus')
+    print("len(t)", "len(z), len(mu), len(vpa) = ", len(t), len(z), len(mu), len(vpa))
+    #print("gvmus.shape = ", gvmus.shape)
+
+    #sys.exit()
+
+    if ((which == "gvpa") or (which == "both")):
+        ## Code to plot g for stella
+        gvmus = gvmus[-1]   # spec, mu, vpa
+        fig = plt.figure(figsize=[10,10])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+        counter=0
+
+        for mu_idx in range(0, len(mu)):
+            counter += 1
+            g_ion_vpa = gvmus[0, mu_idx, :]
+            g_electron_vpa = gvmus[1, mu_idx, :]
+            ax1.plot(vpa, g_ion_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+            ax2.plot(vpa, g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+
+            if counter == 5:
+                for ax in [ax1, ax2]:
+                    ax.grid(True)
+                    ax.legend(loc="best")
+                ax2.set_xlabel("vpa")
+                ax1.set_ylabel(r"$g_{ion}$")
+                ax2.set_ylabel(r"$g_{electron}$")
+                plt.show()
+                fig = plt.figure(figsize=[10,10])
+                ax1 = fig.add_subplot(211)
+                ax2 = fig.add_subplot(212)
+                counter=0
+
+        for ax in [ax1, ax2]:
+            ax.grid(True)
+            ax.legend(loc="best")
+        ax2.set_xlabel("vpa")
+        ax1.set_ylabel(r"$g_{ion}$")
+        ax2.set_ylabel(r"$g_{electron}$")
+        plt.show()
+
+    if ((which == "gmu") or (which == "both")):
+        ###### Plot g(mu) for different vpa
+        fig = plt.figure(figsize=[10,10])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+        counter=0
+        #print("vpa = ", vpa)
+        #sys.exit()
+        # Only go over half of vpa-space (symmetry arguyment)
+        for vpa_idx in range(int(len(vpa)/2), len(vpa)):
+            counter += 1
+            g_ion_mu = gvmus[0, :, vpa_idx]
+            g_electron_mu = gvmus[1, :, vpa_idx]
+            ax1.plot(mu, g_ion_mu, label="vpa={:.3f}".format(vpa[vpa_idx]))
+            ax2.plot(mu, g_electron_mu, label="vpa={:.3f}".format(vpa[vpa_idx]))
+
+            if counter == 5:
+                for ax in [ax1, ax2]:
+                    ax.grid(True)
+                    ax.legend(loc="best")
+                ax2.set_xlabel("mu")
+                ax1.set_ylabel(r"$g_{ion}$")
+                ax2.set_ylabel(r"$g_{electron}$")
+                plt.show()
+                fig = plt.figure(figsize=[10,10])
+                ax1 = fig.add_subplot(211)
+                ax2 = fig.add_subplot(212)
+                counter=0
+
+        for ax in [ax1, ax2]:
+            ax.grid(True)
+            ax.legend(loc="best")
+        ax2.set_xlabel("mu")
+        ax1.set_ylabel(r"$g_{ion}$")
+        ax2.set_ylabel(r"$g_{electron}$")
+        plt.show()
 
     return

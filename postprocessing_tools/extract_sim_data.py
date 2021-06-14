@@ -4,7 +4,7 @@ from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import numpy as np
 import sys
 
-def get_omega_data(sim_longname, sim_type="stella"):
+def get_omega_data(sim_longname, sim_type):
     """ """
 
     if sim_type == "stella":
@@ -98,7 +98,7 @@ def get_omega_data_gs2(sim_longname):
 
     return time, freqom_final, gammaom_final, freq, gamma
 
-def get_phiz_data(sim_longname, sim_type="stella"):
+def get_phiz_data(sim_longname, sim_type):
     """ """
     if sim_type == "stella":
         theta, real_phi, imag_phi = get_phiz_data_stella(sim_longname)
@@ -109,7 +109,7 @@ def get_phiz_data(sim_longname, sim_type="stella"):
 
     return theta, real_phi, imag_phi
 
-def get_aparz_data(sim_longname, sim_type="stella"):
+def get_aparz_data(sim_longname, sim_type):
     """ """
     if sim_type == "stella":
         theta, real_apar, imag_apar = get_aparz_data_stella(sim_longname)
@@ -120,7 +120,7 @@ def get_aparz_data(sim_longname, sim_type="stella"):
 
     return theta, real_apar, imag_apar
 
-def get_bparz_data(sim_longname, sim_type="stella"):
+def get_bparz_data(sim_longname, sim_type):
     """ """
     if sim_type == "stella":
         theta, real_bpar, imag_bpar = get_bparz_data_stella(sim_longname)
@@ -162,6 +162,55 @@ def get_phiz_data_gs2(sim_longname):
     phi = phi[0,0,:]
     return theta, phi.real, phi.imag
 
+def find_bpar_phi_ratio(sim_longname, sim_type):
+    """ """
+    theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
+    theta, real_bpar, imag_bpar = get_bparz_data(sim_longname, sim_type)
+
+    # get absolute values of the fields.
+
+    # Perform initial normalisation so finite values do not become infinite
+    # when squared
+    initial_normalisation = np.max(real_phi)
+    real_phi = real_phi/initial_normalisation
+    imag_phi = imag_phi/initial_normalisation
+    real_bpar = real_bpar/initial_normalisation
+    imag_bpar = imag_bpar/initial_normalisation
+
+    # Get the abs values
+    abs_phi = np.sqrt(real_phi*real_phi + imag_phi*imag_phi)
+    abs_bpar = np.sqrt(real_bpar*real_bpar + imag_bpar*imag_bpar)
+    #print("")
+    max_abs_phi = np.max(abs_phi)
+    max_abs_bpar = np.max(abs_bpar)
+    return max_abs_bpar/max_abs_phi
+
+def find_apar_phi_ratio(sim_longname, sim_type):
+    """ """
+    theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
+    theta, real_apar, imag_apar = get_aparz_data(sim_longname, sim_type)
+
+    # get absolute values of the fields.
+
+    # Perform initial normalisation so finite values do not become infinite
+    # when squared
+    initial_normalisation = np.max(real_phi)
+    real_phi = real_phi/initial_normalisation
+    imag_phi = imag_phi/initial_normalisation
+    real_apar = real_apar/initial_normalisation
+    imag_apar = imag_apar/initial_normalisation
+
+    # Get the abs values
+    abs_phi = np.sqrt(real_phi*real_phi + imag_phi*imag_phi)
+    abs_apar = np.sqrt(real_apar*real_apar + imag_apar*imag_apar)
+    #print("")
+    max_abs_phi = np.max(abs_phi)
+    max_abs_apar = np.max(abs_apar)
+    return max_abs_apar/max_abs_phi
+
+def get_chi_stella():
+    """ """
+    return
 
 def get_aparz_data_stella(sim_longname):
     """ """
