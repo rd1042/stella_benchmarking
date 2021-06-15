@@ -251,7 +251,7 @@ def get_bparz_data_stella(sim_longname):
     final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
     final_fields_file.close()
 
-    ## final_fields_data = z, z-zed0, aky, akx, real(bpar), imag(bpar), real(bpar), imag(bpar),
+    ## final_fields_data = z, z-zed0, aky, akx, real(phi), imag(phi), real(apar), imag(apar),
     ## real(bpar), imag(bpar), z_eqarc-zed0, kperp2
     # Usually we're just looking at one mode; check how many unique kx and ky we have
 

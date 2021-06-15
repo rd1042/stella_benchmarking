@@ -66,48 +66,54 @@ def analyse_fapar0_results():
 
     print("Hello world")
     beta_strs = [
-                 "0.00001",
+                 "0.00001a",
+                 "0.00001b",
                  "0.001",
                  "0.002",
                  "0.010",
                  ]
     stella_sim_longnames = [
                             "stella_beta0.00001_fapar0/input",
+                            "stella_beta0.00001_fapar0/input_balloon",
                             "stella_beta0.001_fapar0/input",
                             "stella_beta0.002_fapar0/input",
                             "stella_beta0.010_fapar0/input",
                             ]
     gs2_sim_longnames = [
                             "gs2_beta_scan_fapar0/_0.00001",
+                            "gs2_beta_scan_fapar0/_0.00001",
                             "gs2_beta_scan_fapar0/_0.0010",
                             "gs2_beta_scan_fapar0/_0.0020",
                             "gs2_beta_scan_fapar0/_0.0100",
                             ]
-    # for beta_idx in range(0, len(beta_strs)):
-    #     stella_sim_longname = stella_sim_longnames[beta_idx]
-    #     gs2_sim_longname = gs2_sim_longnames[beta_idx]
-    #     beta_str = beta_strs[beta_idx]
-    #     make_comparison_plots([
-    #                            stella_sim_longname,
-    #                            gs2_sim_longname,
-    #                            ],
-    #                           [
-    #                            "stella",
-    #                            "GS2",
-    #                            ],
-    #                           "./beta_" + beta_str + "_fapar0",
-    #                           sim_types=[
-    #                                      "stella",
-    #                                      "gs2",
-    #                                      ],
-    #                            plot_bpar=True,
-    #                            )
+    for beta_idx in range(0, len(beta_strs)):
+        stella_sim_longname = stella_sim_longnames[beta_idx]
+        gs2_sim_longname = gs2_sim_longnames[beta_idx]
+        beta_str = beta_strs[beta_idx]
+        make_comparison_plots([
+                               stella_sim_longname,
+                               gs2_sim_longname,
+                               ],
+                              [
+                               "stella",
+                               "GS2",
+                               ],
+                              "./beta_" + beta_str + "_fapar0",
+                              sim_types=[
+                                         "stella",
+                                         "gs2",
+                                         ],
+                               plot_bpar=True,
+                               plot_format=".png"
+                               )
+        # plot_gmvus("stella_beta0.001_fapar0/input.out.nc")
+        print("stella_sim_longname = ", stella_sim_longname)
+        print("gs2_sim_longname = ", gs2_sim_longname)
+        gs2_bpar_ratio = find_bpar_phi_ratio(gs2_sim_longname, "gs2")
+        stella_bpar_ratio = find_bpar_phi_ratio(stella_sim_longname, "stella")
+        print("gs2_bpar_ratio = ", gs2_bpar_ratio)
+        print("stella_bpar_ratio2 = ", stella_bpar_ratio)
 
-    # plot_gmvus("stella_beta0.001_fapar0/input.out.nc")
-    gs2_bpar_ratio = find_bpar_phi_ratio("gs2_beta_scan_fapar0/_0.00001", "gs2")
-    stella_bpar_ratio = find_bpar_phi_ratio("stella_beta0.00001_fapar0/input", "stella")
-    print("gs2_bpar_ratio = ", gs2_bpar_ratio)
-    print("stella_bpar_ratio2 = ", stella_bpar_ratio)
     return
 
 def analyse_fapar0_changing_vpares():
@@ -343,7 +349,7 @@ if __name__ == "__main__":
 
     # analyse_fbpar0_results()
     # plot_geometry()
-    make_low_beta_fbpar0_plots()
-    # analyse_fapar0_results()
+    # make_low_beta_fbpar0_plots()
+    analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()

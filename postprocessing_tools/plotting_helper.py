@@ -1,7 +1,7 @@
 """ """
 
 from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
-from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
+from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf, extract_data_from_ncdf_with_xarray
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle
@@ -31,7 +31,7 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
     ax2.plot(time, gammaom, label=sim_label, ls=linestyle)
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
-def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
+def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_format=".eps"):
     """ """
 
     theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
@@ -107,7 +107,7 @@ def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     return
 
 def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
-                          plot_apar=False, plot_bpar=False):
+                          plot_apar=False, plot_bpar=False, plot_format=".eps"):
     """Compare multiple simulations which have a single common input. Create the following
     plots:
     1) omega(t)
@@ -187,13 +187,13 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
     for ax in axes:
         ax.grid(True)
         ax.legend(loc="best")
-    fig1.savefig(save_name + "_omega.eps")
-    fig2.savefig(save_name + "_phi.eps")
+    fig1.savefig(save_name + "_omega" + plot_format)
+    fig2.savefig(save_name + "_phi" + plot_format)
     if plot_apar:
-        fig3.savefig(save_name + "_apar.eps")
+        fig3.savefig(save_name + "_apar" + plot_format)
         plt.close(fig3)
     if plot_bpar:
-        fig4.savefig(save_name + "_bpar.eps")
+        fig4.savefig(save_name + "_bpar" + plot_format)
         plt.close(fig4)
     plt.close(fig1)
     plt.close(fig2)
@@ -286,7 +286,8 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     return
 
 
-def plot_gmvus(stella_outnc_longname, which="gvpa"):
+def plot_gmvus(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
+                stretch_electron_vpa=False):
     """ """
     t, z, mu, vpa, gds2, gds21, gds22, bmag, gradpar, gvmus = extract_data_from_ncdf(stella_outnc_longname,
                                     "t", 'zed', "mu", "vpa", 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar', 'gvmus')
@@ -300,17 +301,30 @@ def plot_gmvus(stella_outnc_longname, which="gvpa"):
         gvmus = gvmus[-1]   # spec, mu, vpa
         fig = plt.figure(figsize=[10,10])
         ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+        ax2 = fig.add_subplot(212, sharex=ax1)
         counter=0
-
+        ion_max_val = 0
+        electron_max_val = 0
         for mu_idx in range(0, len(mu)):
             counter += 1
             g_ion_vpa = gvmus[0, mu_idx, :]
             g_electron_vpa = gvmus[1, mu_idx, :]
+            tmp_max_val = np.max(g_ion_vpa)
+            ion_max_val = max(tmp_max_val, ion_max_val)
+            tmp_max_val = np.max(g_electron_vpa)
+            electron_max_val = max(tmp_max_val, electron_max_val)
+
             ax1.plot(vpa, g_ion_vpa, label="mu={:.3f}".format(mu[mu_idx]))
-            ax2.plot(vpa, g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+            if stretch_electron_vpa:
+                ax2.plot(vpa/np.sqrt(0.00028), g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+            else:
+                ax2.plot(vpa, g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
 
             if counter == 5:
+                if plot_gauss_squared:
+                    maxwell_vpa_squared = (np.exp(-vpa**2*0.00028))**2
+                    ax1.plot(vpa, maxwell_vpa_squared*ion_max_val, c="black", ls="--", label=r"$\exp\left(-v_\parallel^2\right)$")
+                    ax2.plot(vpa, maxwell_vpa_squared*electron_max_val, c="black", ls="--", label=r"$\exp\left(-v_\parallel^2\right)$")
                 for ax in [ax1, ax2]:
                     ax.grid(True)
                     ax.legend(loc="best")
@@ -322,6 +336,8 @@ def plot_gmvus(stella_outnc_longname, which="gvpa"):
                 ax1 = fig.add_subplot(211)
                 ax2 = fig.add_subplot(212)
                 counter=0
+                ion_max_val = 0
+                electron_max_val = 0
 
         for ax in [ax1, ax2]:
             ax.grid(True)
@@ -333,6 +349,9 @@ def plot_gmvus(stella_outnc_longname, which="gvpa"):
 
     if ((which == "gmu") or (which == "both")):
         ###### Plot g(mu) for different vpa
+        if which == "gmu":
+            # Get the final timestep of gvmus
+            gvmus = gvmus[-1]   # spec, mu, vpa
         fig = plt.figure(figsize=[10,10])
         ax1 = fig.add_subplot(211)
         ax2 = fig.add_subplot(212)
