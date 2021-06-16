@@ -268,10 +268,18 @@ def get_bparz_data_stella(sim_longname):
     return z, real_bpar, imag_bpar
 
 def get_bparz_data_gs2(sim_longname):
-    """ """
-    theta, bpar = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","bpar")
+    """Get bpar(z) from the .out.nc file of a GS2 simulation,
+    BUT normalised to be consistent with stella's bpar(z).
+    ###################################################
+    GS2 has bpar = B_parallel (Lref)/(B*rho_ref) = (Lref)/(bmag*Bref*rho_ref)
+    stella has bpar = B_parallel (a)/(Bref*rho_ref)
+    So stella's bpar is equivalent to GS2's bpar*bmag (assuming GS2's Lref, rho_ref
+    is same as stella's!)
+    """
+
+    theta, bpar, bmag = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","bpar", "bmag")
     if ((len(bpar) > 1) or (len(bpar[0]) > 1)):
         print("bpar= ", bpar)
         print("(len(bpar) > 1) or (len(bpar[0]) > 1), aborting")
-    bpar = bpar[0,0,:]
+    bpar = bpar[0,0,:]*bmag
     return theta, bpar.real, bpar.imag

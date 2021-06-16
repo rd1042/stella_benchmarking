@@ -18,24 +18,24 @@ def analyse_fbpar0_results():
                  #"0.02",
                  #"0.03",
                  #"0.04",
-                 "0.005",
-                 "0.010",
+                 #"0.005",
+                 #"0.010",
                  ]
     stella_sim_longnames = [
                             "stella_beta0.001_fbpar0/input",
                             #"stella_beta0.002_fbpar0/input",
                             #"stella_beta0.003_fbpar0/input",
                             #"stella_beta0.004_fbpar0/input",
-                            "stella_beta0.005_fbpar0/input",
-                            "stella_beta0.010_fbpar0/input",
+                            #"stella_beta0.005_fbpar0/input",
+                            #"stella_beta0.010_fbpar0/input",
                             ]
     gs2_sim_longnames = [
                             "gs2_beta_scan_fbpar0/_0.0010",
                             #"gs2_beta_scan_fbpar0/_0.0020",
                             #"gs2_beta_scan_fbpar0/_0.0030",
                             #"gs2_beta_scan_fbpar0/_0.0040",
-                            "gs2_beta_scan_fbpar0/_0.0050",
-                            "gs2_beta_scan_fbpar0/_0.0100",
+                            #"gs2_beta_scan_fbpar0/_0.0050",
+                            #"gs2_beta_scan_fbpar0/_0.0100",
                             ]
     for beta_idx in range(0, len(beta_strs)):
         stella_sim_longname = stella_sim_longnames[beta_idx]
@@ -66,25 +66,22 @@ def analyse_fapar0_results():
 
     print("Hello world")
     beta_strs = [
-                 "0.00001a",
-                 "0.00001b",
+                 "0.00001",
                  "0.001",
                  "0.002",
-                 "0.010",
+                 #"0.010",
                  ]
     stella_sim_longnames = [
                             "stella_beta0.00001_fapar0/input",
-                            "stella_beta0.00001_fapar0/input_balloon",
                             "stella_beta0.001_fapar0/input",
                             "stella_beta0.002_fapar0/input",
-                            "stella_beta0.010_fapar0/input",
+                            #"stella_beta0.010_fapar0/input",
                             ]
     gs2_sim_longnames = [
                             "gs2_beta_scan_fapar0/_0.00001",
-                            "gs2_beta_scan_fapar0/_0.00001",
                             "gs2_beta_scan_fapar0/_0.0010",
                             "gs2_beta_scan_fapar0/_0.0020",
-                            "gs2_beta_scan_fapar0/_0.0100",
+                            #"gs2_beta_scan_fapar0/_0.0100",
                             ]
     for beta_idx in range(0, len(beta_strs)):
         stella_sim_longname = stella_sim_longnames[beta_idx]
