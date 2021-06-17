@@ -8,34 +8,66 @@ from extract_sim_data import find_bpar_phi_ratio, find_apar_phi_ratio
 import matplotlib.pyplot as plt
 import numpy as np
 
+IMAGE_DIR = "./images/"
+### Give the names of all the sims here - avoids needing to type them out
+### in the methods.
+
+## fapar = 0
+# stella
+sim_st_b00001_fapar0 = "stella_beta0.00001_fapar0/input"
+sim_st_b001_fapar0 = "stella_beta0.001_fapar0/input"
+sim_st_b002_fapar0 = "stella_beta0.002_fapar0/input"
+sim_st_b01_fapar0  = "stella_beta0.010_fapar0/input"
+# gs2
+sim_gs2_b00001_fapar0 = "gs2_beta_scan_fapar0/_0.00001"
+sim_gs2_b001_fapar0 = "gs2_beta_scan_fapar0/_0.0010"
+sim_gs2_b002_fapar0 = "gs2_beta_scan_fapar0/_0.0020"
+sim_gs2_b01_fapar0 = "gs2_beta_scan_fapar0/_0.0100"
+
+## fbpar = 0
+# stella
+sim_st_b00001_fbpar0 = "stella_beta0.00001_fbpar0/input"
+sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
+sim_st_b002_fbpar0 = "stella_beta0.002_fbpar0/input"
+sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
+sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
+sim_st_b005_fbpar0 = "stella_beta0.005_fbpar0/input"
+sim_st_b01_fbpar0 = "stella_beta0.010_fbpar0/input"
+# gs2
+sim_gs2_b00001_fbpar0 = "gs2_beta_scan_fbpar0/_0.00001"
+sim_gs2_b001_fbpar0 = "gs2_beta_scan_fbpar0/_0.0010"
+sim_gs2_b002_fbpar0 = "gs2_beta_scan_fbpar0/_0.0020"
+sim_gs2_b003_fbpar0 = "gs2_beta_scan_fbpar0/_0.0030"
+sim_gs2_b004_fbpar0 = "gs2_beta_scan_fbpar0/_0.0040"
+sim_gs2_b005_fbpar0 = "gs2_beta_scan_fbpar0/_0.0050"
+sim_gs2_b01_fbpar0 = "gs2_beta_scan_fbpar0/_0.0100"
+
+## fapar=1, fbpar=1
+sim_st_b0 = "stella_beta0.000/input"
+sim_st_b005 = "stella_beta0.005/input"
+sim_st_b01 = "stella_beta0.010/input"
+sim_st_b015 = "stella_beta0.015/input"
+sim_st_b02 = "stella_beta0.020/input"
+sim_st_b025 = "stella_beta0.025/input"
+sim_st_b03 = "stella_beta0.030/input"
+
+## The pickled files summarising G22 beta scans
+pickle_gs2 = "gs2_beta_scan/omega_values.pickle"
+pickle_gs2_fbpar0 = "gs2_beta_scan_fbpar0/omega_values.pickle"
+
 def analyse_fbpar0_results():
     """Compare omega(t) and phi(z), apar(z)
     between GS2 and stella results """
 
     print("Hello world")
     beta_strs = [
-                 "0.001",
-                 #"0.02",
-                 #"0.03",
-                 #"0.04",
-                 #"0.005",
-                 #"0.010",
+
                  ]
     stella_sim_longnames = [
-                            "stella_beta0.001_fbpar0/input",
-                            #"stella_beta0.002_fbpar0/input",
-                            #"stella_beta0.003_fbpar0/input",
-                            #"stella_beta0.004_fbpar0/input",
-                            #"stella_beta0.005_fbpar0/input",
-                            #"stella_beta0.010_fbpar0/input",
+
                             ]
     gs2_sim_longnames = [
-                            "gs2_beta_scan_fbpar0/_0.0010",
-                            #"gs2_beta_scan_fbpar0/_0.0020",
-                            #"gs2_beta_scan_fbpar0/_0.0030",
-                            #"gs2_beta_scan_fbpar0/_0.0040",
-                            #"gs2_beta_scan_fbpar0/_0.0050",
-                            #"gs2_beta_scan_fbpar0/_0.0100",
+
                             ]
     for beta_idx in range(0, len(beta_strs)):
         stella_sim_longname = stella_sim_longnames[beta_idx]
@@ -72,16 +104,10 @@ def analyse_fapar0_results():
                  #"0.010",
                  ]
     stella_sim_longnames = [
-                            "stella_beta0.00001_fapar0/input",
-                            "stella_beta0.001_fapar0/input",
-                            "stella_beta0.002_fapar0/input",
-                            #"stella_beta0.010_fapar0/input",
+
                             ]
     gs2_sim_longnames = [
-                            "gs2_beta_scan_fapar0/_0.00001",
-                            "gs2_beta_scan_fapar0/_0.0010",
-                            "gs2_beta_scan_fapar0/_0.0020",
-                            #"gs2_beta_scan_fapar0/_0.0100",
+
                             ]
     for beta_idx in range(0, len(beta_strs)):
         stella_sim_longname = stella_sim_longnames[beta_idx]
@@ -224,49 +250,10 @@ def plot_geometry():
     return
 
 
-def make_low_beta_fbpar0_plots():
-    """ """
-    gs2_sim = "gs2_beta_scan_fbpar0/_0.00001"
-    #gs2_sim = "gs2_beta_scan_fbpar0/_0.0010"
-    sim1 = "stella_beta0_fbpar0/input"
-    sim2 = "stella_beta0.00001_fbpar0/input"
-
-    make_comparison_plots([
-                           gs2_sim,
-                           #sim1,
-                           sim2,
-                           ],
-                          [
-                           "gs2 beta=0.00001",
-                           #"gs2 beta=0.001",
-                           #"beta=0",
-                           "stella beta=0.00001",
-                           ],
-                          "./low_beta",
-                          sim_types=[
-                                     "gs2",
-                                     #"stella",
-                                     "stella",
-                                     ],
-                           plot_apar=True,
-                           )
-    # plot_gmvus(sim2 + ".out.nc", which="gvpa")
-    gs2_ratio = find_apar_phi_ratio("gs2_beta_scan_fbpar0/_0.00001", "gs2")
-    stella_ratio = find_apar_phi_ratio("stella_beta0.00001_fbpar0/input", "stella")
-    print("gs2_ratio = ", gs2_ratio)
-    print("stella_ratio = ", stella_ratio)
-    return
-
 def plot_beta_scans():
     """ """
     stella_sim_longnames = [
-                            "stella_beta0.000/input",
-                            "stella_beta0.005/input",
-                            "stella_beta0.010/input",
-                            "stella_beta0.015/input",
-                            "stella_beta0.020/input",
-                            "stella_beta0.025/input",
-                            "stella_beta0.030/input",
+
                             ]
     stella_beta_vals = [
                         0.0,
@@ -277,7 +264,7 @@ def plot_beta_scans():
                         0.025,
                         0.03
                         ]
-    gs2_pickle = "gs2_beta_scan/omega_values.pickle"
+
 
     make_beta_scan_plots(stella_sim_longnames,
                          stella_beta_vals,
@@ -286,12 +273,7 @@ def plot_beta_scans():
                          )
 
     stella_sim_longnames = [
-                            "stella_beta0.000/input",
-                            "stella_beta0.001_fbpar0/input",
-                            "stella_beta0.002_fbpar0/input",
-                            "stella_beta0.003_fbpar0/input",
-                            "stella_beta0.004_fbpar0/input",
-                            "stella_beta0.005_fbpar0/input",
+
                             ]
     stella_beta_vals = [
                         0.0,
@@ -302,7 +284,7 @@ def plot_beta_scans():
                         0.005,
                         ]
 
-    gs2_pickle = "gs2_beta_scan_fbpar0/omega_values.pickle"
+
 
     make_beta_scan_plots(stella_sim_longnames,
                          stella_beta_vals,
@@ -341,12 +323,135 @@ def plot_gvmus_for_fbpar0():
     return
 
 
+def make_comparison_plots_many(stella_sim_longnames, gs2_sim_longnames,
+                                beta_strs, prefix, plot_apar = False,
+                                plot_bpar = False, plot_format=".png"):
+    """ """
+
+    for beta_idx in range(0, len(beta_strs)):
+        stella_sim_longname = stella_sim_longnames[beta_idx]
+        gs2_sim_longname = gs2_sim_longnames[beta_idx]
+        beta_str = beta_strs[beta_idx]
+        make_comparison_plots([
+                               stella_sim_longname,
+                               gs2_sim_longname,
+                               ],
+                              [
+                               "stella",
+                               "GS2",
+                               ],
+                              IMAGE_DIR + prefix + "beta_" + beta_str,
+                              sim_types=[
+                                         "stella",
+                                         "gs2",
+                                         ],
+                               plot_apar=plot_apar,
+                               plot_bpar=plot_bpar,
+                               plot_format=plot_format
+                               )
+
+def plot_fapar_fbpar_on():
+    """ """
+    ## Beta scan
+    stella_sim_longnames = [
+                            sim_st_b0,
+                            sim_st_b005,
+                            sim_st_b01,
+                            sim_st_b015,
+                            sim_st_b02,
+                            sim_st_b025,
+                            sim_st_b03
+                            ]
+    stella_beta_vals = [
+                        0.,
+                        0.005,
+                        0.01,
+                        0.015,
+                        0.02,
+                        0.025,
+                        0.03,
+                        ]
+    make_beta_scan_plots(stella_sim_longnames,
+                         stella_beta_vals,
+                         IMAGE_DIR + "test_cbc_beta_scan",
+                         gs2_pickle=pickle_gs2)
+
+    return
+
+def plot_fapar0():
+    """ """
+    stella_sim_longnames = [
+                            sim_st_b00001_fapar0,
+                            sim_st_b001_fapar0,
+                            sim_st_b002_fapar0,
+                            sim_st_b01_fapar0,
+                            ]
+    gs2_sim_longnames = [
+                         sim_gs2_b00001_fapar0,
+                         sim_gs2_b001_fapar0,
+                         sim_gs2_b002_fapar0,
+                         sim_gs2_b01_fapar0
+                        ]
+    beta_strs = [
+                 "0.00001",
+                 "0.001",
+                 "0.002",
+                 "0.01"
+                 ]
+    make_comparison_plots_many(stella_sim_longnames,
+                               gs2_sim_longnames,
+                               beta_strs, "fapar=0/", plot_apar=False, plot_bpar=True)
+    return
+
+
+def plot_fbpar0():
+    """ """
+    stella_sim_longnames = [
+                            sim_st_b00001_fbpar0,
+                            sim_st_b001_fbpar0,
+                            sim_st_b002_fbpar0,
+                            sim_st_b003_fbpar0,
+                            sim_st_b004_fbpar0,
+                            sim_st_b005_fbpar0,
+                            sim_st_b01_fbpar0
+                            ]
+
+    gs2_sim_longnames = [
+                            sim_gs2_b00001_fbpar0,
+                            sim_gs2_b001_fbpar0,
+                            sim_gs2_b002_fbpar0,
+                            sim_gs2_b003_fbpar0,
+                            sim_gs2_b004_fbpar0,
+                            sim_gs2_b005_fbpar0,
+                            sim_gs2_b01_fbpar0
+                        ]
+    beta_strs = [
+                 "0.00001",
+                 "0.001",
+                 "0.002",
+                 "0.003",
+                 "0.004",
+                 "0.005",
+                 "0.01"
+                 ]
+    make_comparison_plots_many(stella_sim_longnames,
+                               gs2_sim_longnames,
+                               beta_strs, "fbpar=0/", plot_apar=True, plot_bpar=False)
+
+def make_all_plots():
+    """ """
+    plot_fbpar0()
+    plot_fapar_fbpar_on()
+    plot_fapar0()
+    return
+
 if __name__ == "__main__":
     ## Compare
 
     # analyse_fbpar0_results()
     # plot_geometry()
     # make_low_beta_fbpar0_plots()
-    analyse_fapar0_results()
+    # analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
+    make_all_plots()

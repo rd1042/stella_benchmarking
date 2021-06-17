@@ -24,11 +24,15 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
     gammaom_half = gammaom[half_len:]
     # Get an estimate for the ylims by looking at the max/min of the second half
     # of the frequencuy and gamma data
-    linestyle=next(linestyles1)
-    gamma_llim = (np.min(gammaom_half)); gamma_ulim = (np.max(gammaom_half))
-    freq_llim = (np.min(freqom_half)); freq_ulim = np.max(freqom_half)
-    ax1.plot(time, freqom, label=sim_label, ls=linestyle)
-    ax2.plot(time, gammaom, label=sim_label, ls=linestyle)
+    if np.isfinite(freqom_final) and np.isfinite(gammaom_final):
+        linestyle=next(linestyles1)
+        gamma_llim = (np.min(gammaom_half)); gamma_ulim = (np.max(gammaom_half))
+        freq_llim = (np.min(freqom_half)); freq_ulim = np.max(freqom_half)
+        ax1.plot(time, freqom, label=sim_label, ls=linestyle)
+        ax2.plot(time, gammaom, label=sim_label, ls=linestyle)
+    else:
+        gamma_llim = np.NaN; gamma_ulim = np.NaN; freq_llim = np.NaN; freq_ulim = np.NaN
+
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
 def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_format=".eps"):
@@ -38,7 +42,8 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_for
     ## Check values are finite
     if not(np.all(np.isfinite(real_phi)) and np.all(np.isfinite(imag_phi))):
         print("Error! phi contains non-finite values")
-        sys.exit()
+        print("sim_longname = ", sim_longname)
+        return
 
     ## Combine real and imaginary parts to get abs_phi
     # If real and imaginary parts are large, it's possible that they'll
@@ -63,7 +68,8 @@ def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     ## Check values are finite
     if not(np.all(np.isfinite(real_apar)) and np.all(np.isfinite(imag_apar))):
         print("Error! apar contains non-finite values")
-        sys.exit()
+        print("sim_longname = ", sim_longname)
+        return
 
     ## Combine real and imaginary parts to get abs_apar
     # If real and imaginary parts are large, it's possible that they'll
@@ -88,7 +94,8 @@ def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     ## Check values are finite
     if not(np.all(np.isfinite(real_bpar)) and np.all(np.isfinite(imag_bpar))):
         print("Error! bpar contains non-finite values")
-        sys.exit()
+        print("sim_longname = ", sim_longname)
+        return
 
     ## Combine real and imaginary parts to get abs_bpar
     # If real and imaginary parts are large, it's possible that they'll
@@ -153,12 +160,16 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
             plot_apar_z_for_sim(ax31, sim_longname, sim_label, sim_type=sim_type)
         if plot_bpar:
             plot_bpar_z_for_sim(ax41, sim_longname, sim_label, sim_type=sim_type)
-        gamma_llims.append(gamma_llim)
-        gamma_ulims.append(gamma_ulim)
-        freq_llims.append(freq_llim)
-        freq_ulims.append(freq_ulim)
-        gamma_vals.append(gammaom_final)
-        freq_vals.append(freqom_final)
+
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
+                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
+            gamma_llims.append(gamma_llim)
+            gamma_ulims.append(gamma_ulim)
+            freq_llims.append(freq_llim)
+            freq_ulims.append(freq_ulim)
+            gamma_vals.append(gammaom_final)
+            freq_vals.append(freqom_final)
 
     ## Set lims based on sim data
     gamma_llim = np.min(np.array(gamma_llims))/1.1
@@ -213,7 +224,7 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     ax22 = fig2.add_subplot(212, sharex=ax21)
     gamma_vals = []
     freq_vals = []
-
+    final_beta_vals = []
     gamma_llims = []
     gamma_ulims = []
     freq_llims = []
@@ -233,12 +244,16 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
             sys.exit()
         gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
             freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
-        gamma_llims.append(gamma_llim)
-        gamma_ulims.append(gamma_ulim)
-        freq_llims.append(freq_llim)
-        freq_ulims.append(freq_ulim)
-        gamma_vals.append(gammaom_final)
-        freq_vals.append(freqom_final)
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
+                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
+            gamma_llims.append(gamma_llim)
+            gamma_ulims.append(gamma_ulim)
+            freq_llims.append(freq_llim)
+            freq_ulims.append(freq_ulim)
+            gamma_vals.append(gammaom_final)
+            freq_vals.append(freqom_final)
+            final_beta_vals.append(beta_vals[sim_idx])
 
     ## Set lims based on sim data
     gamma_llim = np.min(np.array(gamma_llims))
@@ -252,10 +267,10 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     ax12.set_ylabel(r"$\gamma$")
 
 
-    ax21.plot(beta_vals, freq_vals, label="stella")
-    ax22.plot(beta_vals, gamma_vals, label="stella")
-    ax21.scatter(beta_vals, freq_vals, c="black", s=15., marker="x")
-    ax22.scatter(beta_vals, gamma_vals, c="black", s=15., marker="x")
+    ax21.plot(final_beta_vals, freq_vals, label="stella")
+    ax22.plot(final_beta_vals, gamma_vals, label="stella")
+    ax21.scatter(final_beta_vals, freq_vals, c="black", s=15., marker="x")
+    ax22.scatter(final_beta_vals, gamma_vals, c="black", s=15., marker="x")
     if gs2_pickle is not None:
         myfile = open(gs2_pickle, 'rb')
         gs2_dict = pickle.load(myfile)  # contains 'beta', 'frequency', 'growth rate'
