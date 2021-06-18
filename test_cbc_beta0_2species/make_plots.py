@@ -7,6 +7,39 @@ from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import matplotlib.pyplot as plt
 import numpy as np
 
+stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
+stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
+stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
+stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
+gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
+
+def plot_nperiod_scan():
+    """ """
+    make_comparison_plots([
+                    stella_basecase_longname,
+                    stella_nperiod5_longname,
+                    stella_nperiod7_longname,
+                    stella_nperiod9_longname,
+                    gs2_basecase_longname
+                    ],
+                    [
+                    "stella master (nperiod=3)",
+                    "stella master (nperiod=5)",
+                    "stella master (nperiod=7)",
+                    "stella master (nperiod=8)",
+                    "GS2 (nperiod=4)",
+                    ],
+                    "./test_cbc_beta0_2species_nperiodscan",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+    return
+
 def compare_stella_to_gs2():
     """ """
     master_sim_longname1 = "master_cmiller_es_2species_ypi/cmiller_electrostatic_2species"
@@ -130,5 +163,6 @@ def plot_g_for_stella_sim():
 
 
 if __name__ == "__main__":
-    plot_g_for_stella_sim()
+    #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
+    plot_nperiod_scan()
