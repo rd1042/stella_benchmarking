@@ -42,7 +42,11 @@
 
 &vpamu_grids_parameters
  nvgrid = 108
+<<<<<<< Updated upstream
  nmu = 24
+=======
+ nmu = 48
+>>>>>>> Stashed changes
  vpa_max = 3.0
 /
 
@@ -81,7 +85,11 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
+<<<<<<< Updated upstream
  nstep = 30000
+=======
+ nstep = 100000
+>>>>>>> Stashed changes
 /
 &species_knobs
  nspec= 2
