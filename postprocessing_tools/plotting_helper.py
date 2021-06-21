@@ -403,3 +403,106 @@ def plot_gmvus(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
         plt.show()
 
     return
+
+def plot_gzvs(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
+                stretch_electron_vpa=False):
+    """ """
+    view_ncdf_variables(stella_outnc_longname)
+    t, z, vpa, gzvs = extract_data_from_ncdf(stella_outnc_longname,
+                                    "t", 'zed', "vpa", 'gzvs')
+    print("len(t)", "len(z), len(vpa) = ", len(t), len(z), len(vpa))
+    print("gzvs.shape = ", gzvs.shape)  #
+    sys.exit()
+
+    if ((which == "gvpa") or (which == "both")):
+        ## Code to plot g for stella
+        gvmus = gvmus[-1]   # spec, mu, vpa
+        fig = plt.figure(figsize=[10,10])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212, sharex=ax1)
+        counter=0
+        ion_max_val = 0
+        electron_max_val = 0
+        for mu_idx in range(0, len(mu)):
+            counter += 1
+            g_ion_vpa = gvmus[0, mu_idx, :]
+            g_electron_vpa = gvmus[1, mu_idx, :]
+            tmp_max_val = np.max(g_ion_vpa)
+            ion_max_val = max(tmp_max_val, ion_max_val)
+            tmp_max_val = np.max(g_electron_vpa)
+            electron_max_val = max(tmp_max_val, electron_max_val)
+
+            ax1.plot(vpa, g_ion_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+            if stretch_electron_vpa:
+                ax2.plot(vpa/np.sqrt(0.00028), g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+            else:
+                ax2.plot(vpa, g_electron_vpa, label="mu={:.3f}".format(mu[mu_idx]))
+
+            if counter == 5:
+                if plot_gauss_squared:
+                    maxwell_vpa_squared = (np.exp(-vpa**2*0.00028))**2
+                    ax1.plot(vpa, maxwell_vpa_squared*ion_max_val, c="black", ls="--", label=r"$\exp\left(-v_\parallel^2\right)$")
+                    ax2.plot(vpa, maxwell_vpa_squared*electron_max_val, c="black", ls="--", label=r"$\exp\left(-v_\parallel^2\right)$")
+                for ax in [ax1, ax2]:
+                    ax.grid(True)
+                    ax.legend(loc="best")
+                ax2.set_xlabel("vpa")
+                ax1.set_ylabel(r"$g_{ion}$")
+                ax2.set_ylabel(r"$g_{electron}$")
+                plt.show()
+                fig = plt.figure(figsize=[10,10])
+                ax1 = fig.add_subplot(211)
+                ax2 = fig.add_subplot(212)
+                counter=0
+                ion_max_val = 0
+                electron_max_val = 0
+
+        for ax in [ax1, ax2]:
+            ax.grid(True)
+            ax.legend(loc="best")
+        ax2.set_xlabel("vpa")
+        ax1.set_ylabel(r"$g_{ion}$")
+        ax2.set_ylabel(r"$g_{electron}$")
+        plt.show()
+
+    if ((which == "gmu") or (which == "both")):
+        ###### Plot g(mu) for different vpa
+        if which == "gmu":
+            # Get the final timestep of gvmus
+            gvmus = gvmus[-1]   # spec, mu, vpa
+        fig = plt.figure(figsize=[10,10])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+        counter=0
+        #print("vpa = ", vpa)
+        #sys.exit()
+        # Only go over half of vpa-space (symmetry arguyment)
+        for vpa_idx in range(int(len(vpa)/2), len(vpa)):
+            counter += 1
+            g_ion_mu = gvmus[0, :, vpa_idx]
+            g_electron_mu = gvmus[1, :, vpa_idx]
+            ax1.plot(mu, g_ion_mu, label="vpa={:.3f}".format(vpa[vpa_idx]))
+            ax2.plot(mu, g_electron_mu, label="vpa={:.3f}".format(vpa[vpa_idx]))
+
+            if counter == 5:
+                for ax in [ax1, ax2]:
+                    ax.grid(True)
+                    ax.legend(loc="best")
+                ax2.set_xlabel("mu")
+                ax1.set_ylabel(r"$g_{ion}$")
+                ax2.set_ylabel(r"$g_{electron}$")
+                plt.show()
+                fig = plt.figure(figsize=[10,10])
+                ax1 = fig.add_subplot(211)
+                ax2 = fig.add_subplot(212)
+                counter=0
+
+        for ax in [ax1, ax2]:
+            ax.grid(True)
+            ax.legend(loc="best")
+        ax2.set_xlabel("mu")
+        ax1.set_ylabel(r"$g_{ion}$")
+        ax2.set_ylabel(r"$g_{electron}$")
+        plt.show()
+
+    return

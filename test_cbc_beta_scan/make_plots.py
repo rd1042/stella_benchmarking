@@ -2,7 +2,7 @@
 
 import sys
 sys.path.append("../postprocessing_tools")
-from plotting_helper import make_beta_scan_plots, make_comparison_plots, plot_gmvus
+from plotting_helper import make_beta_scan_plots, make_comparison_plots, plot_gmvus, plot_gzvs
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 from extract_sim_data import find_bpar_phi_ratio, find_apar_phi_ratio
 import matplotlib.pyplot as plt
@@ -28,6 +28,9 @@ sim_gs2_b01_fapar0 = "gs2_beta_scan_fapar0/_0.0100"
 # stella
 sim_st_b00001_fbpar0 = "stella_beta0.00001_fbpar0/input"
 sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
+sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
+sim_st_b001_fbpar0_no_mag_drift = "stella_beta0.001_fbpar0/input_no_drifts"
+sim_st_b001_fbpar0_no_mirror = "stella_beta0.001_fbpar0/input_no_mirror"
 sim_st_b002_fbpar0 = "stella_beta0.002_fbpar0/input"
 sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
 sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
@@ -54,6 +57,34 @@ sim_st_b03 = "stella_beta0.030/input"
 ## The pickled files summarising G22 beta scans
 pickle_gs2 = "gs2_beta_scan/omega_values.pickle"
 pickle_gs2_fbpar0 = "gs2_beta_scan_fbpar0/omega_values.pickle"
+
+def analyse_fbpar0_beta0001_results():
+    """Compare sims, all with fbpar=0, fapar=1, beta=0.001, for which
+    we try turning on and off different knobs."""
+
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                           sim_st_b001_fbpar0_no_drive,
+                           sim_st_b001_fbpar0_no_mag_drift,
+                           sim_st_b001_fbpar0_no_mirror
+                           ],
+                          [
+                           "stella",
+                           "stella, zero gradients",
+                           "stella, no magnetic drifts",
+                           "stella, no mirror term"
+                           ],
+                          "./termsoff_beta_0.001_fbpar0",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella"
+                                     ],
+                           plot_apar=True,
+                           )
+    return
+
 
 def analyse_fbpar0_results():
     """Compare omega(t) and phi(z), apar(z)
@@ -322,6 +353,17 @@ def plot_gvmus_for_fbpar0():
 
     return
 
+def plot_gzvs_for_fbpar0():
+    """Take a look at the distribrution function for
+    fbpar=0 sims """
+
+    stella_sim_longname = "stella_beta0.010_fbpar0/input"
+    stella_outnc_longname = stella_sim_longname + ".out.nc"
+    plot_gzvs(stella_outnc_longname)
+
+
+    return
+
 
 def make_comparison_plots_many(stella_sim_longnames, gs2_sim_longnames,
                                 beta_strs, prefix, plot_apar = False,
@@ -454,4 +496,5 @@ if __name__ == "__main__":
     # analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
-    make_all_plots()
+    # make_all_plots()
+    plot_gzvs_for_fbpar0()

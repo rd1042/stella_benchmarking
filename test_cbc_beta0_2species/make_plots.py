@@ -11,7 +11,59 @@ stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
+stella_adiabatic_longname = "stella_adiabatic/input5"
+
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
+gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
+gs2_adiabatic_longname = "gs2_adiabatic/input"
+gs2_eqarc_false_longname = "gs2_electrostatic_new/_0.0000_eqarc_false"
+
+def plot_eqarc_results():
+    """ """
+    make_comparison_plots([
+                    stella_nperiod5_longname,
+                    gs2_basecase_longname,
+                    gs2_eqarc_false_longname
+                    ],
+                    [
+                    "stella master",
+                    "GS2 (equal_arc=.true.)",
+                    "GS2 (equal_arc=.false.)",
+                    ],
+                    "./test_cbc_beta0_eqarc",
+                    sim_types=[
+                    "stella",
+                    "gs2",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+    return
+
+def plot_adiabatic_results():
+    """ """
+    make_comparison_plots([
+                    stella_adiabatic_longname,
+                    gs2_adiabatic_longname,
+                    stella_nperiod5_longname,
+                    gs2_basecase_longname
+                    ],
+                    [
+                    "stella master (adiabatic electrons)",
+                    "GS2 (adiabatic electrons)",
+                    "stella master (kinetic electrons)",
+                    "GS2 (kinetic electrons)",
+                    ],
+                    "./test_cbc_beta0_adiabatic",
+                    sim_types=[
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+    return
 
 def plot_nperiod_scan():
     """ """
@@ -36,6 +88,27 @@ def plot_nperiod_scan():
                     "stella",
                     "stella",
                     "gs2",
+                    ],
+                    plot_format=".png")
+    return
+
+def plot_dt_scan():
+    """ """
+    make_comparison_plots([
+                    stella_nperiod5_longname,
+                    gs2_basecase_longname,
+                    gs2_dt001_longname
+                    ],
+                    [
+                    "stella master (dt=)",
+                    "GS2 (dt=0.05)",
+                    "GS2 (dt=0.01)",
+                    ],
+                    "./test_cbc_beta0_2species_dtscan",
+                    sim_types=[
+                    "stella",
+                    "gs2",
+                    "gs2"
                     ],
                     plot_format=".png")
     return
@@ -165,4 +238,7 @@ def plot_g_for_stella_sim():
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
-    plot_nperiod_scan()
+    #plot_nperiod_scan()
+    #plot_adiabatic_results()
+    #plot_dt_scan()
+    plot_eqarc_results()
