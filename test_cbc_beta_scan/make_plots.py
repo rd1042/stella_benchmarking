@@ -89,7 +89,7 @@ def analyse_fbpar0_beta0001_results():
                                      "gs2"
                                      ],
                            plot_apar=True,
-                           plot_format=".png"
+                           plot_format=".eps"
                            )
     return
 
@@ -505,5 +505,5 @@ if __name__ == "__main__":
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
     # make_all_plots()
-    plot_gzvs_for_fbpar0()
-    # analyse_fbpar0_beta0001_results()
+    #plot_gzvs_for_fbpar0()
+    analyse_fbpar0_beta0001_results()

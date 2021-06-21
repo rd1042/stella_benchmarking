@@ -9,6 +9,11 @@ import numpy as np
 
 stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
+stella_nperiod5_dt0001_longname = "master_cmiller_es_2species_marconi/input5_dt001"
+stella_nperiod5_upwind02_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.2"
+stella_nperiod5_upwind05_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.5"
+stella_nperiod5_upwind1_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_1"
+stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
 stella_adiabatic_longname = "stella_adiabatic/input5"
@@ -17,6 +22,34 @@ gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
 gs2_adiabatic_longname = "gs2_adiabatic/input"
 gs2_eqarc_false_longname = "gs2_electrostatic_new/_0.0000_eqarc_false"
+
+def plot_upwinding_scan():
+    """ """
+    make_comparison_plots([
+                    stella_nperiod5_longname,
+                    stella_nperiod5_upwind02_longname,
+                    stella_nperiod5_upwind05_longname,
+                    stella_nperiod5_upwind1_longname,
+                    gs2_basecase_longname,
+                    ],
+                    [
+                    "stella (z, vpa upwind=0.02)",
+                    "stella (z, vpa upwind=0.2)",
+                    "stella (z, vpa upwind=0.5)",
+                    "stella (z, vpa upwind=1.0)",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_upwinding",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+    return
 
 def plot_eqarc_results():
     """ """
@@ -96,16 +129,19 @@ def plot_dt_scan():
     """ """
     make_comparison_plots([
                     stella_nperiod5_longname,
+                    stella_nperiod5_dt0001_longname,
                     gs2_basecase_longname,
                     gs2_dt001_longname
                     ],
                     [
-                    "stella master (dt=)",
+                    "stella master (dt=0.025)",
+                    "stella master (dt=0.001)",
                     "GS2 (dt=0.05)",
                     "GS2 (dt=0.01)",
                     ],
                     "./test_cbc_beta0_2species_dtscan",
                     sim_types=[
+                    "stella",
                     "stella",
                     "gs2",
                     "gs2"
@@ -237,9 +273,10 @@ def plot_g_for_stella_sim():
 
 
 if __name__ == "__main__":
-    plot_g_for_stella_sim()
+    #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
-    #plot_dt_scan()
+    plot_dt_scan()
     #plot_eqarc_results()
+    #plot_upwinding_scan()
