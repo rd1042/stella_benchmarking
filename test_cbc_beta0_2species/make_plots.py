@@ -2,7 +2,7 @@
 
 import sys
 sys.path.append("../postprocessing_tools")
-from plotting_helper import make_comparison_plots, plot_gmvus
+from plotting_helper import make_comparison_plots, plot_gmvus, plot_gzvs
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -231,14 +231,15 @@ def compare_stella_to_gs2():
 def plot_g_for_stella_sim():
     """ """
     master_outnc_longname2 = "master_cmiller_es_2species_marconi/input.out.nc"
-    plot_gmvus(master_outnc_longname2, which="gvpa", plot_gauss_squared=True, stretch_electron_vpa=False)
+    #plot_gmvus(master_outnc_longname2, which="gvpa", plot_gauss_squared=True, stretch_electron_vpa=False)
+    plot_gzvs(master_outnc_longname2, which="gz", plot_gauss_squared=True, stretch_electron_vpa=False)
     return
 
 
 if __name__ == "__main__":
-    #plot_g_for_stella_sim()
+    plot_g_for_stella_sim()
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
     #plot_dt_scan()
-    plot_eqarc_results()
+    #plot_eqarc_results()
