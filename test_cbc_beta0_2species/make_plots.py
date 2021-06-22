@@ -13,6 +13,9 @@ stella_nperiod5_dt0001_longname = "master_cmiller_es_2species_marconi/input5_dt0
 stella_nperiod5_upwind02_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.2"
 stella_nperiod5_upwind05_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.5"
 stella_nperiod5_upwind1_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_1"
+stella_nperiod5_upwind0_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0"
+stella_nperiod5_t_upwind0_longname = "master_cmiller_es_2species_marconi/input5_t_upwind0"
+stella_nperiod5_t_upwind0_zvpa_upwind_0_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
@@ -22,32 +25,57 @@ gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
 gs2_adiabatic_longname = "gs2_adiabatic/input"
 gs2_eqarc_false_longname = "gs2_electrostatic_new/_0.0000_eqarc_false"
+gs2_bakdif0_longname = "gs2_electrostatic_new/beta0_bakdif0"
+gs2_bakdif1_longname = "gs2_electrostatic_new/beta0_bakdif1"
+gs2_fexpr0_longname = "gs2_electrostatic_new/beta0_fexpr0"
+gs2_fexpr1_longname = "gs2_electrostatic_new/beta0_fexpr1"
 
 def plot_upwinding_scan():
     """ """
     make_comparison_plots([
                     stella_nperiod5_longname,
-                    stella_nperiod5_upwind02_longname,
-                    stella_nperiod5_upwind05_longname,
-                    stella_nperiod5_upwind1_longname,
+                    #stella_nperiod5_upwind02_longname,
+                    #stella_nperiod5_upwind05_longname,
+                    #stella_nperiod5_upwind1_longname,
+                    stella_nperiod5_upwind0_longname,
+                    stella_nperiod5_t_upwind0_longname,
+                    stella_nperiod5_t_upwind0_zvpa_upwind_0_longname,
                     gs2_basecase_longname,
+                    gs2_bakdif0_longname,
+                    #gs2_bakdif1_longname,
+                    gs2_fexpr0_longname,
+                    gs2_fexpr1_longname
                     ],
                     [
                     "stella (z, vpa upwind=0.02)",
-                    "stella (z, vpa upwind=0.2)",
-                    "stella (z, vpa upwind=0.5)",
-                    "stella (z, vpa upwind=1.0)",
+                    #"stella (z, vpa upwind=0.2)",
+                    #"stella (z, vpa upwind=0.5)",
+                    #"stella (z, vpa upwind=1.0)",
+                    "stella (z, vpa upwind=0.0)",
+                    "stella (z, t_upwind=0)",
+                    "stella (z, t_upwind=0, vpa upwind=0.0)",
                     "GS2",
+                    "GS2 (bakdif=0)",
+                    #"GS2 (bakdif=1)",
+                    "GS2 (fexpr=0)",
+                    "GS2 (fexpr=1)",
                     ],
                     "./test_cbc_beta0_upwinding",
                     sim_types=[
                     "stella",
+                    #"stella",
+                    #"stella",
+                    #"stella",
                     "stella",
                     "stella",
                     "stella",
                     "gs2",
+                    "gs2",
+                    #"gs2",
+                    "gs2",
+                    "gs2",
                     ],
-                    plot_format=".png")
+                    plot_format=".eps")
 
     return
 
@@ -277,6 +305,6 @@ if __name__ == "__main__":
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
-    plot_dt_scan()
+    #plot_dt_scan()
     #plot_eqarc_results()
-    #plot_upwinding_scan()
+    plot_upwinding_scan()
