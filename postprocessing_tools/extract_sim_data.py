@@ -241,7 +241,7 @@ def get_aparz_data_gs2(sim_longname):
     if ((len(apar) > 1) or (len(apar[0]) > 1)):
         print("apar= ", apar)
         print("(len(apar) > 1) or (len(apar[0]) > 1), aborting")
-    apar = apar[0,0,:]
+    apar = apar[0,0,:]/2
     return theta, apar.real, apar.imag
 
 def get_bparz_data_stella(sim_longname):

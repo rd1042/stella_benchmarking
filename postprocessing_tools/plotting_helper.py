@@ -1,6 +1,7 @@
 """ """
 
 from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
+from extract_sim_data import find_apar_phi_ratio, find_bpar_phi_ratio
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf, extract_data_from_ncdf_with_xarray
 import numpy as np
 import matplotlib.pyplot as plt
@@ -157,9 +158,13 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
             freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
         plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type)
         if plot_apar:
+            apar_ratio = find_apar_phi_ratio(sim_longname, sim_type)
+            print("sim_longname, apar ratio = ", sim_longname, apar_ratio)
             plot_apar_z_for_sim(ax31, sim_longname, sim_label, sim_type=sim_type)
         if plot_bpar:
             plot_bpar_z_for_sim(ax41, sim_longname, sim_label, sim_type=sim_type)
+            bpar_ratio = find_bpar_phi_ratio(sim_longname, sim_type)
+            print("sim_longname, bpar ratio = ", sim_longname, bpar_ratio)
 
         if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
                 and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
@@ -479,14 +484,14 @@ def plot_gzvs(stella_outnc_longname, which="gz", plot_gauss_squared=False,
             counter += 1
             g_ion_z = gzvs[0, vpa_idx, :]
             g_electron_z = gzvs[1, vpa_idx, :]
-            ax1.plot(z, g_ion_z, label="vpa={:.3f}".format(vpa[vpa_idx]))
-            ax2.plot(z, g_electron_z, label="vpa={:.3f}".format(vpa[vpa_idx]))
+            ax1.plot(z/np.pi, g_ion_z, label="vpa={:.3f}".format(vpa[vpa_idx]))
+            ax2.plot(z/np.pi, g_electron_z, label="vpa={:.3f}".format(vpa[vpa_idx]))
 
             if counter == 5:
                 for ax in [ax1, ax2]:
                     ax.grid(True)
                     ax.legend(loc="best")
-                ax2.set_xlabel("z")
+                ax2.set_xlabel(r"$z/\pi$")
                 ax1.set_ylabel(r"$g_{ion}$")
                 ax2.set_ylabel(r"$g_{electron}$")
                 plt.show()
@@ -498,7 +503,7 @@ def plot_gzvs(stella_outnc_longname, which="gz", plot_gauss_squared=False,
         for ax in [ax1, ax2]:
             ax.grid(True)
             ax.legend(loc="best")
-        ax2.set_xlabel("z")
+        ax2.set_xlabel(r"$z/\pi$")
         ax1.set_ylabel(r"$g_{ion}$")
         ax2.set_ylabel(r"$g_{electron}$")
         plt.show()

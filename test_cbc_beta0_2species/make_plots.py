@@ -20,10 +20,20 @@ stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
 stella_adiabatic_longname = "stella_adiabatic/input5"
+stella_adiabatic_m001_longname = "stella_adiabatic/input5_mi0.01"
+stella_adiabatic_m01_longname = "stella_adiabatic/input5_mi0.1"
+stella_adiabatic_m05_longname = "stella_adiabatic/input5_mi0.5"
+stella_adiabatic_m2_longname = "stella_adiabatic/input5_mi2"
+stella_adiabatic_m10_longname = "stella_adiabatic/input5_mi10"
 
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
 gs2_adiabatic_longname = "gs2_adiabatic/input"
+gs2_adiabatic_m001_longname = "gs2_adiabatic/input_mi0.01"
+gs2_adiabatic_m01_longname = "gs2_adiabatic/input_mi0.1"
+gs2_adiabatic_m05_longname = "gs2_adiabatic/input_mi0.5"
+gs2_adiabatic_m2_longname = "gs2_adiabatic/input_mi2"
+gs2_adiabatic_m10_longname = "gs2_adiabatic/input_mi10"
 gs2_eqarc_false_longname = "gs2_electrostatic_new/_0.0000_eqarc_false"
 gs2_bakdif0_longname = "gs2_electrostatic_new/beta0_bakdif0"
 gs2_bakdif1_longname = "gs2_electrostatic_new/beta0_bakdif1"
@@ -101,6 +111,55 @@ def plot_eqarc_results():
 
     return
 
+def plot_adiabatic_mass_scan():
+    """ """
+    make_comparison_plots([
+                    stella_adiabatic_longname,
+                    gs2_adiabatic_longname,
+                    stella_adiabatic_m001_longname,
+                    gs2_adiabatic_m001_longname,
+                    stella_adiabatic_m01_longname,
+                    gs2_adiabatic_m01_longname,
+                    stella_adiabatic_m05_longname,
+                    gs2_adiabatic_m05_longname,
+                    stella_adiabatic_m2_longname,
+                    gs2_adiabatic_m2_longname,
+                    stella_adiabatic_m10_longname,
+                    gs2_adiabatic_m10_longname,
+                    ],
+                    [
+                    "stella ",
+                    "GS2",
+                    "stella (m_i = 0.01)",
+                    "GS2 (m_i = 0.01)",
+                    "stella (m_i = 0.1)",
+                    "GS2 (m_i = 0.1)",
+                    "stella (m_i = 0.5)",
+                    "GS2 (m_i = 0.5)",
+                    "stella (m_i = 2)",
+                    "GS2 (m_i = 2)",
+                    "stella (m_i = 10)",
+                    "GS2 (m_i = 10)",
+                    ],
+                    "./test_cbc_beta0_adiabatic_mass_scan",
+                    sim_types=[
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+    return
+
 def plot_adiabatic_results():
     """ """
     make_comparison_plots([
@@ -162,8 +221,8 @@ def plot_dt_scan():
                     gs2_dt001_longname
                     ],
                     [
-                    "stella master (dt=0.025)",
-                    "stella master (dt=0.001)",
+                    "stella master (dt=0.013)",
+                    "stella master (dt=0.01)",
                     "GS2 (dt=0.05)",
                     "GS2 (dt=0.01)",
                     ],
@@ -301,10 +360,11 @@ def plot_g_for_stella_sim():
 
 
 if __name__ == "__main__":
-    #plot_g_for_stella_sim()
+    plot_g_for_stella_sim()
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
     #plot_dt_scan()
     #plot_eqarc_results()
-    plot_upwinding_scan()
+    #plot_upwinding_scan()
+    #plot_adiabatic_mass_scan()
