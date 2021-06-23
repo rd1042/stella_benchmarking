@@ -9,6 +9,7 @@ import numpy as np
 
 stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
+stella_nperiod5_ntheta128_longname = "master_cmiller_es_2species_marconi/input5_ntheta128"
 stella_nperiod5_dt0001_longname = "master_cmiller_es_2species_marconi/input5_dt001"
 stella_nperiod5_upwind02_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.2"
 stella_nperiod5_upwind05_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.5"
@@ -185,6 +186,27 @@ def plot_adiabatic_results():
 
     return
 
+def plot_ntheta_scan():
+    """ """
+    make_comparison_plots([
+                    stella_nperiod5_longname,
+                    stella_nperiod5_ntheta128_longname,
+                    gs2_basecase_longname
+                    ],
+                    [
+                    "stella master (nperiod=5, ntheta=64)",
+                    "stella master (nperiod=5, ntheta=128)",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_nthetascan",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+    return 
+
 def plot_nperiod_scan():
     """ """
     make_comparison_plots([
@@ -360,7 +382,7 @@ def plot_g_for_stella_sim():
 
 
 if __name__ == "__main__":
-    plot_g_for_stella_sim()
+    #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
@@ -368,3 +390,4 @@ if __name__ == "__main__":
     #plot_eqarc_results()
     #plot_upwinding_scan()
     #plot_adiabatic_mass_scan()
+    plot_ntheta_scan()
