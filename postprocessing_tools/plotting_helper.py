@@ -437,8 +437,8 @@ def plot_gzvs(stella_outnc_longname, which="gz", plot_gauss_squared=False,
             tmp_max_val = np.max(g_electron_vpa)
             electron_max_val = max(tmp_max_val, electron_max_val)
 
-            ax1.plot(vpa, g_ion_vpa, label="z={:.3f}".format(z[z_idx]))
-            ax2.plot(vpa, g_electron_vpa, label="z={:.3f}".format(z[z_idx]))
+            ax1.plot(vpa, g_ion_vpa, label="z/pi={:.3f}".format(z[z_idx]/np.pi))
+            ax2.plot(vpa, g_electron_vpa, label="z/pi={:.3f}".format(z[z_idx]/np.pi))
 
             if counter == 5:
                 if plot_gauss_squared:
