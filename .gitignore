@@ -27,7 +27,7 @@ postprocessing_tools/__pycache__/
 *.mom2
 *.moments
 *.vspace_integration_error
-*/mat/
+mat/
 *stella.out
 *millerlocal.*
 *.input*.in
