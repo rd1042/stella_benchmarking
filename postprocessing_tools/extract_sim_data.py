@@ -3,19 +3,21 @@
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import numpy as np
 import sys
+import re
+import math
 
 def get_omega_data(sim_longname, sim_type):
     """ """
 
     if sim_type == "stella":
         time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data_stella(sim_longname)
-        time, gamma_stable_estimate = get_gamma_stable(sim_longname)
+        time, gamma_stable = get_gamma_stable_stella(sim_longname)
     elif sim_type == "gs2":
-        time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data_gs2(sim_longname)
+        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data_gs2(sim_longname)
     else:
         print("sim_type not recognised!")
 
-    return time, freqom_final, gammaom_final, freqom, gammaom
+    return time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable
 
 def get_omega_data_stella(sim_longname):
     """The .omega file contains columns t, ky, kx, re(omega), im(omega), av re(omega), av im(omega).
@@ -71,12 +73,17 @@ def get_omega_data_stella(sim_longname):
     else:
         #time, phi2 = extract_data_from_ncdf((sim_longname + ".out.nc"), "t", "phi2")
         time = omega_data[:,0]
-        freqom_final = omega_data[-1, 3]
-        gammaom_final = omega_data[-1, 4]
+        # This gives us omega instantaneous
+        #freqom_final = omega_data[-1, 3]
+        #gammaom_final = omega_data[-1, 4]
+        # This gives us omega average
+        freqom_final = omega_data[-1, 5]
+        gammaom_final = omega_data[-1, 6]
 
-        return time, freqom_final, gammaom_final, omega_data[:,3], omega_data[:,4]
+        #return time, freqom_final, gammaom_final, omega_data[:,3], omega_data[:,4]
+        return time, freqom_final, gammaom_final, omega_data[:,5], omega_data[:,6]
 
-def get_gamma_stable(sim_longname):
+def get_gamma_stable_stella(sim_longname):
     """Get an estimate for the growth rate by looking at stella's |phi|^2(t).
     To get an estimate of gamma(t), we do the following:
     gamma(t) = 1/(2 (t2 - t1)) * ln(phi^2 (t2) / phi^2 (t1))
@@ -94,22 +101,46 @@ def get_gamma_stable(sim_longname):
         # elements = ["istep", "      0 time", "  0.0000E+00  |phi|^2", "  0.2739E-05 |apar|^2", "   0.0000E+00"]
         time_elem = elements[2].strip() # "0.0000E+00  |phi|^2"
         time_elem = re.split("\s+", time_elem)[0] # "0.0000E+00"
-        print("time_elem = ", time_elem)
         t_list.append(float(time_elem))
         phi2_elem = elements[3].strip()
         phi2_elem = re.split("\s+", phi2_elem)[0]
-        print("phi2_elem = ", phi2_elem)
         phi2_list.append(float(phi2_elem))
-        sys.exit()
+
+    gamma_list = calculate_gamma_stable(t_list, phi2_list)
+
+    t_array = np.array(t_list[1:])
+    gamma_array = np.array(gamma_list)
+
     return t_array, gamma_array
+
+def calculate_gamma_stable(t_list, phi2_list):
+    """ """
+    gamma_list = []
+    # Calculte gamma for every element in t_list, except the first element
+    for t_idx in range(1, len(t_list)):
+        # Find the nearest integer to t_idx/2, rounding down
+        told_idx = math.floor(float(t_idx)/2)
+        # New idea: just take the previous time. Unfortunately, leads to big errors because time given to low accuracy.
+        #told_idx = t_idx - 1
+
+        delta_t = t_list[t_idx] - t_list[told_idx]
+        phi2 = phi2_list[t_idx]
+        phi2_old = phi2_list[told_idx]
+        try:
+            gamma = (1.0/(2*delta_t)) * np.log(phi2/phi2_old)
+        except ZeroDivisionError:
+            gamma = np.NaN
+        gamma_list.append(gamma)
+
+    return gamma_list
 
 def get_omega_data_gs2(sim_longname):
     """ """
 
     try:
-        time, omega = extract_data_from_ncdf((sim_longname + ".out.nc"), "t", "omega_average")
+        time, phi2, omega = extract_data_from_ncdf((sim_longname + ".out.nc"), "t", "phi2", "omega_average")
     except KeyError:
-        time, omega = extract_data_from_ncdf((sim_longname + ".out.nc"), "t", "omegaavg")
+        time, phi2, omega = extract_data_from_ncdf((sim_longname + ".out.nc"), "t", "phi2", "omegaavg")
 
     ## Check that there's only 1 mode i.e. omega has dimensions (n_time, 1, 1)
     if ((len(omega[0]) > 1) or (len(omega[0][0]) > 1)):
@@ -121,10 +152,9 @@ def get_omega_data_gs2(sim_longname):
     gammaom_final = omega[-1].imag
     freq = omega.real
     gamma = omega.imag
+    gamma_stable_list = calculate_gamma_stable(time, phi2)
 
-
-
-    return time, freqom_final, gammaom_final, freq, gamma
+    return time[1:], freqom_final, gammaom_final, freq[1:], gamma[1:], np.array(gamma_stable_list)
 
 def get_phiz_data(sim_longname, sim_type):
     """ """

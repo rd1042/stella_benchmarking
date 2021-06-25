@@ -14,15 +14,15 @@ linestyles1=cycle(["-", "--", "-.", ":"])
 linestyles2=cycle(["-", "--", "-.", ":"])
 
 
-
-
 def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
     """ """
-    time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data(sim_longname, sim_type)
-    print("freqom_final, gammaom_final = ", freqom_final, gammaom_final)
+    print("sim_longname = ", sim_longname)
+    time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(sim_longname, sim_type)
     half_len = int(len(time)/2)
     freqom_half = freqom[half_len:]
+
     gammaom_half = gammaom[half_len:]
+    # gammaom_half = gamma_stable[half_len:]
     # Get an estimate for the ylims by looking at the max/min of the second half
     # of the frequencuy and gamma data
     if np.isfinite(freqom_final) and np.isfinite(gammaom_final):
@@ -31,6 +31,7 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
         freq_llim = (np.min(freqom_half)); freq_ulim = np.max(freqom_half)
         ax1.plot(time, freqom, label=sim_label, ls=linestyle)
         ax2.plot(time, gammaom, label=sim_label, ls=linestyle)
+        #ax2.plot(time, gamma_stable, label=sim_label + " gamma_stable")
     else:
         gamma_llim = np.NaN; gamma_ulim = np.NaN; freq_llim = np.NaN; freq_ulim = np.NaN
 
