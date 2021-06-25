@@ -9,6 +9,7 @@ def get_omega_data(sim_longname, sim_type):
 
     if sim_type == "stella":
         time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data_stella(sim_longname)
+        time, gamma_stable_estimate = get_gamma_stable(sim_longname)
     elif sim_type == "gs2":
         time, freqom_final, gammaom_final, freqom, gammaom = get_omega_data_gs2(sim_longname)
     else:
@@ -74,6 +75,33 @@ def get_omega_data_stella(sim_longname):
         gammaom_final = omega_data[-1, 4]
 
         return time, freqom_final, gammaom_final, omega_data[:,3], omega_data[:,4]
+
+def get_gamma_stable(sim_longname):
+    """Get an estimate for the growth rate by looking at stella's |phi|^2(t).
+    To get an estimate of gamma(t), we do the following:
+    gamma(t) = 1/(2 (t2 - t1)) * ln(phi^2 (t2) / phi^2 (t1))
+    where t2 = t, t1 = nearest(t/2)
+    i.e. this scheme always gives the growth rate by looking at the growth over
+    the latter half of the simulation time"""
+    out_longname = sim_longname + ".out"
+    outfile = open(out_longname, "r")
+    out_lines = outfile.readlines()
+    t_list = []
+    phi2_list = []
+    for line in out_lines:
+        # A line looks like  istep=      0 time=  0.0000E+00  |phi|^2=  0.2739E-05 |apar|^2=   0.0000E+00
+        elements = re.split("=", line)
+        # elements = ["istep", "      0 time", "  0.0000E+00  |phi|^2", "  0.2739E-05 |apar|^2", "   0.0000E+00"]
+        time_elem = elements[2].strip() # "0.0000E+00  |phi|^2"
+        time_elem = re.split("\s+", time_elem)[0] # "0.0000E+00"
+        print("time_elem = ", time_elem)
+        t_list.append(float(time_elem))
+        phi2_elem = elements[3].strip()
+        phi2_elem = re.split("\s+", phi2_elem)[0]
+        print("phi2_elem = ", phi2_elem)
+        phi2_list.append(float(phi2_elem))
+        sys.exit()
+    return t_array, gamma_array
 
 def get_omega_data_gs2(sim_longname):
     """ """

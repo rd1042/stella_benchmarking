@@ -410,7 +410,7 @@ def plot_g_for_stella_sim():
 
 
 if __name__ == "__main__":
-    plot_g_for_stella_sim()
+    #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
     #plot_nperiod_scan()
     #plot_adiabatic_results()
@@ -419,4 +419,4 @@ if __name__ == "__main__":
     #plot_upwinding_scan()
     #plot_adiabatic_mass_scan()
     #plot_ntheta_scan()
-    #plot_different_mirror_treatment()
+    plot_different_mirror_treatment()

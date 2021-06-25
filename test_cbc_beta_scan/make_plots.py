@@ -32,6 +32,7 @@ sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
 sim_st_b001_fbpar0_no_mag_drift = "stella_beta0.001_fbpar0/input_no_drifts"
 sim_st_b001_fbpar0_no_mirror = "stella_beta0.001_fbpar0/input_no_mirror"
 sim_st_b001_fbpar0_equal_masses = "stella_beta0.001_fbpar0_equal_masses/input"
+sim_st_b001_fbpar0_flipflop = "stella_beta0.001_fbpar0/input_np5_flipflop"
 sim_st_b002_fbpar0 = "stella_beta0.002_fbpar0/input"
 sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
 sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
@@ -69,6 +70,7 @@ def analyse_fbpar0_beta0001_results():
                            sim_st_b001_fbpar0_no_mag_drift,
                            sim_st_b001_fbpar0_no_mirror,
                            sim_st_b001_fbpar0_equal_masses,
+                           sim_st_b001_fbpar0_flipflop,
                            sim_gs2_b001_fbpar0
                            ],
                           [
@@ -77,10 +79,12 @@ def analyse_fbpar0_beta0001_results():
                            "stella, no magnetic drifts",
                            "stella, no mirror term",
                            "stella, m_e=1",
+                           "stella, flip-flop",
                            "GS2"
                            ],
                           "./termsoff_beta_0.001_fbpar0",
                           sim_types=[
+                                     "stella",
                                      "stella",
                                      "stella",
                                      "stella",
@@ -506,4 +510,4 @@ if __name__ == "__main__":
     # analyse_fapar0_changing_vpares()
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
-    # analyse_fbpar0_beta0001_results()
+    analyse_fbpar0_beta0001_results()
