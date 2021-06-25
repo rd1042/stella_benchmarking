@@ -11,6 +11,7 @@ stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod5_ntheta128_longname = "master_cmiller_es_2species_marconi/input5_ntheta128"
 stella_nperiod5_dt0001_longname = "master_cmiller_es_2species_marconi/input5_dt001"
+stella_nperiod5_dt00005_longname = "master_cmiller_es_2species_marconi/input5_dt0005"
 stella_nperiod5_upwind02_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.2"
 stella_nperiod5_upwind05_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_0.5"
 stella_nperiod5_upwind1_longname = "master_cmiller_es_2species_marconi/input5_zvpa_upwind_1"
@@ -18,6 +19,7 @@ stella_nperiod5_upwind0_longname = "master_cmiller_es_2species_marconi/input5_zv
 stella_nperiod5_t_upwind0_longname = "master_cmiller_es_2species_marconi/input5_t_upwind0"
 stella_nperiod5_t_upwind0_zvpa_upwind_0_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0"
 stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0_implicit_mirror"
+stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_flipflop_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0_implicit_mirror_flipflop"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
@@ -29,6 +31,8 @@ stella_adiabatic_m2_longname = "stella_adiabatic/input5_mi2"
 stella_adiabatic_m10_longname = "stella_adiabatic/input5_mi10"
 
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
+gs2_nperiod6_longname = "gs2_electrostatic_new/beta0_nperiod6"
+gs2_ntheta128_longname = "gs2_electrostatic_new/beta0_ntheta128"
 gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
 gs2_adiabatic_longname = "gs2_adiabatic/input"
 gs2_adiabatic_m001_longname = "gs2_adiabatic/input_mi0.01"
@@ -219,17 +223,21 @@ def plot_ntheta_scan():
     make_comparison_plots([
                     stella_nperiod5_longname,
                     stella_nperiod5_ntheta128_longname,
-                    gs2_basecase_longname
+                    gs2_basecase_longname,
+                    gs2_ntheta128_longname,
+
                     ],
                     [
                     "stella master (nperiod=5, ntheta=64)",
                     "stella master (nperiod=5, ntheta=128)",
-                    "GS2",
+                    "GS2 (nperiod=4, ntheta=64)",
+                    "GS2 (nperiod=4, ntheta=128)",
                     ],
                     "./test_cbc_beta0_2species_nthetascan",
                     sim_types=[
                     "stella",
                     "stella",
+                    "gs2",
                     "gs2",
                     ],
                     plot_format=".png")
@@ -242,7 +250,8 @@ def plot_nperiod_scan():
                     stella_nperiod5_longname,
                     stella_nperiod7_longname,
                     stella_nperiod9_longname,
-                    gs2_basecase_longname
+                    gs2_basecase_longname,
+                    gs2_nperiod6_longname
                     ],
                     [
                     "stella master (nperiod=3)",
@@ -250,6 +259,7 @@ def plot_nperiod_scan():
                     "stella master (nperiod=7)",
                     "stella master (nperiod=8)",
                     "GS2 (nperiod=4)",
+                    "GS2 (nperiod=6)",
                     ],
                     "./test_cbc_beta0_2species_nperiodscan",
                     sim_types=[
@@ -257,6 +267,7 @@ def plot_nperiod_scan():
                     "stella",
                     "stella",
                     "stella",
+                    "gs2",
                     "gs2",
                     ],
                     plot_format=".png")
@@ -267,17 +278,20 @@ def plot_dt_scan():
     make_comparison_plots([
                     stella_nperiod5_longname,
                     stella_nperiod5_dt0001_longname,
+                    stella_nperiod5_dt00005_longname,
                     gs2_basecase_longname,
                     gs2_dt001_longname
                     ],
                     [
                     "stella master (dt=0.013)",
                     "stella master (dt=0.01)",
+                    "stella master (dt=0.005)",
                     "GS2 (dt=0.05)",
                     "GS2 (dt=0.01)",
                     ],
                     "./test_cbc_beta0_2species_dtscan",
                     sim_types=[
+                    "stella",
                     "stella",
                     "stella",
                     "gs2",
@@ -409,6 +423,29 @@ def plot_g_for_stella_sim():
     return
 
 
+def plot_flip_flop_option():
+    """ """
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_longname,
+            stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_flipflop_longname,
+            gs2_basecase_longname
+                    ],
+                    [
+                    "stella base case",
+                    "stella upwinding=0, implicit mirror",
+                    "stella upwinding=0, implicit mirror, flip-flop",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_flipflop",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "stella",
+                    "gs2"
+                    ],
+                    plot_format=".png")
+
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
@@ -419,4 +456,5 @@ if __name__ == "__main__":
     #plot_upwinding_scan()
     #plot_adiabatic_mass_scan()
     #plot_ntheta_scan()
-    plot_different_mirror_treatment()
+    #plot_different_mirror_treatment()
+    plot_flip_flop_option()
