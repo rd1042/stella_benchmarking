@@ -33,4 +33,4 @@ EXEFILE=~/stella_master/stella
 OUTFILE=$SLURM_JOBID"_"$SLURM_JOB_NAME"_stella.out"
 ERRFILE=$SLURM_JOBID"_"$SLURM_JOB_NAME"_stella.err"
 
-mpirun -errfile-pattern $ERRFILE -outfile-pattern $OUTFILE -envall -genv -n $NUMPROC $EXEFILE input_rmaj10.in
+mpirun -errfile-pattern $ERRFILE -outfile-pattern $OUTFILE -envall -genv -n $NUMPROC $EXEFILE input5_rmaj10.in

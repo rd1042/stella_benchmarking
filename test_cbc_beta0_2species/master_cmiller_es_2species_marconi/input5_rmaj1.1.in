@@ -1,5 +1,5 @@
 &zgrid_parameters
- nzed = 64
+ nzed = 192
  ntubes = 1
  nperiod = 5
  boundary_option="default"
@@ -41,8 +41,8 @@
 /
 
 &vpamu_grids_parameters
- nvgrid = 72
- nmu = 24
+ nvgrid = 96
+ nmu = 36
  vpa_max = 3.0
 /
 
@@ -79,7 +79,7 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 10000
+ nstep = 80000
 /
 &species_knobs
  nspec= 2
