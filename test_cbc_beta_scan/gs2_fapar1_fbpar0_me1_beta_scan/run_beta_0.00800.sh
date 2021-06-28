@@ -10,7 +10,7 @@
 #SBATCH --output=array_job_%A_%a.log     # Standard output and error log
 #SBATCH --account=phys-gspt-2019         # Project account
 
-sim_name="input.in"
+sim_name="beta_0.00800.in"
 #ulimit -s unlimited	# unlimited stack size
 mpirun -n 12 ../../../gs2_master/bin/gs2 $sim_name
 
