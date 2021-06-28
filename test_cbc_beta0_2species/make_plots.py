@@ -9,6 +9,11 @@ import numpy as np
 
 stella_basecase_longname = "master_cmiller_es_2species_marconi/input"
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
+stella_nperiod5_me00001_longname = "master_cmiller_es_2species_marconi/input5_me0.0001"
+stella_nperiod5_me1_longname = "master_cmiller_es_2species_marconi/input5_me1"
+stella_nperiod5_rmaj1point1_longname = "master_cmiller_es_2species_marconi/input5_rmaj1.1"
+stella_nperiod5_rmaj10_longname = "master_cmiller_es_2species_marconi/input5_rmaj10"
+stella_nperiod5_rmaj20_longname = "master_cmiller_es_2species_marconi/input5_rmaj20"
 stella_nperiod5_ntheta128_longname = "master_cmiller_es_2species_marconi/input5_ntheta128"
 stella_nperiod5_dt0001_longname = "master_cmiller_es_2species_marconi/input5_dt001"
 stella_nperiod5_dt00005_longname = "master_cmiller_es_2species_marconi/input5_dt0005"
@@ -23,6 +28,8 @@ stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_flipflop_longname = "mas
 stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
+
+# Adiabatic stella
 stella_adiabatic_longname = "stella_adiabatic/input5"
 stella_adiabatic_m001_longname = "stella_adiabatic/input5_mi0.01"
 stella_adiabatic_m01_longname = "stella_adiabatic/input5_mi0.1"
@@ -31,6 +38,10 @@ stella_adiabatic_m2_longname = "stella_adiabatic/input5_mi2"
 stella_adiabatic_m10_longname = "stella_adiabatic/input5_mi10"
 
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
+gs2_rmaj10_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj10"
+gs2_rmaj20_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj20"
+gs2_rmaj1point1_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj1.1"
+gs2_me1_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_me1"
 gs2_nperiod6_longname = "gs2_electrostatic_new/beta0_nperiod6"
 gs2_ntheta128_longname = "gs2_electrostatic_new/beta0_ntheta128"
 gs2_dt001_longname = "gs2_electrostatic_new/beta0_dt0.01"
@@ -446,6 +457,68 @@ def plot_flip_flop_option():
                     ],
                     plot_format=".png")
 
+def plot_rmaj_scan():
+    """ """
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            stella_nperiod5_rmaj1point1_longname,
+            #stella_nperiod5_rmaj10_longname,
+            stella_nperiod5_rmaj20_longname,
+            gs2_basecase_longname,
+            gs2_rmaj1point1_longname,
+            gs2_rmaj20_longname,
+                    ],
+                    [
+                    "stella base case",
+                    "stella rmaj=1.1",
+                    #"stella rmaj=10",
+                    "stella rmaj=20",
+                    "GS2",
+                    "GS2 rmaj=1.1",
+                    "GS2 rmaj=20",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_rmajscan",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    #"stella",
+                    "stella",
+                    "gs2",
+                    "gs2",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+
+def plot_me_scan():
+    """ """
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            #stella_nperiod5_me00001_longname,
+            stella_nperiod5_me1_longname,
+            gs2_basecase_longname,
+            gs2_me1_longname
+                    ],
+                    [
+                    "stella base case (me=2.8e-4)",
+                    #"stella me=1e-4",
+                    "stella me=1",
+                    "GS2 (me=2.8e-4)",
+                    "GS2 (me=1)",
+                    ],
+                    "./test_cbc_beta0_2species_mescan",
+                    sim_types=[
+                    "stella",
+                    #"stella",
+                    #"stella",
+                    "stella",
+                    "gs2",
+                    "gs2"
+                    ],
+                    plot_format=".png")
+
+
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
@@ -457,4 +530,6 @@ if __name__ == "__main__":
     #plot_adiabatic_mass_scan()
     #plot_ntheta_scan()
     #plot_different_mirror_treatment()
-    plot_flip_flop_option()
+    #plot_flip_flop_option()
+    plot_me_scan()
+    #plot_rmaj_scan()

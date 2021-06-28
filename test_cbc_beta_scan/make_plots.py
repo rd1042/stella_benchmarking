@@ -41,6 +41,7 @@ sim_st_b01_fbpar0 = "stella_beta0.010_fbpar0/input"
 # gs2
 sim_gs2_b00001_fbpar0 = "gs2_beta_scan_fbpar0/_0.00001"
 sim_gs2_b001_fbpar0 = "gs2_beta_scan_fbpar0/_0.0010"
+sim_gs2_b001_fbpar0_equal_masses = "gs2_beta_scan_fbpar0/_0.0010_me1"
 sim_gs2_b002_fbpar0 = "gs2_beta_scan_fbpar0/_0.0020"
 sim_gs2_b003_fbpar0 = "gs2_beta_scan_fbpar0/_0.0030"
 sim_gs2_b004_fbpar0 = "gs2_beta_scan_fbpar0/_0.0040"
@@ -97,6 +98,33 @@ def analyse_fbpar0_beta0001_results():
                            )
     return
 
+def plot_fbpar0_beta0001_equal_masses():
+    """Compare sims, all with fbpar=0, fapar=1, beta=0.001, for which
+    we try turning on and off different knobs."""
+
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                           sim_gs2_b001_fbpar0,
+                           sim_st_b001_fbpar0_equal_masses,
+                           sim_gs2_b001_fbpar0_equal_masses,
+                           ],
+                          [
+                           "stella",
+                           "GS2",
+                           "stella, m_e=1",
+                           "GS2, m_e=1",
+                           ],
+                          "./termsoff_beta_0.001_fbpar0_me1",
+                          sim_types=[
+                                     "stella",
+                                     "gs2",
+                                     "stella",
+                                     "gs2",
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+    return
 
 def analyse_fbpar0_results():
     """Compare omega(t) and phi(z), apar(z)
@@ -510,4 +538,5 @@ if __name__ == "__main__":
     # analyse_fapar0_changing_vpares()
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
-    analyse_fbpar0_beta0001_results()
+    #analyse_fbpar0_beta0001_results()
+    plot_fbpar0_beta0001_equal_masses()
