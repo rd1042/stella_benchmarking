@@ -126,7 +126,9 @@ def make_beta_scans_for_me1():
     beta_vals = np.linspace(0, 0.04, 21)
 
     ##
-    construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar1_fbpar1_me1_folder, beta_vals, "stella")
+    construct_beta_scan(stella_fapar0_fbpar1_me1_folder, beta_vals, "stella")
 
     return
 
