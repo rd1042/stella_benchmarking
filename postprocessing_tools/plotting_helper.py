@@ -216,13 +216,57 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
     plt.close(fig2)
     return
 
-def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
-                         gs2_pickle=None):
+
+def calculate_omega_for_param_scan(folder_name, param, param_key, file_regex=False,
+                                   path=None, use_lin_filepath=False, **kwargs):
+    """Extract output files from selected folder. For each output file, find the
+    value of the scanned parameter and calculate Omega."""
+    print("folder_name = ", folder_name)
+    # print("Check your slashes")
+    # sys.exit()
+    # Extract the files
+    if path is None:
+        if use_lin_filepath:
+            path = LIN_SIM_PATH + folder_name + "/"
+        elif file_regex == False:
+            path = folder_name + '/'
+        else:
+            path = folder_name + '/' + file_regex
+    output_file_list = glob.glob(path + "*.out.nc")
+    param_list = []
+    frequency_list = []
+    growth_rate_list = []
+    freq_errors = []
+    growth_rate_errors = []
+    if len(output_file_list) == 0:
+        print("output_file_list = ", output_file_list)
+        sys.exit("Empty output file list, aborting")
+    for i, output_file in enumerate(output_file_list):
+
+        # Extract the name of the simulation from its full path
+        m = re.search(path +'(.+?)\.out\.nc', output_file)
+        found = m.group(1)
+        save_loc = re.split((found+".out.nc"), output_file)[0]
+        print("save_loc = ", save_loc)
+        fitted_growth_rate, growth_rate_error, converged_frequency, freq_error = calculate_omega_and_plot_for_single(output_file,
+                        figtitle=found, folder_name=folder_name, save_path=save_loc, **kwargs)
+        frequency_list.append(converged_frequency)
+        freq_errors.append(freq_error)
+        growth_rate_list.append(fitted_growth_rate)
+        growth_rate_errors.append(growth_rate_error)
+        print("output_file, fitted_growth_rate = ", output_file, fitted_growth_rate)
+        try:    # Bob: should fix this
+            param_list.append(help_ncdf.extract_data_from_ncdf(output_file, param_key))
+        except KeyError:
+            print("Error!")
+            sys.exit()
+    return (param_list, frequency_list, growth_rate_list,
+            freq_errors, growth_rate_errors)
+
+
+def make_beta_scan_plots(stella_longnames, beta_vals, save_name,
+                         gs2_pickle=None,  plot_apar=False, plot_bpar=False, plot_format=".eps"):
     """ """
-    ## Plot of omega(t)
-    fig1 = plt.figure(figsize=[10, 12])
-    ax11 = fig1.add_subplot(211)
-    ax12 = fig1.add_subplot(212, sharex=ax11)
 
     ## Plot of omega(beta)
     fig2 = plt.figure(figsize=[10, 12])
@@ -239,39 +283,19 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     gamma_vals = []
     freq_vals = []
 
-    for sim_idx, sim_longname in enumerate(sim_longnames):
-        sim_label = "beta = " + str(beta_vals[sim_idx])
-        if len(sim_types) == 0:
-            sim_type="stella"
-        elif len(sim_types) == len(sim_longnames):
-            sim_type = sim_types[sim_idx]
-        else:
-            print("Error! len(sim_longnames), len(sim_types) = ", len(sim_longnames), len(sim_types) )
-            sys.exit()
-        gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
-            freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
-        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
-                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
-                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
-            gamma_llims.append(gamma_llim)
-            gamma_ulims.append(gamma_ulim)
-            freq_llims.append(freq_llim)
-            freq_ulims.append(freq_ulim)
+    for sim_idx, sim_longname in enumerate(stella_longnames):
+        ## Plot of omega(t)
+        make_comparison_plots([sim_longname],
+                              ["beta = " + str(beta_vals[sim_idx])],
+                              (save_name + "_beta = " + str(beta_vals[sim_idx])),
+                              sim_types=["stella"],
+                              plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
+
+        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(sim_longname, "stella")
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)):
             gamma_vals.append(gammaom_final)
             freq_vals.append(freqom_final)
             final_beta_vals.append(beta_vals[sim_idx])
-
-    ## Set lims based on sim data
-    gamma_llim = np.min(np.array(gamma_llims))
-    gamma_ulim = np.max(np.array(gamma_ulims))
-    freq_llim = np.min(np.array(freq_llims))
-    freq_ulim = np.max(np.array(freq_ulims))
-    ax11.set_ylim(freq_llim, freq_ulim)
-    ax12.set_ylim(gamma_llim, gamma_ulim)
-    ax12.set_xlabel(r"$t$")
-    ax11.set_ylabel(r"$\omega$")
-    ax12.set_ylabel(r"$\gamma$")
-
 
     ax21.plot(final_beta_vals, freq_vals, label="stella")
     ax22.plot(final_beta_vals, gamma_vals, label="stella")
@@ -295,17 +319,14 @@ def make_beta_scan_plots(sim_longnames, beta_vals, save_name, sim_types=[],
     ax22.set_ylabel(r"$\gamma$")
     ax22.set_xlabel(r"$\beta$")
 
-    for ax in [ax11, ax12, ax21, ax22]:
+    for ax in [ax21, ax22]:
         ax.grid(True)
         ax.legend(loc="best")
 
-    fig1.savefig(save_name + "_omega_t.eps")
-    fig2.savefig(save_name + "_omega_beta.eps")
-    plt.close(fig1)
+    fig2.savefig(save_name + "_omega_beta" + plot_format)
     plt.close(fig2)
 
     return
-
 
 def plot_gmvus(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
                 stretch_electron_vpa=False):
