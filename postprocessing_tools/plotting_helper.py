@@ -2,6 +2,7 @@
 
 from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
 from extract_sim_data import find_apar_phi_ratio, find_bpar_phi_ratio
+from extract_sim_data import get_gs2_omega_from_plaintext
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf, extract_data_from_ncdf_with_xarray
 import numpy as np
 import matplotlib.pyplot as plt
@@ -264,9 +265,10 @@ def calculate_omega_for_param_scan(folder_name, param, param_key, file_regex=Fal
             freq_errors, growth_rate_errors)
 
 
-def make_beta_scan_plots(stella_longnames, beta_vals, save_name,
+def make_beta_scan_plots(stella_longnames, gs2_longnames, beta_vals, save_name,
                          gs2_pickle=None,  plot_apar=False, plot_bpar=False, plot_format=".eps"):
-    """ """
+    """Construct beta scans in the case where we have a set of stella sims and a
+    set of GS2 sims."""
 
     ## Plot of omega(beta)
     fig2 = plt.figure(figsize=[10, 12])
@@ -275,32 +277,40 @@ def make_beta_scan_plots(stella_longnames, beta_vals, save_name,
     gamma_vals = []
     freq_vals = []
     final_beta_vals = []
-    gamma_llims = []
-    gamma_ulims = []
-    freq_llims = []
-    freq_ulims = []
 
-    gamma_vals = []
-    freq_vals = []
+    stella_gamma_vals = []
+    stella_freq_vals = []
+    gs2_gamma_vals = []
+    gs2_freq_vals = []
 
-    for sim_idx, sim_longname in enumerate(stella_longnames):
+    for sim_idx, stella_longname in enumerate(stella_longnames):
         ## Plot of omega(t)
-        make_comparison_plots([sim_longname],
-                              ["beta = " + str(beta_vals[sim_idx])],
+        make_comparison_plots([stella_longname, gs2_longnames[sim_idx]],
+                              ["stella beta = " + str(beta_vals[sim_idx]),
+                              "GS2 beta = " + str(beta_vals[sim_idx])
+                              ],
                               (save_name + "_beta = " + str(beta_vals[sim_idx])),
-                              sim_types=["stella"],
+                              sim_types=["stella", "gs2"],
                               plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
 
-        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(sim_longname, "stella")
-        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)):
-            gamma_vals.append(gammaom_final)
-            freq_vals.append(freqom_final)
+        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
+        freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+              and np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)):
+            stella_gamma_vals.append(gammaom_final)
+            stella_freq_vals.append(freqom_final)
+            gs2_gamma_vals.append(gammaom_final_gs2)
+            gs2_freq_vals.append(freqom_final_gs2)
             final_beta_vals.append(beta_vals[sim_idx])
 
-    ax21.plot(final_beta_vals, freq_vals, label="stella")
-    ax22.plot(final_beta_vals, gamma_vals, label="stella")
-    ax21.scatter(final_beta_vals, freq_vals, c="black", s=15., marker="x")
-    ax22.scatter(final_beta_vals, gamma_vals, c="black", s=15., marker="x")
+    ax21.plot(final_beta_vals, stella_freq_vals, label="stella")
+    ax22.plot(final_beta_vals, stella_gamma_vals, label="stella")
+    ax21.plot(final_beta_vals, gs2_freq_vals, label="GS2")
+    ax22.plot(final_beta_vals, gs2_gamma_vals, label="GS2")
+    ax21.scatter(final_beta_vals, stella_freq_vals, c="black", s=15., marker="x")
+    ax22.scatter(final_beta_vals, stella_gamma_vals, c="black", s=15., marker="x")
+    ax21.scatter(final_beta_vals, gs2_freq_vals, c="red", s=15., marker="x")
+    ax22.scatter(final_beta_vals, gs2_gamma_vals, c="red", s=15., marker="x")
     if gs2_pickle is not None:
         myfile = open(gs2_pickle, 'rb')
         gs2_dict = pickle.load(myfile)  # contains 'beta', 'frequency', 'growth rate'

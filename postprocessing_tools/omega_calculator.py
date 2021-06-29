@@ -88,7 +88,7 @@ def write_gs2_data_to_plaintext(sim_longname):
     """For a GS2 sim, write:
     (1) omega(t)
     (2) calcalated omega    # NB this is calculated, but currently not written anywhere
-    """
+    (3) fields data in stella units """
     outnc_longname = sim_longname   + ".out.nc"
 
     # Get omega values
@@ -106,31 +106,31 @@ def write_gs2_data_to_plaintext(sim_longname):
     omega_file.close()
     # Get the fields data
     ## Actually, this is already written to .fields, so don't need to write it.
-    # theta, phi = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","phi")
-    # phi = phi[0][0]
-    # # print("theta, phi = ", theta, phi)
-    # # sys.exit()
-    # try:
-    #     [apar] = extract_data_from_ncdf((sim_longname + ".out.nc"), "apar")
-    #     apar = apar[0][0]
-    # except KeyError:
-    #     apar = np.zeros(len(theta))
-    # try:
-    #     [bpar] = extract_data_from_ncdf((sim_longname + ".out.nc"), "bpar")
-    #     bpar = bpar[0][0]
-    # except KeyError:
-    #     bpar = np.zeros(len(theta))
-    #
-    # fields_file_longname = sim_longname + ".final_fields"
-    # fields_file = open(fields_file_longname, "w")
-    # fields_file.write("theta \t \t Re[phi] \t \t Im[phi] \t \t " +
-    #         "Re[apar] \t \t Im[apar] \t \t Re[apar] \t \t Im[bpar] \t \t Re[bpar] \n")
-    # for theta_idx in range(0, len(theta)):
-    #     fields_line = "{:.6e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} ".format(
-    #             theta[theta_idx], phi[theta_idx].real, phi[theta_idx].imag,
-    #             apar[theta_idx].real, apar[theta_idx].imag,
-    #             bpar[theta_idx].real, bpar[theta_idx].imag)
-    #     fields_file.write(fields_line)
-    # fields_file.close()
+    theta, phi = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","phi")
+    phi = phi[0][0]
+    # print("theta, phi = ", theta, phi)
+    # sys.exit()
+    try:
+        [apar] = extract_data_from_ncdf((sim_longname + ".out.nc"), "apar")
+        apar = apar[0][0]/2
+    except KeyError:
+        apar = np.zeros(len(theta))
+    try:
+        [bpar] = extract_data_from_ncdf((sim_longname + ".out.nc"), "bpar", "bmag")
+        bpar = bpar[0][0]*bmag
+    except KeyError:
+        bpar = np.zeros(len(theta))
+
+    fields_file_longname = sim_longname + ".final_fields_stella_normalisation"
+    fields_file = open(fields_file_longname, "w")
+    fields_file.write("theta \t \t Re[phi] \t \t Im[phi] \t \t " +
+            "Re[apar] \t \t Im[apar] \t \t Re[apar] \t \t Im[bpar] \t \t Re[bpar] \n")
+    for theta_idx in range(0, len(theta)):
+        fields_line = "{:.6e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} \t \t {:.12e} ".format(
+                theta[theta_idx], phi[theta_idx].real, phi[theta_idx].imag,
+                apar[theta_idx].real, apar[theta_idx].imag,
+                bpar[theta_idx].real, bpar[theta_idx].imag)
+        fields_file.write(fields_line)
+    fields_file.close()
 
     return

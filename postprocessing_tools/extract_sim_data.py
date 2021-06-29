@@ -104,7 +104,14 @@ def get_gamma_stable_stella(sim_longname):
         t_list.append(float(time_elem))
         phi2_elem = elements[3].strip()
         phi2_elem = re.split("\s+", phi2_elem)[0]
-        phi2_list.append(float(phi2_elem))
+        try:
+            phi2_list.append(float(phi2_elem))
+        except ValueError:
+            # This might occur because phi2 looks like '0.1306+101' i.e. missing "e" before "+"
+            print("Float error: phi2_elem = ", phi2_elem)
+            phi2_elem = re.sub("\+", "e+", phi2_elem)
+            print("post-replacement: phi2_elem = ", phi2_elem)
+            phi2_list.append(float(phi2_elem))
 
     gamma_list = calculate_gamma_stable(t_list, phi2_list)
 
@@ -134,7 +141,7 @@ def calculate_gamma_stable(t_list, phi2_list):
 
     return gamma_list
 
-def get_omega_data_gs2(sim_longname):
+def get_omega_data_gs2_outnc(sim_longname):
     """ """
 
     try:
@@ -155,6 +162,19 @@ def get_omega_data_gs2(sim_longname):
     gamma_stable_list = calculate_gamma_stable(time, phi2)
 
     return time[1:], freqom_final, gammaom_final, freq[1:], gamma[1:], np.array(gamma_stable_list)
+
+def get_omega_data_gs2(sim_longname):
+    """ """
+
+    omega_filename = sim_longname + ".omega"
+    omega_file = open(omega_filename, "r")
+    omega_data=np.loadtxt(omega_filename,dtype='float', skiprows=1)
+    omega_file.close()
+
+    ## omega_data = time, real(omavg), im(omavg)
+    # Return final frequency and gamma
+
+    return omega_data[:,0], omega_data[-1,1], omega_data[-1,2], omega_data[:,1], omega_data[:,2], None
 
 def get_phiz_data(sim_longname, sim_type):
     """ """
@@ -212,6 +232,30 @@ def get_phiz_data_stella(sim_longname):
     return z, real_phi, imag_phi
 
 def get_phiz_data_gs2(sim_longname):
+    """ """
+    final_fields_filename = sim_longname + ".fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## fields_data = theta, aky, akx, real(phi), imag(phi), real(apar), imag(apar),
+    ##               real(bpar), imag(bpar), theta-theta0, abs(phi)
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    theta = final_fields_data[:,0]
+
+    aky = final_fields_data[:,1]; akx = final_fields_data[:,2]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_phi = final_fields_data[:,3]; imag_phi = final_fields_data[:,4]
+    return theta, real_phi, imag_phi
+
+
+def get_phiz_data_gs2_outnc(sim_longname):
     """ """
     theta, phi = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","phi")
     if ((len(phi) > 1) or (len(phi[0]) > 1)):
@@ -295,6 +339,29 @@ def get_aparz_data_stella(sim_longname):
 
 def get_aparz_data_gs2(sim_longname):
     """ """
+    final_fields_filename = sim_longname + ".fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## fields_data = theta, aky, akx, real(phi), imag(phi), real(apar), imag(apar),
+    ##               real(bpar), imag(bpar), theta-theta0, abs(phi)
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    theta = final_fields_data[:,0]
+
+    aky = final_fields_data[:,1]; akx = final_fields_data[:,2]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_apar = final_fields_data[:,5]; imag_apar = final_fields_data[:,6]
+    return theta, real_apar, imag_apar
+
+def get_aparz_data_gs2_outnc(sim_longname):
+    """ """
     theta, apar = extract_data_from_ncdf((sim_longname + ".out.nc"), "theta","apar")
     if ((len(apar) > 1) or (len(apar[0]) > 1)):
         print("apar= ", apar)
@@ -326,6 +393,29 @@ def get_bparz_data_stella(sim_longname):
     return z, real_bpar, imag_bpar
 
 def get_bparz_data_gs2(sim_longname):
+    """ """
+    final_fields_filename = sim_longname + ".fields"
+    final_fields_file = open(final_fields_filename, "r")
+    final_fields_data=np.loadtxt(final_fields_filename,dtype='float')
+    final_fields_file.close()
+
+    ## fields_data = theta, aky, akx, real(phi), imag(phi), real(apar), imag(apar),
+    ##               real(bpar), imag(bpar), theta-theta0, abs(phi)
+    # Usually we're just looking at one mode; check how many unique kx and ky we have
+
+    theta = final_fields_data[:,0]
+
+    aky = final_fields_data[:,1]; akx = final_fields_data[:,2]
+    unique_aky = set(aky); unique_akx = set(akx)
+    if len(unique_aky) > 1 or len(unique_akx) > 1:
+        print("len(unique_aky), len(unique_akx) = ", len(unique_aky), len(unique_akx))
+        print("Not currently supported")
+        sys.exit()
+
+    real_bpar = final_fields_data[:,7]; imag_bpar = final_fields_data[:,8]
+    return theta, real_bpar, imag_bpar
+
+def get_bparz_data_gs2_outnc(sim_longname):
     """Get bpar(z) from the .out.nc file of a GS2 simulation,
     BUT normalised to be consistent with stella's bpar(z).
     ###################################################
@@ -341,3 +431,14 @@ def get_bparz_data_gs2(sim_longname):
         print("(len(bpar) > 1) or (len(bpar[0]) > 1), aborting")
     bpar = bpar[0,0,:]*bmag
     return theta, bpar.real, bpar.imag
+
+def get_gs2_omega_from_plaintext(sim_longname):
+    """ """
+    omega_filename = sim_longname + ".omega"
+    omega_file = open(omega_filename, "r")
+    omega_data=np.loadtxt(omega_filename,dtype='float', skiprows=1)
+    omega_file.close()
+
+    ## omega_data = time, real(omavg), im(omavg)
+    # Return final frequency and gamma
+    return omega_data[-1, 1], omega_data[-1, 2]
