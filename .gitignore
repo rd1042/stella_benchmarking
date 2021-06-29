@@ -31,3 +31,7 @@ mat/
 *stella.out
 *millerlocal.*
 *.input*.in
+*.beta*.in
+*.optim
+*.g
+*.log
