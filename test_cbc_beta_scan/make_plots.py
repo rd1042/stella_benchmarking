@@ -364,10 +364,8 @@ def plot_beta_scans():
                          )
     return
 
-def plot_gvmus_for_fbpar0():
-    """Take a look at the distribrution function for
-    fbpar=0 sims """
-
+def compare_vres_fbpar0():
+    """ """
     stella_sim_longname = "stella_beta0.010_fbpar0/input"
     stella_sim_longname_higher_vpa = "stella_beta0.010_fbpar0_higher_vpa/input"
     stella_outnc_longname = stella_sim_longname + ".out.nc"
@@ -387,8 +385,20 @@ def plot_gvmus_for_fbpar0():
                 ],
                 plot_apar=True,
                 )
+    return
+
+def plot_g_for_fbpar0_different_terms_off():
+    """Take a look at the distribrution function for
+    fbpar=0 sims with beta=1e-3 and various terms on/off """
+
+    stella_outnc_longname = sim_st_b001_fbpar0 + ".out.nc"
+    stella_outnc_longname_no_mirror = sim_st_b001_fbpar0_no_mirror + ".out.nc"
+
     plot_gmvus(stella_outnc_longname)
-    plot_gmvus(stella_outnc_longname_higher_vpa)
+    plot_gzvs(stella_outnc_longname)
+    print("Now no mirror:")
+    plot_gmvus(stella_outnc_longname_no_mirror)
+    plot_gzvs(stella_outnc_longname_no_mirror)
 
 
     return
@@ -539,4 +549,5 @@ if __name__ == "__main__":
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
     #analyse_fbpar0_beta0001_results()
-    plot_fbpar0_beta0001_equal_masses()
+    #plot_fbpar0_beta0001_equal_masses()
+    #plot_g_for_fbpar0_different_terms_off()
