@@ -29,6 +29,22 @@ stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
 
+# stella, kinetic electrons, from the "new folder" (which has nperiod=5 and no upwinding)
+ stella_noupwind_emirror_estream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_higher_vres"
+ stella_noupwind_imirror_istream_edrift_flipflop = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_flipflop"
+ stella_noupwind_imirror_istream_edrift_me1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_me1"
+ stella_noupwind_imirror_istream_idrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_idrift"
+ stella_noupwind_emirror_estream_edrift = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift"
+ stella_noupwind_imirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_higher_vres"
+ stella_noupwind_imirror_istream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_smaller_dt"
+ stella_noupwind_slmirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift_higher_vres"
+ stella_noupwind_emirror_estream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_smaller_dt"
+ stella_noupwind_imirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift"
+ stella_noupwind_imirror_istream_edrift_stm1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_stm1"
+ stella_noupwind_slmirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift"
+
+
+
 # Adiabatic stella
 stella_adiabatic_longname = "stella_adiabatic/input5"
 stella_adiabatic_m001_longname = "stella_adiabatic/input5_mi0.01"
@@ -538,6 +554,119 @@ def plot_me_scan():
                     ],
                     plot_format=".png")
 
+
+def plot_noupwind_different_numerical_schemes():
+    """With no upwidning, see what happens when we change the numerical scheme,
+    and the v-space resolution """
+
+        make_comparison_plots([
+                stella_noupwind_imirror_istream_edrift,
+                stella_noupwind_imirror_istream_edrift_higher_vres,
+                stella_noupwind_slmirror_istream_edrift,
+                stella_noupwind_slmirror_istream_edrift_higher_vres,
+                stella_noupwind_emirror_estream_edrift,
+                stella_noupwind_emirror_estream_edrift_higher_vres,
+                stella_noupwind_imirror_istream_idrift,
+                gs2_basecase_longname,
+                                ],
+                                [
+                                "i, i, e",
+                                "i, i, e, higher_vres",
+                                "sl, i, e",
+                                "sl, i, e, higher_vres",
+                                "e, e, e",
+                                "e, e, e, higher_vres",
+                                "i, i, i",
+                                "GS2",
+                                ],
+                    "images/noupwind_vres_scan",
+                    sim_types=[
+                        "stella",
+                        "stella",
+                        "stella",
+                        "stella",
+                        "stella",
+                        "stella",
+                        "stella",
+                        "gs2"
+                        ],
+                    plot_format=".png")
+    return
+
+def plot_noupwind_dt_variation():
+    """See if we're resolved in dt for each scheme"""
+        make_comparison_plots([
+            stella_noupwind_imirror_istream_edrift,
+            stella_noupwind_imirror_istream_edrift_smaller_dt,
+            stella_noupwind_emirror_estream_edrift,
+            stella_noupwind_emirror_estream_edrift_smaller_dt,
+            gs2_basecase_longname,
+            ],
+            [
+                "i, i, e",
+                "i, i, e, dt=0.005",
+                "e, e, e",
+                "e, e, e, dt=0.005",
+                "GS2",
+            ],
+            "images/noupwind_dt_variation",
+            sim_types = [
+                        "stella",
+                        "stella",
+                        "stella",
+                        "stella",
+                        "gs2"
+            ],
+                plot_format=".png")
+    return
+
+
+def plot_noupwind_different_electron_treatment():
+    """See what happens if we (1)  """
+        make_comparison_plots([
+            stella_noupwind_imirror_istream_edrift,
+            stella_noupwind_imirror_istream_edrift_me1,
+            stella_noupwind_imirror_istream_edrift_stm1,
+            gs2_basecase_longname
+                    ],
+                    [
+                    "i, i, e",
+                    "i, i, e, me=1",
+                    "i, i, e, stm=1",
+                    "GS2",
+                    "GS2, me=1",
+                    "GS2, stm=1",
+                    ],
+                    "images/noupwind_diff_electron_treatment",
+                    sim_types=[
+                        "stella",
+                        "stella",
+                        "stella",
+                        "gs2",
+                        "gs2",
+                        "gs2",
+                    ],
+                plot_format=".png")
+    return
+
+def plot_noupwind_flipflop():
+    """Compare a case with flip_flop on vs flip_flop off"""
+        make_comparison_plots([
+            stella_noupwind_imirror_istream_edrift_flipflop,
+            stella_noupwind_imirror_istream_edrift,
+            gs2_basecase_longname
+                ],
+                [
+
+                ],
+                "images/noupwind_flipflop",
+                sim_types=[
+                        "stella",
+                        "stella",
+                        "gs2"
+                ],
+            plot_format=".png")
+    return
 
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
