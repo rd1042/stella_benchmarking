@@ -41,10 +41,9 @@
 /
 
 &vpamu_grids_parameters
- nvgrid = 144
- nmu = 48
- vpa_max = 2.1  ! Changed from 3
- vperp_max = 1.73 ! Changed from default value of 3
+ nvgrid = 72
+ nmu = 24
+ vpa_max = 3.0
 /
 
 &dist_fn_knobs
@@ -79,11 +78,10 @@
  zed_upwind = 0.0
  time_upwind = 0.0
  vpa_upwind = 0.0
- stream_implicit = .false.
- mirror_implicit = .false.
  mirror_semi_lagrange = .false.
- delt = 0.03
- nstep = 20000
+ drifts_implicit = .true.
+ delt = 0.005
+ nstep = 60000
 /
 &species_knobs
  nspec= 2
