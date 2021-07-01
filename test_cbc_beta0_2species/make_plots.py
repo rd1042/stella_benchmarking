@@ -30,18 +30,21 @@ stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
 
 # stella, kinetic electrons, from the "new folder" (which has nperiod=5 and no upwinding)
- stella_noupwind_emirror_estream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_higher_vres"
- stella_noupwind_imirror_istream_edrift_flipflop = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_flipflop"
- stella_noupwind_imirror_istream_edrift_me1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_me1"
- stella_noupwind_imirror_istream_idrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_idrift"
- stella_noupwind_emirror_estream_edrift = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift"
- stella_noupwind_imirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_higher_vres"
- stella_noupwind_imirror_istream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_smaller_dt"
- stella_noupwind_slmirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift_higher_vres"
- stella_noupwind_emirror_estream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_smaller_dt"
- stella_noupwind_imirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift"
- stella_noupwind_imirror_istream_edrift_stm1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_stm1"
- stella_noupwind_slmirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift"
+stella_noupwind_emirror_estream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_higher_vres"
+stella_noupwind_imirror_istream_edrift_flipflop = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_flipflop"
+stella_noupwind_imirror_istream_edrift_me1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_me1"
+stella_noupwind_imirror_istream_idrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_idrift"
+stella_noupwind_imirror_istream_idrift_dt001 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_idrift_dt001"
+stella_noupwind_imirror_istream_idrift_dt0005 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_idrift_dt0005"
+stella_noupwind_emirror_estream_edrift = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift"
+stella_noupwind_imirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_higher_vres"
+stella_noupwind_imirror_istream_edrift_midvres = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_midvres"
+stella_noupwind_imirror_istream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_smaller_dt"
+stella_noupwind_slmirror_istream_edrift_higher_vres = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift_higher_vres"
+stella_noupwind_emirror_estream_edrift_smaller_dt = "master_cmiller_noupwind_2species_marconi/input_emirror_estream_edrift_smaller_dt"
+stella_noupwind_imirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift"
+stella_noupwind_imirror_istream_edrift_stm1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_stm1"
+stella_noupwind_slmirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift"
 
 
 
@@ -559,9 +562,10 @@ def plot_noupwind_different_numerical_schemes():
     """With no upwidning, see what happens when we change the numerical scheme,
     and the v-space resolution """
 
-        make_comparison_plots([
+    make_comparison_plots([
                 stella_noupwind_imirror_istream_edrift,
                 stella_noupwind_imirror_istream_edrift_higher_vres,
+                stella_noupwind_imirror_istream_edrift_midvres,
                 stella_noupwind_slmirror_istream_edrift,
                 stella_noupwind_slmirror_istream_edrift_higher_vres,
                 stella_noupwind_emirror_estream_edrift,
@@ -572,6 +576,7 @@ def plot_noupwind_different_numerical_schemes():
                                 [
                                 "i, i, e",
                                 "i, i, e, higher_vres",
+                                "i, i, e, mid_vres",
                                 "sl, i, e",
                                 "sl, i, e, higher_vres",
                                 "e, e, e",
@@ -590,16 +595,19 @@ def plot_noupwind_different_numerical_schemes():
                         "stella",
                         "gs2"
                         ],
-                    plot_format=".png")
+                    plot_format=".png", show_fig=True)
     return
 
 def plot_noupwind_dt_variation():
     """See if we're resolved in dt for each scheme"""
-        make_comparison_plots([
+    make_comparison_plots([
             stella_noupwind_imirror_istream_edrift,
             stella_noupwind_imirror_istream_edrift_smaller_dt,
             stella_noupwind_emirror_estream_edrift,
             stella_noupwind_emirror_estream_edrift_smaller_dt,
+            stella_noupwind_imirror_istream_idrift,
+            stella_noupwind_imirror_istream_idrift_dt001,
+            stella_noupwind_imirror_istream_idrift_dt0005,
             gs2_basecase_longname,
             ],
             [
@@ -607,10 +615,15 @@ def plot_noupwind_dt_variation():
                 "i, i, e, dt=0.005",
                 "e, e, e",
                 "e, e, e, dt=0.005",
+                "i, i, i",
+                "i, i, i, dt=0.01",
+                "i, i, i, dt=0.005",
                 "GS2",
             ],
             "images/noupwind_dt_variation",
             sim_types = [
+                        "stella",
+                        "stella",
                         "stella",
                         "stella",
                         "stella",
@@ -623,7 +636,7 @@ def plot_noupwind_dt_variation():
 
 def plot_noupwind_different_electron_treatment():
     """See what happens if we (1)  """
-        make_comparison_plots([
+    make_comparison_plots([
             stella_noupwind_imirror_istream_edrift,
             stella_noupwind_imirror_istream_edrift_me1,
             stella_noupwind_imirror_istream_edrift_stm1,
@@ -651,13 +664,15 @@ def plot_noupwind_different_electron_treatment():
 
 def plot_noupwind_flipflop():
     """Compare a case with flip_flop on vs flip_flop off"""
-        make_comparison_plots([
-            stella_noupwind_imirror_istream_edrift_flipflop,
+    make_comparison_plots([
             stella_noupwind_imirror_istream_edrift,
+            stella_noupwind_imirror_istream_edrift_flipflop,
             gs2_basecase_longname
                 ],
                 [
-
+                 "i, i, e",
+                 "i, i, e, flip-flop",
+                 "GS2",
                 ],
                 "images/noupwind_flipflop",
                 sim_types=[
@@ -682,4 +697,7 @@ if __name__ == "__main__":
     #plot_flip_flop_option()
     #plot_me_scan()
     #plot_rmaj_scan()
-    compare_stella_to_gs2()
+    #compare_stella_to_gs2()
+    plot_noupwind_different_numerical_schemes()
+    # plot_noupwind_dt_variation()
+    # plot_noupwind_flipflop()

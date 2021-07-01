@@ -117,7 +117,7 @@ def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     return
 
 def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
-                          plot_apar=False, plot_bpar=False, plot_format=".eps"):
+                          plot_apar=False, plot_bpar=False, plot_format=".eps", show_fig=False):
     """Compare multiple simulations which have a single common input. Create the following
     plots:
     1) omega(t)
@@ -205,16 +205,30 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
     for ax in axes:
         ax.grid(True)
         ax.legend(loc="best")
-    fig1.savefig(save_name + "_omega" + plot_format)
-    fig2.savefig(save_name + "_phi" + plot_format)
+    if show_fig:
+        print("About to show fig")
+        plt.show()
+        print("Quitting")
+        sys.exit()
+        fig2.show()
+    else:
+        print("Not about to show fig")
+        fig1.savefig(save_name + "_omega" + plot_format)
+        fig2.savefig(save_name + "_phi" + plot_format)
+        plt.close(fig1)
+        plt.close(fig2)
     if plot_apar:
-        fig3.savefig(save_name + "_apar" + plot_format)
-        plt.close(fig3)
+        if show_fig:
+            fig3.show()
+        else:
+            fig3.savefig(save_name + "_apar" + plot_format)
+            plt.close(fig3)
     if plot_bpar:
-        fig4.savefig(save_name + "_bpar" + plot_format)
-        plt.close(fig4)
-    plt.close(fig1)
-    plt.close(fig2)
+        if show_fig:
+            fig4.show()
+        else:
+            fig4.savefig(save_name + "_bpar" + plot_format)
+            plt.close(fig4)
     return
 
 
