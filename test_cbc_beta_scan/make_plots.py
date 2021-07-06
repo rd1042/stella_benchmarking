@@ -29,6 +29,12 @@ sim_gs2_b01_fapar0 = "gs2_beta_scan_fapar0/_0.0100"
 sim_st_b00001_fbpar0 = "stella_beta0.00001_fbpar0/input"
 sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
 sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
+sim_st_b001_fbpar0_no_drive_0_upwind = "stella_beta0.001_fbpar0/input_zero_drive_no_upwinding"
+sim_st_b001_fbpar0_no_drive_01_upwind = "stella_beta0.001_fbpar0/input_zero_drive_more_upwinding"
+sim_st_b001_fbpar0_no_drive_02_upwind = "stella_beta0.001_fbpar0/input_zero_drive_0.2_upwinding"
+sim_st_b001_fbpar0_no_drive_mid_vres = "stella_beta0.001_fbpar0/input_zero_drive_mid_vres"
+sim_st_b001_fbpar0_no_drive_higher_vres = "stella_beta0.001_fbpar0/input_zero_drive_higher_vres"
+sim_st_b001_fbpar0_no_drive_lower_dt = "stella_beta0.001_fbpar0/input_zero_drive_lower_dt"
 sim_st_b001_fbpar0_no_mag_drift = "stella_beta0.001_fbpar0/input_no_drifts"
 sim_st_b001_fbpar0_no_mirror = "stella_beta0.001_fbpar0/input_no_mirror"
 sim_st_b001_fbpar0_equal_masses = "stella_beta0.001_fbpar0_equal_masses/input"
@@ -387,6 +393,68 @@ def compare_vres_fbpar0():
                 )
     return
 
+def compare_omega_for_fbpar0_zero_drive():
+    """ """
+
+    make_comparison_plots([
+                        sim_st_b001_fbpar0_no_drive,
+                        sim_st_b001_fbpar0_no_drive_mid_vres,
+                        # sim_st_b001_fbpar0_no_drive_higher_vres,
+                        sim_st_b001_fbpar0_no_drive_lower_dt,
+                        sim_gs2_b001_fbpar0,
+                           ],
+                          [
+                           "stella, zero drive",
+                           "stella, zero drive, mid vres",
+                          # "stella, zero drive, higher vres",
+                           "stella, zero drive, lower dt",
+                           "GS2",
+                           ],
+                          IMAGE_DIR + "fbpar0_beta1e-3_zerodrive",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     #"stella",
+                                     "gs2",
+                                     ],
+                           plot_apar=True,
+                           plot_bpar=False,
+                           plot_format=".png"
+                           )
+
+def compare_omega_for_fbpar0_zero_drive_change_upwind():
+    """ """
+
+    make_comparison_plots([
+                        sim_st_b001_fbpar0_no_drive,
+                        sim_st_b001_fbpar0_no_drive_0_upwind,
+                        sim_st_b001_fbpar0_no_drive_01_upwind,
+                        sim_st_b001_fbpar0_no_drive_02_upwind,
+                        sim_gs2_b001_fbpar0,
+                           ],
+                          [
+                           "stella, zero drive",
+                           "stella, zero drive, z & vpa upwind=0",
+                           "stella, zero drive, z & vpa upwind=0.1",
+                           "stella, zero drive, z & vpa upwind=0.2",
+                           "GS2",
+                           ],
+                          IMAGE_DIR + "fbpar0_beta1e-3_zerodrive_scan_upwind",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "gs2",
+                                     ],
+                           plot_apar=True,
+                           plot_bpar=False,
+                           plot_format=".png"
+                           )
+
+
+
 def plot_g_for_fbpar0_different_terms_off():
     """Take a look at the distribrution function for
     fbpar=0 sims with beta=1e-3 and various terms on/off """
@@ -551,3 +619,5 @@ if __name__ == "__main__":
     #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
+    #compare_omega_for_fbpar0_different_terms_off()
+    compare_omega_for_fbpar0_zero_drive_change_upwind()

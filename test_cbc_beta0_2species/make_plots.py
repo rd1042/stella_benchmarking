@@ -45,7 +45,7 @@ stella_noupwind_emirror_estream_edrift_smaller_dt = "master_cmiller_noupwind_2sp
 stella_noupwind_imirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift"
 stella_noupwind_imirror_istream_edrift_stm1 = "master_cmiller_noupwind_2species_marconi/input_imirror_istream_edrift_stm1"
 stella_noupwind_slmirror_istream_edrift = "master_cmiller_noupwind_2species_marconi/input_slmirror_istream_edrift"
-
+stella_debug_flipflop = "master_cmiller_noupwind_2species_marconi/iie_ff_from_restart"
 
 
 # Adiabatic stella
@@ -593,9 +593,10 @@ def plot_noupwind_different_numerical_schemes():
                         "stella",
                         "stella",
                         "stella",
+                        "stella",
                         "gs2"
                         ],
-                    plot_format=".png", show_fig=True)
+                    plot_format=".png", show_fig=False)
     return
 
 def plot_noupwind_dt_variation():
@@ -622,6 +623,7 @@ def plot_noupwind_dt_variation():
             ],
             "images/noupwind_dt_variation",
             sim_types = [
+                        "stella",
                         "stella",
                         "stella",
                         "stella",
@@ -683,6 +685,91 @@ def plot_noupwind_flipflop():
             plot_format=".png")
     return
 
+def plot_phit_noupwind_flip_flop():
+    """ """
+    stella_noupwind_imirror_istream_edrift_outnc = stella_noupwind_imirror_istream_edrift + ".out.nc"
+    stella_noupwind_imirror_istream_edrift_flipflop_outnc = stella_noupwind_imirror_istream_edrift_flipflop + ".out.nc"
+
+    [t, z, lie_phi_vs_t] = extract_data_from_ncdf(stella_noupwind_imirror_istream_edrift_outnc, "t", "zed", "phi_vs_t")
+    [t, z, flipflop_phi_vs_t] = extract_data_from_ncdf(stella_noupwind_imirror_istream_edrift_flipflop_outnc, "t", "zed", "phi_vs_t")
+
+    print("len(t) = ", len(t))
+    print("len(z) = ", len(z))
+    #print("phi_vs_t.shape = ", phi_vs_t.shape)  # (t, tube, z, ky, kx) I think
+    lie_phi_avg = []
+    flipflop_phi_avg = []
+
+    for t_idx in range(0,len(t)):
+        lie_phi_vs_t_idx = lie_phi_vs_t[t_idx,0,:,0,0]
+        flipflop_phi_vs_t_idx = flipflop_phi_vs_t[t_idx,0,:,0,0]
+
+        lie_phi_avg.append(np.mean(lie_phi_vs_t_idx))
+        flipflop_phi_avg.append(np.mean(flipflop_phi_vs_t_idx))
+
+    lie_phi_avg = np.array(lie_phi_avg)
+    flipflop_phi_avg = np.array(flipflop_phi_avg)
+    lie_omega = np.log(lie_phi_avg[1:]/lie_phi_avg[:-1]) *1j
+    flipflop_omega = np.log(flipflop_phi_avg[1:]/flipflop_phi_avg[:-1]) *1j
+    print("lie_omega = ", lie_omega)
+    print("flipflop_omega = ", flipflop_omega)
+    # for t_idx in range(0,10):
+    #     lie_phi_vs_t_idx = lie_phi_vs_t[t_idx,0,:,0,0]
+    #     flipflop_phi_vs_t_idx = flipflop_phi_vs_t[t_idx,0,:,0,0]
+    #     fig = plt.figure()
+    #     ax1 = fig.add_subplot(111)
+    #     ax1.plot(z, abs(lie_phi_vs_t_idx))
+    #     ax1.plot(z, abs(flipflop_phi_vs_t_idx))
+    #     plt.show()
+
+    return
+
+def debug_flip_flop():
+    """ """
+    stella_debug_flipflop_outnc = stella_debug_flipflop + ".out.nc"
+
+    view_ncdf_variables(stella_debug_flipflop_outnc)
+    # ['code_info', 'nproc', 'nmesh', 'ntubes', 'nkx', 'nky', 'nzed_tot',
+    #  'nspecies', 'nmu', 'nvpa_tot', 't', 'charge', 'mass', 'dens', 'temp',
+    #  'tprim', 'fprim', 'vnew', 'type_of_species', 'theta0', 'kx', 'ky', 'mu',
+    #  'vpa', 'zed', 'bmag', 'gradpar', 'gbdrift', 'gbdrift0', 'cvdrift',
+    #  'cvdrift0', 'kperp2', 'gds2', 'gds21', 'gds22', 'grho', 'jacob', 'q',
+    #  'beta', 'shat', 'jtwist', 'drhodpsi', 'phi2', 'phi_vs_t', 'gvmus', 'gzvs', 'input_file']
+
+    [input_file, t, z, flipflop_phi_vs_t] = extract_data_from_ncdf(stella_debug_flipflop_outnc, "input_file", "t", "zed", "phi_vs_t")
+    #print("code_info = ", code_info) # [-- -- -- -- -- -- -- -- -- --]
+    #sys.exit()
+    print("len(t) = ", len(t))
+    print("len(z) = ", len(z))
+    print("input_file = ", input_file)
+    #print("phi_vs_t.shape = ", phi_vs_t.shape)  # (t, tube, z, ky, kx) I think
+    flipflop_phi_avg = []
+    code_dt = 0.013
+    for t_idx in range(0,len(t)):
+        flipflop_phi_vs_t_idx = flipflop_phi_vs_t[t_idx,0,:,0,0]
+
+        #flipflop_phi_avg.append(np.mean(flipflop_phi_vs_t_idx))
+        flipflop_phi_avg.append(flipflop_phi_vs_t_idx[int(len(z)*0.5)])
+    flipflop_phi_avg = np.array(flipflop_phi_avg)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    flip_flop_diff = np.abs(flipflop_phi_vs_t[1,0,:,0,0]) - np.abs(flipflop_phi_vs_t[0,0,:,0,0])
+    print("flip_flop_diff = ", flip_flop_diff)
+    ax1.plot(t, abs(flipflop_phi_avg))
+    plt.show()
+    flipflop_omega = np.log(flipflop_phi_avg[1:]/flipflop_phi_avg[:-1]) *1j/code_dt
+    print("flipflop_omega = ", flipflop_omega)
+    # for t_idx in range(0,10):
+    #     lie_phi_vs_t_idx = lie_phi_vs_t[t_idx,0,:,0,0]
+    #     flipflop_phi_vs_t_idx = flipflop_phi_vs_t[t_idx,0,:,0,0]
+    #     fig = plt.figure()
+    #     ax1 = fig.add_subplot(111)
+    #     ax1.plot(z, abs(lie_phi_vs_t_idx))
+    #     ax1.plot(z, abs(flipflop_phi_vs_t_idx))
+    #     plt.show()
+
+    return
+
+
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
     #compare_stella_to_gs2()
@@ -698,6 +785,8 @@ if __name__ == "__main__":
     #plot_me_scan()
     #plot_rmaj_scan()
     #compare_stella_to_gs2()
-    plot_noupwind_different_numerical_schemes()
-    # plot_noupwind_dt_variation()
+    #plot_noupwind_different_numerical_schemes()
+    #plot_noupwind_dt_variation()
+    #plot_phit_noupwind_flip_flop()
+    debug_flip_flop()
     # plot_noupwind_flipflop()

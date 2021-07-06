@@ -206,27 +206,18 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
         ax.grid(True)
         ax.legend(loc="best")
     if show_fig:
-        print("About to show fig")
         plt.show()
-        print("Quitting")
-        sys.exit()
-        fig2.show()
     else:
-        print("Not about to show fig")
         fig1.savefig(save_name + "_omega" + plot_format)
         fig2.savefig(save_name + "_phi" + plot_format)
         plt.close(fig1)
         plt.close(fig2)
     if plot_apar:
-        if show_fig:
-            fig3.show()
-        else:
+        if not show_fig:
             fig3.savefig(save_name + "_apar" + plot_format)
             plt.close(fig3)
     if plot_bpar:
-        if show_fig:
-            fig4.show()
-        else:
+        if not show_fig:
             fig4.savefig(save_name + "_bpar" + plot_format)
             plt.close(fig4)
     return
