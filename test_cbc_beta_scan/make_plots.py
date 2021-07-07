@@ -29,6 +29,8 @@ sim_gs2_b01_fapar0 = "gs2_beta_scan_fapar0/_0.0100"
 sim_st_b00001_fbpar0 = "stella_beta0.00001_fbpar0/input"
 sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
 sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
+sim_st_b001_fbpar0_no_drive_no_stream_no_mirror = "stella_beta0.001_fbpar0/input_zero_drive_zero_streaming_zero_mirror"
+sim_st_b001_fbpar0_no_stream_no_mirror = "stella_beta0.001_fbpar0/input_zero_streaming_zero_mirror"
 sim_st_b001_fbpar0_no_drive_0_upwind = "stella_beta0.001_fbpar0/input_zero_drive_no_upwinding"
 sim_st_b001_fbpar0_no_drive_01_upwind = "stella_beta0.001_fbpar0/input_zero_drive_more_upwinding"
 sim_st_b001_fbpar0_no_drive_02_upwind = "stella_beta0.001_fbpar0/input_zero_drive_0.2_upwinding"
@@ -89,7 +91,7 @@ def analyse_fbpar0_beta0001_results():
                            "stella, flip-flop",
                            "GS2"
                            ],
-                          "./termsoff_beta_0.001_fbpar0",
+                          "images/termsoff_beta_0.001_fbpar0",
                           sim_types=[
                                      "stella",
                                      "stella",
@@ -453,7 +455,31 @@ def compare_omega_for_fbpar0_zero_drive_change_upwind():
                            plot_format=".png"
                            )
 
-
+def compare_omega_for_fbpar0_changing_streaming_and_drive():
+    """ """
+    make_comparison_plots([
+                            sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_no_drive,
+                            sim_st_b001_fbpar0_no_stream_no_mirror,
+                            sim_st_b001_fbpar0_no_drive_no_stream_no_mirror
+                         ],
+                        [
+                         "stella",
+                         "stella, zero drive",
+                         "stella, zero streaming & mirror",
+                         "stella, zero drive, zero streaming & mirror",
+                         ],
+                        IMAGE_DIR + "fbpar0_beta1e-3_zerodrive_change_str_mirr",
+                        sim_types=[
+                                   "stella",
+                                   "stella",
+                                   "stella",
+                                   "stella",
+                                   ],
+                         plot_apar=True,
+                         plot_bpar=False,
+                         plot_format=".png", show_fig=True
+                         )
 
 def plot_g_for_fbpar0_different_terms_off():
     """Take a look at the distribrution function for
@@ -616,8 +642,9 @@ if __name__ == "__main__":
     # analyse_fapar0_changing_vpares()
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
-    #analyse_fbpar0_beta0001_results()
+    analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
     #compare_omega_for_fbpar0_different_terms_off()
-    compare_omega_for_fbpar0_zero_drive_change_upwind()
+    #compare_omega_for_fbpar0_zero_drive_change_upwind()
+    #compare_omega_for_fbpar0_changing_streaming_and_drive()

@@ -574,14 +574,14 @@ def plot_noupwind_different_numerical_schemes():
                 gs2_basecase_longname,
                                 ],
                                 [
-                                "i, i, e",
+                                "i, i, e std. vres",
                                 "i, i, e, higher_vres",
                                 "i, i, e, mid_vres",
-                                "sl, i, e",
+                                "sl, i, e std. vres",
                                 "sl, i, e, higher_vres",
-                                "e, e, e",
+                                "e, e, e std. vres",
                                 "e, e, e, higher_vres",
-                                "i, i, i",
+                                "i, i, i std. vres",
                                 "GS2",
                                 ],
                     "images/noupwind_vres_scan",
@@ -596,7 +596,7 @@ def plot_noupwind_different_numerical_schemes():
                         "stella",
                         "gs2"
                         ],
-                    plot_format=".png", show_fig=False)
+                    plot_format=".png", show_fig=True)
     return
 
 def plot_noupwind_dt_variation():
@@ -612,11 +612,11 @@ def plot_noupwind_dt_variation():
             gs2_basecase_longname,
             ],
             [
-                "i, i, e",
+                "i, i, e, dt=0.0133",
                 "i, i, e, dt=0.005",
-                "e, e, e",
+                "e, e, e, dt=0.0133",
                 "e, e, e, dt=0.005",
-                "i, i, i",
+                "i, i, i, dt=0.03",
                 "i, i, i, dt=0.01",
                 "i, i, i, dt=0.005",
                 "GS2",
@@ -632,7 +632,7 @@ def plot_noupwind_dt_variation():
                         "stella",
                         "gs2"
             ],
-                plot_format=".png")
+                plot_format=".png", show_fig=True)
     return
 
 
@@ -752,9 +752,21 @@ def debug_flip_flop():
     flipflop_phi_avg = np.array(flipflop_phi_avg)
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    flip_flop_diff = np.abs(flipflop_phi_vs_t[1,0,:,0,0]) - np.abs(flipflop_phi_vs_t[0,0,:,0,0])
-    print("flip_flop_diff = ", flip_flop_diff)
-    ax1.plot(t, abs(flipflop_phi_avg))
+    flip_flop_diff_1 = np.abs(flipflop_phi_vs_t[1,0,:,0,0]) - np.abs(flipflop_phi_vs_t[0,0,:,0,0])
+    flip_flop_diff_2 = np.abs(flipflop_phi_vs_t[2,0,:,0,0]) - np.abs(flipflop_phi_vs_t[1,0,:,0,0])
+    flip_flop_diff_3 = np.abs(flipflop_phi_vs_t[2,0,:,0,0]) - np.abs(flipflop_phi_vs_t[0,0,:,0,0])
+
+    #flip_flop_diff_4 = np.abs(flipflop_phi_vs_t[4,0,:,0,0]) - np.abs(flipflop_phi_vs_t[2,0,:,0,0])
+    #print("flip_flop_diff = ", flip_flop_diff)
+    ax1.plot(z/np.pi, flip_flop_diff_1, label="abs(phi(t1)) - abs(phi(t0))")
+    ax1.plot(z/np.pi, flip_flop_diff_2, label="abs(phi(t2)) - abs(phi(t1))")
+    ax1.plot(z/np.pi, flip_flop_diff_3, label="abs(phi(t2)) - abs(phi(t0))")
+    ax1.plot(z/np.pi, np.abs(flipflop_phi_vs_t[2,0,:,0,0]), label="abs(phi(t2))")
+    ax1.legend(loc="best")
+    ax1.grid(True)
+    ax1.set_xlabel(r"$z/\pi$")
+    #ax1.plot(z, flip_flop_diff_4)
+    #ax1.plot(t, abs(flipflop_phi_avg))
     plt.show()
     flipflop_omega = np.log(flipflop_phi_avg[1:]/flipflop_phi_avg[:-1]) *1j/code_dt
     print("flipflop_omega = ", flipflop_omega)
@@ -789,4 +801,4 @@ if __name__ == "__main__":
     #plot_noupwind_dt_variation()
     #plot_phit_noupwind_flip_flop()
     debug_flip_flop()
-    # plot_noupwind_flipflop()
+    #plot_noupwind_flipflop()
