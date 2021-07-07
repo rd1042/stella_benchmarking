@@ -343,6 +343,75 @@ def make_beta_scan_plots(stella_longnames, gs2_longnames, beta_vals, save_name,
 
     return
 
+def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
+                         gs2_pickle=None,  plot_apar=False, plot_bpar=False, plot_format=".eps"):
+    """Construct ky scans in the case where we have a set of stella sims and a
+    set of GS2 sims."""
+
+    ## Plot of omega(ky)
+    fig2 = plt.figure(figsize=[10, 12])
+    ax21 = fig2.add_subplot(211)
+    ax22 = fig2.add_subplot(212, sharex=ax21)
+    gamma_vals = []
+    freq_vals = []
+    final_ky_vals = []
+
+    stella_gamma_vals = []
+    stella_freq_vals = []
+    gs2_gamma_vals = []
+    gs2_freq_vals = []
+
+    for sim_idx, stella_longname in enumerate(stella_longnames):
+        ## Plot of omega(t)
+        make_comparison_plots([stella_longname,
+                                gs2_longnames[sim_idx]
+                                ],
+                              ["stella ky = " + str(ky_vals[sim_idx]),
+                              "GS2 ky = " + str(ky_vals[sim_idx])
+                              ],
+                              (save_name + "_ky = " + str(ky_vals[sim_idx])),
+                              sim_types=["stella",
+                                        "gs2"
+                                        ],
+                              plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
+
+        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
+        freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+             and np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)
+              ):
+            stella_gamma_vals.append(gammaom_final)
+            stella_freq_vals.append(freqom_final)
+            gs2_gamma_vals.append(gammaom_final_gs2)
+            gs2_freq_vals.append(freqom_final_gs2)
+            final_ky_vals.append(ky_vals[sim_idx])
+
+    ax21.plot(final_ky_vals, stella_freq_vals, label="stella")
+    ax22.plot(final_ky_vals, stella_gamma_vals, label="stella")
+    ax21.plot(final_ky_vals, gs2_freq_vals, label="GS2")
+    ax22.plot(final_ky_vals, gs2_gamma_vals, label="GS2")
+    ax21.scatter(final_ky_vals, stella_freq_vals, c="black", s=15., marker="x")
+    ax22.scatter(final_ky_vals, stella_gamma_vals, c="black", s=15., marker="x")
+    ax21.scatter(final_ky_vals, gs2_freq_vals, c="red", s=15., marker="x")
+    ax22.scatter(final_ky_vals, gs2_gamma_vals, c="red", s=15., marker="x")
+    if gs2_pickle is not None:
+        print("Not supported")
+        sys.exit()
+
+    ax21.set_ylabel(r"$\omega$")
+    ax22.set_ylabel(r"$\gamma$")
+    ax22.set_xlabel(r"$k_y$")
+
+    for ax in [ax21, ax22]:
+        ax.grid(True)
+        ax.legend(loc="best")
+
+    fig2.savefig(save_name + "_omega_ky" + plot_format)
+    plt.close(fig2)
+
+    return
+
+
 def plot_gmvus(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
                 stretch_electron_vpa=False):
     """ """
