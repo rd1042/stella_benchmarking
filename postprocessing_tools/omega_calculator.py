@@ -39,8 +39,11 @@ def calculate_omega_gs2_from_outnc(sim_name):
 
     # Only use the last half of the data to fit the growth rate - hopefully,
     # growh rate has converged at this point.
-
-    t_chopped, phi2_chopped = chop_fitting_data(t, phi2)
+    
+    try:
+    	t_chopped, phi2_chopped = chop_fitting_data(t, phi2)
+    except Exception:
+        return np.NaN, np.NaN, np.NaN, np.NaN
     fitted_phi2, fitted_growth_rate, growth_rate_error = (
                             fit_growth_rate_from_phi2(t_chopped, phi2_chopped))
     return t, omega_average[:,0,0], fitted_growth_rate, growth_rate_error
@@ -98,10 +101,13 @@ def write_gs2_data_to_plaintext(sim_longname):
     omega_file_longname = sim_longname + ".omega"
     omega_file = open(omega_file_longname, "w")
     omega_file.write("time \t \t Re[omavg] \t \t Im[omavg] \n")
-    for t_idx in range(0, len(t)):
-        omega_line = "{:.6e} \t \t {:.12e} \t \t {:.12e} \n".format(t[t_idx], omega_average[t_idx].real, omega_average[t_idx].imag)
-        #omega_line = str(t[t_idx]) + "\t \t" + str(omega_average[t_idx].real) + "\t \t" + str(omega_average[t_idx].imag) + "\n"
-        omega_file.write(omega_line)
+    if np.isnan(t).any():
+        omega_file.write("Error! NaN values detected - probably too few phi2(t) points")
+    else:
+        for t_idx in range(0, len(t)):
+            omega_line = "{:.6e} \t \t {:.12e} \t \t {:.12e} \n".format(t[t_idx], omega_average[t_idx].real, omega_average[t_idx].imag)
+            #omega_line = str(t[t_idx]) + "\t \t" + str(omega_average[t_idx].real) + "\t \t" + str(omega_average[t_idx].imag) + "\n"
+            omega_file.write(omega_line)
 
     omega_file.close()
     # Get the fields data
