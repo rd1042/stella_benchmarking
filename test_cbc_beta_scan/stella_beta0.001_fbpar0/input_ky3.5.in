@@ -35,13 +35,13 @@
 
 &parameters
  zeff = 1.0
- beta = 0.00
+ beta = 0.001
  vnew_ref = 0.01
  rhostar = 0.01
 /
 
 &vpamu_grids_parameters
- nvgrid = 72
+ nvgrid = 36
  nmu = 24
  vpa_max = 3.0
 /
@@ -59,13 +59,13 @@
 /
 &kt_grids_range_parameters
  naky = 1
- aky_min = 0.35
- aky_max = 0.35
+ aky_min = 3.5
+ aky_max = 3.5
 /
 
 &init_g_knobs
  chop_side = F
- phiinit=   0.01
+ phiinit=   0.001
  restart_file = "nc/example.nc"
  ginit_option= "default"
  width0 = 1.0
@@ -73,16 +73,15 @@
 
 &knobs
  fphi =   1.0
- fapar =  0.0
+ fapar =  1.0
  fbpar = 0.0
- zed_upwind = 0.0
- time_upwind = 0.0
- vpa_upwind = 0.0
- stream_implicit = .false.
+ stream_implicit = .false. 
  mirror_implicit = .false.
- mirror_semi_lagrange = .false.
+ zed_upwind = 0.02
+ time_upwind = 0.02
+ vpa_upwind = 0.02
  delt = 0.03
- nstep = 150000
+ nstep = 50000
 /
 &species_knobs
  nspec= 2
@@ -109,7 +108,7 @@
 /
 
 &stella_diagnostics_knobs
- nwrite = 20
+ nwrite = 500
  nsave = 3000 
  save_for_restart = .false.
  write_omega = .true.
