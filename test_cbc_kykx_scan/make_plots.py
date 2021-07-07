@@ -48,10 +48,10 @@ def get_sim_longnames(folder_longname, kx_str):
 
     return ky_vals, sim_longnames
 
-def compare_ky_scans(stella_folder, gs2_folder, kx_str, save_name, plot_apar=False, plot_bpar=False):
+def compare_ky_scans(stella_folder, gs2_folder, kx_str_stella, kx_str_gs2, save_name, plot_apar=False, plot_bpar=False):
     """ """
-    stella_ky, stella_longnames = get_sim_longnames(stella_folder, kx_str)
-    gs2_ky, gs2_longnames = get_sim_longnames(gs2_folder, kx_str)
+    stella_ky, stella_longnames = get_sim_longnames(stella_folder, kx_str_stella)
+    gs2_ky, gs2_longnames = get_sim_longnames(gs2_folder, kx_str_gs2)
 
     print("ky = ", stella_ky)
     print("stella_longnames = ", stella_longnames)
@@ -75,7 +75,7 @@ def plot_different_ky_scans():
     #                    "images/fapar1_fbpar0")
     compare_ky_scans(stella_folder,
                        gs2_folder,
-                       "_0.0_0.0",
+                       "_0.0_0.0", "_0.0",
                        "images/gyro_electrons_kx=0")
 
 

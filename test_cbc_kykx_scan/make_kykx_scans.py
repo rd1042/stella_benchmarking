@@ -39,12 +39,12 @@ def make_kykx_scans():
     kx_vals = np.linspace(0.0, 1.0, 2)
 
     ##
-    #construct_ky_kx_scan(stella_folder, ky_vals, kx_vals, "stella")
-    # construct_ky_kx_scan(stella_me1_folder, ky_vals, kx_vals, "stella")
-    # construct_ky_kx_scan(stella_adiabatic_folder, ky_vals, kx_vals, "stella")
+    construct_ky_kx_scan(stella_folder, ky_vals, kx_vals, "stella")
+    construct_ky_kx_scan(stella_me1_folder, ky_vals, kx_vals, "stella")
+    construct_ky_kx_scan(stella_adiabatic_folder, ky_vals, kx_vals, "stella")
     # construct_ky_kx_scan(gs2_folder, ky_vals, kx_vals, "gs2")
-    construct_ky_kx_scan(gs2_me1_folder, ky_vals, kx_vals, "gs2")
-    construct_ky_kx_scan(gs2_adiabatic_folder, ky_vals, kx_vals, "gs2")
+    # construct_ky_kx_scan(gs2_me1_folder, ky_vals, kx_vals, "gs2")
+    # construct_ky_kx_scan(gs2_adiabatic_folder, ky_vals, kx_vals, "gs2")
 
     return
 

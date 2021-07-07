@@ -363,28 +363,35 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
 
     for sim_idx, stella_longname in enumerate(stella_longnames):
         ## Plot of omega(t)
-        make_comparison_plots([stella_longname,
-                                gs2_longnames[sim_idx]
-                                ],
-                              ["stella ky = " + str(ky_vals[sim_idx]),
-                              "GS2 ky = " + str(ky_vals[sim_idx])
-                              ],
-                              (save_name + "_ky = " + str(ky_vals[sim_idx])),
-                              sim_types=["stella",
-                                        "gs2"
-                                        ],
-                              plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
+        try:
+            make_comparison_plots([stella_longname,
+                                    gs2_longnames[sim_idx]
+                                    ],
+                                  ["stella ky = " + str(ky_vals[sim_idx]),
+                                  "GS2 ky = " + str(ky_vals[sim_idx])
+                                  ],
+                                  (save_name + "_ky = " + str(ky_vals[sim_idx])),
+                                  sim_types=["stella",
+                                            "gs2"
+                                            ],
+                                  plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
 
-        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
-        freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
-        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
-             and np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)
-              ):
-            stella_gamma_vals.append(gammaom_final)
-            stella_freq_vals.append(freqom_final)
-            gs2_gamma_vals.append(gammaom_final_gs2)
-            gs2_freq_vals.append(freqom_final_gs2)
-            final_ky_vals.append(ky_vals[sim_idx])
+            time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
+            freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+            if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+                 and np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)
+                  ):
+                stella_gamma_vals.append(gammaom_final)
+                stella_freq_vals.append(freqom_final)
+                gs2_gamma_vals.append(gammaom_final_gs2)
+                gs2_freq_vals.append(freqom_final_gs2)
+                final_ky_vals.append(ky_vals[sim_idx])
+        except ValueError:
+            # Probably occurred because a sim has failed, and thus the .omega file,
+            # or one of the other files, is bad.
+            print("ValueError for sim_idx ", sim_idx)
+            print("stella_longname = ", stella_longname)
+            print("gs2_longname = ", gs2_longnames[sim_idx])
 
     ax21.plot(final_ky_vals, stella_freq_vals, label="stella")
     ax22.plot(final_ky_vals, stella_gamma_vals, label="stella")
