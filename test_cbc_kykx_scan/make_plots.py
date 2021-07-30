@@ -77,6 +77,14 @@ def plot_different_ky_scans():
                        gs2_folder,
                        "_0.0_0.0", "_0.0",
                        "images/gyro_electrons_kx=0")
+    # compare_ky_scans(stella_me1_folder,
+    #                    gs2_me1_folder,
+    #                    "_0.0_0.0", "_0.0",
+    #                    "images/m1_electrons_kx=0")
+    # compare_ky_scans(stella_adiabatic_folder,
+    #                    gs2_adiabatic_folder,
+    #                    "_0.0_0.0", "_0.0",
+    #                    "images/adiabatic_electrons_kx=0")
 
 
     return

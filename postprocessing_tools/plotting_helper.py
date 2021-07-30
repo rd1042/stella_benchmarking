@@ -348,10 +348,7 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
     """Construct ky scans in the case where we have a set of stella sims and a
     set of GS2 sims."""
 
-    ## Plot of omega(ky)
-    fig2 = plt.figure(figsize=[10, 12])
-    ax21 = fig2.add_subplot(211)
-    ax22 = fig2.add_subplot(212, sharex=ax21)
+
     gamma_vals = []
     freq_vals = []
     final_ky_vals = []
@@ -375,7 +372,8 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
                                             "gs2"
                                             ],
                                   plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
-
+            # Currently we get gamma_stable, but don't do anything with it
+            # (taking growth rate from .out is too inaccurate)
             time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
             freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
             if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
@@ -393,10 +391,23 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
             print("stella_longname = ", stella_longname)
             print("gs2_longname = ", gs2_longnames[sim_idx])
 
+    stella_gamma_vals = np.array(stella_gamma_vals)
+    stella_freq_vals = np.array(stella_freq_vals)
+    gs2_gamma_vals = np.array(gs2_gamma_vals)
+    gs2_freq_vals = np.array(gs2_freq_vals)
+    final_ky_vals = np.array(final_ky_vals)
+    ## Plot of omega(ky)
+    fig2 = plt.figure(figsize=[10, 12])
+    ax21 = fig2.add_subplot(221)
+    ax22 = fig2.add_subplot(223, sharex=ax21)
+    ax23 = fig2.add_subplot(222)
+    ax24 = fig2.add_subplot(224, sharex=ax23)
     ax21.plot(final_ky_vals, stella_freq_vals, label="stella")
     ax22.plot(final_ky_vals, stella_gamma_vals, label="stella")
     ax21.plot(final_ky_vals, gs2_freq_vals, label="GS2")
     ax22.plot(final_ky_vals, gs2_gamma_vals, label="GS2")
+    ax23.plot(final_ky_vals, (stella_freq_vals-gs2_freq_vals)/gs2_freq_vals)
+    ax24.plot(final_ky_vals, (stella_gamma_vals-gs2_gamma_vals)/gs2_gamma_vals)
     ax21.scatter(final_ky_vals, stella_freq_vals, c="black", s=15., marker="x")
     ax22.scatter(final_ky_vals, stella_gamma_vals, c="black", s=15., marker="x")
     ax21.scatter(final_ky_vals, gs2_freq_vals, c="red", s=15., marker="x")
@@ -406,13 +417,18 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
         sys.exit()
 
     ax21.set_ylabel(r"$\omega$")
+    ax23.set_ylabel(r"$(\Delta \omega)/\omega_{gs2}$")
+    ax24.set_ylabel(r"$(\Delta \gamma)/\gamma_{gs2}$")
     ax22.set_ylabel(r"$\gamma$")
     ax22.set_xlabel(r"$k_y$")
+    ax24.set_xlabel(r"$k_y$")
 
     for ax in [ax21, ax22]:
         ax.grid(True)
         ax.legend(loc="best")
-
+    ax23.grid(True)
+    ax24.grid(True)
+    plt.tight_layout()
     fig2.savefig(save_name + "_omega_ky" + plot_format)
     plt.close(fig2)
 

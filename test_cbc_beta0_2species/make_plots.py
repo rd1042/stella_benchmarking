@@ -25,7 +25,6 @@ stella_nperiod5_t_upwind0_longname = "master_cmiller_es_2species_marconi/input5_
 stella_nperiod5_t_upwind0_zvpa_upwind_0_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0"
 stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0_implicit_mirror"
 stella_nperiod5_t_upwind0_zvpa_upwind_0_implicit_mirror_flipflop_longname = "master_cmiller_es_2species_marconi/input5_t_zvpa_upwind0_implicit_mirror_flipflop"
-stella_nperiod5_longname = "master_cmiller_es_2species_marconi/input5"
 stella_nperiod7_longname = "master_cmiller_es_2species_marconi/input7"
 stella_nperiod9_longname = "master_cmiller_es_2species_marconi/input9"
 
@@ -370,75 +369,77 @@ def compare_stella_to_gs2():
     #                 plot_format=".png")
 
     # # Code to compare geometry between stella and gs2
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(221)
-    # ax2 = fig.add_subplot(222)
-    # ax3 = fig.add_subplot(223)
-    # ax4 = fig.add_subplot(224)
-    #
-    # z, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(master_sim_longname3+".out.nc",
-    # 'zed', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
-    # ax1.plot(z/np.pi, gds2, label="stella")
-    # ax2.plot(z/np.pi, gds21, label="stella")
-    # ax3.plot(z/np.pi, gds22, label="stella")
-    # ax4.plot(z/np.pi, bmag, label="stella")
-    # #ax2.plot(z, gradpar)
-    #
-    # theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(gs2new_sim_longname + ".out.nc",
-    #                                 'theta', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
-    # ax1.plot(theta/np.pi, gds2, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax2.plot(theta/np.pi, gds21, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax3.plot(theta/np.pi, gds22, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax4.plot(theta/np.pi, bmag, linestyle="-.", c="red", ls="..", label="GS2")
-    # #ax2.plot(theta, gradpar, linestyle="-.", c="red", ls="..")
-    #
-    # for ax in [ax1, ax2, ax3, ax4]:
-    #     ax.legend(loc="best")
-    #     ax.grid(True)
-    # ax3.set_xlabel(r"$\theta/\pi$")
-    # ax4.set_xlabel(r"$\theta/\pi$")
-    # ax1.set_ylabel("gds2")
-    # ax2.set_ylabel("gds21")
-    # ax3.set_ylabel("gds22")
-    # ax4.set_ylabel("bmag")
-    # plt.show()
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
+
+    z, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(master_sim_longname3+".out.nc",
+    'zed', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+    ax1.plot(z/np.pi, gds2, label="stella")
+    ax2.plot(z/np.pi, gds21, label="stella")
+    ax3.plot(z/np.pi, gds22, label="stella")
+    ax4.plot(z/np.pi, bmag, label="stella")
+    #ax2.plot(z, gradpar)
+
+    theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(gs2new_sim_longname + ".out.nc",
+                                    'theta', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+    ax1.plot(theta/np.pi, gds2, linestyle="-.", c="red", ls="..", label="GS2")
+    ax2.plot(theta/np.pi, gds21, linestyle="-.", c="red", ls="..", label="GS2")
+    ax3.plot(theta/np.pi, gds22, linestyle="-.", c="red", ls="..", label="GS2")
+    ax4.plot(theta/np.pi, bmag, linestyle="-.", c="red", ls="..", label="GS2")
+    #ax2.plot(theta, gradpar, linestyle="-.", c="red", ls="..")
+
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.legend(loc="best")
+        ax.grid(True)
+    ax3.set_xlabel(r"$\theta/\pi$")
+    ax4.set_xlabel(r"$\theta/\pi$")
+    ax1.set_ylabel("gds2")
+    ax2.set_ylabel("gds21")
+    ax3.set_ylabel("gds22")
+    ax4.set_ylabel("bmag")
+    plt.show()
+    #sys.exit()
     #
     # # view_ncdf_variables(master_sim_longname3+".out.nc")
     # # view_ncdf_variables(gs2new_sim_longname + ".out.nc")
     #
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(221)
-    # ax2 = fig.add_subplot(222)
-    # ax3 = fig.add_subplot(223)
-    # ax4 = fig.add_subplot(224)
-    #
-    # z, gbdrift, gbdrift0, cvdrift, cvdrift0, gradpar = extract_data_from_ncdf(master_sim_longname3+".out.nc",
-    # 'zed', 'gbdrift', 'gbdrift0', 'cvdrift', 'cvdrift0', 'gradpar')
-    #
-    # ax1.plot(z/np.pi, gbdrift, label="stella")
-    # ax2.plot(z/np.pi, gbdrift0, label="stella")
-    # ax3.plot(z/np.pi, cvdrift, label="stella")
-    # ax4.plot(z/np.pi, cvdrift0, label="stella")
-    # #ax2.plot(z, gradpar)
-    #
-    # theta, gbdrift, gbdrift0, cvdrift, cvdrift0, gradpar = extract_data_from_ncdf(gs2new_sim_longname + ".out.nc",
-    #                                 'theta', 'gbdrift', 'gbdrift0', 'cvdrift', 'cvdrift0', 'gradpar')
-    # ax1.plot(theta/np.pi, gbdrift, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax2.plot(theta/np.pi, gbdrift0, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax3.plot(theta/np.pi, cvdrift, linestyle="-.", c="red", ls="..", label="GS2")
-    # ax4.plot(theta/np.pi, cvdrift0, linestyle="-.", c="red", ls="..", label="GS2")
-    # #ax2.plot(theta, gradpar, linestyle="-.", c="red", ls="..")
-    #
-    # for ax in [ax1, ax2, ax3, ax4]:
-    #     ax.legend(loc="best")
-    #     ax.grid(True)
-    # ax3.set_xlabel(r"$\theta/\pi$")
-    # ax4.set_xlabel(r"$\theta/\pi$")
-    # ax1.set_ylabel("gbdrift")
-    # ax2.set_ylabel("gbdrift0")
-    # ax3.set_ylabel("cvdrift")
-    # ax4.set_ylabel("cvdrift0")
-    # plt.show()
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
+
+    z, gbdrift, gbdrift0, cvdrift, cvdrift0, gradpar = extract_data_from_ncdf(master_sim_longname3+".out.nc",
+    'zed', 'gbdrift', 'gbdrift0', 'cvdrift', 'cvdrift0', 'gradpar')
+
+    ax1.plot(z/np.pi, gbdrift, label="stella")
+    ax2.plot(z/np.pi, gbdrift0, label="stella")
+    ax3.plot(z/np.pi, cvdrift, label="stella")
+    ax4.plot(z/np.pi, cvdrift0, label="stella")
+    #ax2.plot(z, gradpar)
+
+    theta, gbdrift, gbdrift0, cvdrift, cvdrift0, gradpar = extract_data_from_ncdf(gs2new_sim_longname + ".out.nc",
+                                    'theta', 'gbdrift', 'gbdrift0', 'cvdrift', 'cvdrift0', 'gradpar')
+    ax1.plot(theta/np.pi, gbdrift, linestyle="-.", c="red", ls="..", label="GS2")
+    ax2.plot(theta/np.pi, gbdrift0, linestyle="-.", c="red", ls="..", label="GS2")
+    ax3.plot(theta/np.pi, cvdrift, linestyle="-.", c="red", ls="..", label="GS2")
+    ax4.plot(theta/np.pi, cvdrift0, linestyle="-.", c="red", ls="..", label="GS2")
+    #ax2.plot(theta, gradpar, linestyle="-.", c="red", ls="..")
+
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.legend(loc="best")
+        ax.grid(True)
+    ax3.set_xlabel(r"$\theta/\pi$")
+    ax4.set_xlabel(r"$\theta/\pi$")
+    ax1.set_ylabel("gbdrift")
+    ax2.set_ylabel("gbdrift0")
+    ax3.set_ylabel("cvdrift")
+    ax4.set_ylabel("cvdrift0")
+    plt.show()
+    sys.exit()
     #
 
     ## Try plotting the drifts
@@ -462,7 +463,7 @@ def compare_stella_to_gs2():
     plt.show()
 
 
-    view_ncdf_variables(gs2new_sim_longname+".out.nc")
+    # view_ncdf_variables(gs2new_sim_longname+".out.nc")
     return
 
 def plot_g_for_stella_sim():
@@ -530,6 +531,24 @@ def plot_rmaj_scan():
                     plot_format=".png")
 
 
+def plot_stella_gs2_nperiod5():
+    """ """
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            gs2_basecase_longname,
+                    ],
+                    [
+                    "stella",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_default_comparison",
+                    sim_types=[
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".png")
+
+
 def plot_me_scan():
     """ """
     make_comparison_plots([
@@ -555,7 +574,7 @@ def plot_me_scan():
                     "gs2",
                     "gs2"
                     ],
-                    plot_format=".png")
+                    plot_format=".png", show_fig=True)
 
 
 def plot_noupwind_different_numerical_schemes():
@@ -572,7 +591,7 @@ def plot_noupwind_different_numerical_schemes():
                 stella_noupwind_emirror_estream_edrift_higher_vres,
                 stella_noupwind_imirror_istream_idrift,
                 gs2_basecase_longname,
-                                ],
+                gs2_bakdif0_fexpr05_longname                                ],
                                 [
                                 "i, i, e std. vres",
                                 "i, i, e, higher_vres",
@@ -582,7 +601,8 @@ def plot_noupwind_different_numerical_schemes():
                                 "e, e, e std. vres",
                                 "e, e, e, higher_vres",
                                 "i, i, i std. vres",
-                                "GS2",
+                                "GS2 (default)",
+                                "GS2 (bakdif=0, fexpr=0.5)",
                                 ],
                     "images/noupwind_vres_scan",
                     sim_types=[
@@ -594,7 +614,8 @@ def plot_noupwind_different_numerical_schemes():
                         "stella",
                         "stella",
                         "stella",
-                        "gs2"
+                        "gs2",
+                        "gs2",
                         ],
                     plot_format=".png", show_fig=True)
     return
@@ -610,6 +631,7 @@ def plot_noupwind_dt_variation():
             stella_noupwind_imirror_istream_idrift_dt001,
             stella_noupwind_imirror_istream_idrift_dt0005,
             gs2_basecase_longname,
+            gs2_bakdif0_fexpr05_longname
             ],
             [
                 "i, i, e, dt=0.0133",
@@ -619,7 +641,8 @@ def plot_noupwind_dt_variation():
                 "i, i, i, dt=0.03",
                 "i, i, i, dt=0.01",
                 "i, i, i, dt=0.005",
-                "GS2",
+                "GS2 (default)",
+                "GS2 (bakdif=0, fexpr=0.5)",
             ],
             "images/noupwind_dt_variation",
             sim_types = [
@@ -630,7 +653,8 @@ def plot_noupwind_dt_variation():
                         "stella",
                         "stella",
                         "stella",
-                        "gs2"
+                        "gs2",
+                        "gs2",
             ],
                 plot_format=".png", show_fig=True)
     return
@@ -796,9 +820,10 @@ if __name__ == "__main__":
     #plot_flip_flop_option()
     #plot_me_scan()
     #plot_rmaj_scan()
-    #compare_stella_to_gs2()
+    compare_stella_to_gs2()
     #plot_noupwind_different_numerical_schemes()
     #plot_noupwind_dt_variation()
     #plot_phit_noupwind_flip_flop()
-    debug_flip_flop()
+    #debug_flip_flop()
     #plot_noupwind_flipflop()
+    #plot_stella_gs2_nperiod5()
