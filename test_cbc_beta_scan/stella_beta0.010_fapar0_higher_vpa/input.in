@@ -42,11 +42,7 @@
 
 &vpamu_grids_parameters
  nvgrid = 108
-<<<<<<< Updated upstream
  nmu = 24
-=======
- nmu = 48
->>>>>>> Stashed changes
  vpa_max = 3.0
 /
 
