@@ -27,6 +27,16 @@ sim_gs2_b01_fapar0 = "gs2_beta_scan_fapar0/_0.0100"
 ## fbpar = 0
 # stella
 sim_st_b00001_fbpar0 = "stella_beta0.00001_fbpar0/input"
+sim_st_b00005_fbpar0 = "stella_beta0.00005_fbpar0/input"
+sim_st_b0001_fbpar0 = "stella_beta0.0001_fbpar0/input"
+sim_st_b0003_fbpar0 = "stella_beta0.0003_fbpar0/input"
+sim_st_b0006_fbpar0 = "stella_beta0.0006_fbpar0/input"
+sim_st_b0015_fbpar0 = "stella_beta0.0015_fbpar0/input"
+sim_st_b002_fbpar0 = "stella_beta0.002_fbpar0/input"
+sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
+sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
+sim_st_b005_fbpar0 = "stella_beta0.005_fbpar0/input"
+sim_st_b01_fbpar0 = "stella_beta0.010_fbpar0/input"
 sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
 sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
 sim_st_b001_fbpar0_no_drive_no_stream_no_mirror = "stella_beta0.001_fbpar0/input_zero_drive_zero_streaming_zero_mirror"
@@ -36,16 +46,14 @@ sim_st_b001_fbpar0_no_drive_01_upwind = "stella_beta0.001_fbpar0/input_zero_driv
 sim_st_b001_fbpar0_no_drive_02_upwind = "stella_beta0.001_fbpar0/input_zero_drive_0.2_upwinding"
 sim_st_b001_fbpar0_no_drive_mid_vres = "stella_beta0.001_fbpar0/input_zero_drive_mid_vres"
 sim_st_b001_fbpar0_no_drive_higher_vres = "stella_beta0.001_fbpar0/input_zero_drive_higher_vres"
+# NB _no_drive_no_drifts has diamagnetic and curvature drifts set to zero
+sim_st_b001_fbpar0_no_drive_no_drifts = "stella_beta0.001_fbpar0/input_zero_drive_zero_drifts"
 sim_st_b001_fbpar0_no_drive_lower_dt = "stella_beta0.001_fbpar0/input_zero_drive_lower_dt"
+# NB has diamagnetic but no curvature drifts
 sim_st_b001_fbpar0_no_mag_drift = "stella_beta0.001_fbpar0/input_no_drifts"
 sim_st_b001_fbpar0_no_mirror = "stella_beta0.001_fbpar0/input_no_mirror"
 sim_st_b001_fbpar0_equal_masses = "stella_beta0.001_fbpar0_equal_masses/input"
 sim_st_b001_fbpar0_flipflop = "stella_beta0.001_fbpar0/input_np5_flipflop"
-sim_st_b002_fbpar0 = "stella_beta0.002_fbpar0/input"
-sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
-sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
-sim_st_b005_fbpar0 = "stella_beta0.005_fbpar0/input"
-sim_st_b01_fbpar0 = "stella_beta0.010_fbpar0/input"
 # gs2
 sim_gs2_b00001_fbpar0 = "gs2_beta_scan_fbpar0/_0.00001"
 sim_gs2_b001_fbpar0 = "gs2_beta_scan_fbpar0/_0.0010"
@@ -65,7 +73,7 @@ sim_st_b02 = "stella_beta0.020/input"
 sim_st_b025 = "stella_beta0.025/input"
 sim_st_b03 = "stella_beta0.030/input"
 
-## The pickled files summarising G22 beta scans
+## The pickled files summarising G2 beta scans
 pickle_gs2 = "gs2_beta_scan/omega_values.pickle"
 pickle_gs2_fbpar0 = "gs2_beta_scan_fbpar0/omega_values.pickle"
 
@@ -167,8 +175,6 @@ def analyse_fbpar0_results():
                                          ],
                                plot_apar=True,
                                )
-
-
     return
 
 def analyse_fapar0_results():
@@ -258,7 +264,6 @@ def analyse_fapar0_changing_vpares():
     # plot_gmvus("stella_beta0.010_fapar0_higher_vpa/input.out.nc", which="gvpa")
     return
 
-
 def plot_geometry():
     """ """
     stella_outnc_longname = "stella_beta0.001_fbpar0/input.out.nc"
@@ -328,12 +333,20 @@ def plot_geometry():
 
     return
 
-
 def plot_beta_scans():
     """ """
     stella_sim_longnames = [
-
+                        sim_st_b0,
+                        sim_st_b005,
+                        sim_st_b01,
+                        sim_st_b015,
+                        sim_st_b02,
+                        sim_st_b025,
+                        sim_st_b03,
                             ]
+    gs2_sim_longnames = [
+
+                        ]
     stella_beta_vals = [
                         0.0,
                         0.005,
@@ -347,29 +360,28 @@ def plot_beta_scans():
 
     make_beta_scan_plots(stella_sim_longnames,
                          stella_beta_vals,
-                          "./test_cbc_beta_scan",
-                          gs2_pickle=gs2_pickle
+                          "images/test_cbc_beta_scan",
                          )
 
-    stella_sim_longnames = [
-
-                            ]
-    stella_beta_vals = [
-                        0.0,
-                        0.001,
-                        0.002,
-                        0.003,
-                        0.004,
-                        0.005,
-                        ]
-
-
-
-    make_beta_scan_plots(stella_sim_longnames,
-                         stella_beta_vals,
-                          "./test_cbc_beta_scan_fbpar0",
-                         gs2_pickle=gs2_pickle
-                         )
+    # stella_sim_longnames = [
+    #
+    #                         ]
+    # stella_beta_vals = [
+    #                     0.0,
+    #                     0.001,
+    #                     0.002,
+    #                     0.003,
+    #                     0.004,
+    #                     0.005,
+    #                     ]
+    #
+    #
+    #
+    # make_beta_scan_plots(stella_sim_longnames,
+    #                      stella_beta_vals,
+    #                       "./test_cbc_beta_scan_fbpar0",
+    #                      gs2_pickle=gs2_pickle
+    #                      )
     return
 
 def compare_vres_fbpar0():
@@ -461,16 +473,19 @@ def compare_omega_for_fbpar0_changing_streaming_and_drive():
                             sim_st_b001_fbpar0,
                             sim_st_b001_fbpar0_no_drive,
                             sim_st_b001_fbpar0_no_stream_no_mirror,
-                            sim_st_b001_fbpar0_no_drive_no_stream_no_mirror
+                            sim_st_b001_fbpar0_no_drive_no_stream_no_mirror,
+                            sim_st_b001_fbpar0_no_drive_no_drifts
                          ],
                         [
                          "stella",
                          "stella, zero drive",
                          "stella, zero streaming & mirror",
                          "stella, zero drive, zero streaming & mirror",
+                         "stella, zero drive, zero drifts",
                          ],
                         IMAGE_DIR + "fbpar0_beta1e-3_zerodrive_change_str_mirr",
                         sim_types=[
+                                   "stella",
                                    "stella",
                                    "stella",
                                    "stella",
@@ -594,7 +609,12 @@ def plot_fbpar0():
     """ """
     stella_sim_longnames = [
                             sim_st_b00001_fbpar0,
+                            sim_st_b00005_fbpar0,
+                            sim_st_b0001_fbpar0,
+                            sim_st_b0003_fbpar0,
+                            sim_st_b0006_fbpar0,
                             sim_st_b001_fbpar0,
+                            sim_st_b0015_fbpar0,
                             sim_st_b002_fbpar0,
                             sim_st_b003_fbpar0,
                             sim_st_b004_fbpar0,
@@ -605,6 +625,11 @@ def plot_fbpar0():
     gs2_sim_longnames = [
                             sim_gs2_b00001_fbpar0,
                             sim_gs2_b001_fbpar0,
+                            sim_gs2_b001_fbpar0,
+                            sim_gs2_b001_fbpar0,
+                            sim_gs2_b001_fbpar0,
+                            sim_gs2_b001_fbpar0,
+                            sim_gs2_b001_fbpar0,
                             sim_gs2_b002_fbpar0,
                             sim_gs2_b003_fbpar0,
                             sim_gs2_b004_fbpar0,
@@ -613,7 +638,12 @@ def plot_fbpar0():
                         ]
     beta_strs = [
                  "0.00001",
+                 "0.00005",
+                 "0.0001",
+                 "0.0003",
+                 "0.0006",
                  "0.001",
+                 "0.0015",
                  "0.002",
                  "0.003",
                  "0.004",
@@ -634,7 +664,8 @@ def make_all_plots():
 if __name__ == "__main__":
     ## Compare
 
-    # analyse_fbpar0_results()
+    #analyse_fbpar0_results()
+    # plot_beta_scans()
     # plot_geometry()
     # make_low_beta_fbpar0_plots()
     # analyse_fapar0_results()
@@ -642,7 +673,10 @@ if __name__ == "__main__":
     # analyse_fapar0_changing_vpares()
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
-    analyse_fbpar0_beta0001_results()
+    plot_fapar0()
+    plot_fbpar0()
+    compare_omega_for_fbpar0_changing_streaming_and_drive()
+    # analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
     #compare_omega_for_fbpar0_different_terms_off()

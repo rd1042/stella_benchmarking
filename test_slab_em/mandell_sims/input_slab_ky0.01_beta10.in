@@ -1,9 +1,11 @@
 ! Unsheared slab geometry; we take a CBC input file and make the following changes:
 ! 1) Change  boundary_option="default" to  boundary_option="self-periodic"
 ! 2) Reduce nzed, nperiod, nvgrid, nmu
-! 3) Reduce nstep, nwrite, nsave 
+! 3) Reduce nstep, nwrite, nsave
 ! 4) Specify a geo_file
 ! 5) set various overwrite_ knobs in geo_knobs to .true. (could replace them all, but some seem redundant to change)
+!
+! Attempt to reproduce result from Mandell et al (2020). We want beta_mandell=1, kperp=0.1
 
 &zgrid_parameters
  nzed = 36
@@ -14,13 +16,14 @@
 
 &geo_knobs
  geo_option = 'miller'
- geo_file = 'unsheared_slab.geometry'
+ geo_file = 'unsheared_slab_gradpar1.geometry'
  overwrite_bmag = .true.
  overwrite_gds2 = .true.
  overwrite_gds21 = .true.
  overwrite_gds22 = .true.
  ! overwrite_gds23 = .true. ! Neoclassical only
  ! overwrite_gds24 = .true. ! Neoclassical only
+ overwrite_gradpar = .true.
  overwrite_gbdrift = .true.
  overwrite_cvdrift = .true.
  overwrite_gbdrift0 = .true.
@@ -52,7 +55,7 @@
 
 &parameters
  zeff = 1.0
- beta = 0.00
+ beta = 0.0056
  vnew_ref = 0.01
  rhostar = 0.01
 /
@@ -76,8 +79,8 @@
 /
 &kt_grids_range_parameters
  naky = 1
- aky_min = 0.1
- aky_max = 0.1
+ aky_min = 0.01
+ aky_max = 0.01
 /
 
 &init_g_knobs
@@ -90,16 +93,16 @@
 
 &knobs
  fphi =   1.0
- fapar =  0.0
- fbpar = 0.0
+ fapar =  1.0
+ fbpar = 1.0
  zed_upwind = 0.02
  time_upwind = 0.02
  vpa_upwind = 0.02
- stream_implicit = .true.
+ stream_implicit = .false.
  !mirror_implicit = .false.
  !mirror_semi_lagrange = .false.
  delt = 0.03
- nstep = 200
+ nstep = 50000
 /
 &species_knobs
  nspec= 2
@@ -126,8 +129,8 @@
 /
 
 &stella_diagnostics_knobs
- nwrite = 5
- nsave = 100 
+ nwrite = 10
+ nsave = 500
  save_for_restart = .false.
  write_omega = .true.
  write_phi_vs_time = .true.

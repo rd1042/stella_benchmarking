@@ -69,9 +69,9 @@ def compare_beta_scans(stella_folder, gs2_folder, save_name, plot_apar=False, pl
 def plot_different_beta_scans():
     """ """
 
-    # compare_beta_scans(stella_fapar1_fbpar0_me1_folder,
-    #                    gs2_fapar1_fbpar0_me1_folder,
-    #                    "images/fapar1_fbpar0")
+    compare_beta_scans(stella_fapar1_fbpar0_me1_folder,
+                       gs2_fapar1_fbpar0_me1_folder,
+                       "images/fapar1_fbpar0")
     compare_beta_scans(stella_fapar1_fbpar1_me1_folder,
                        gs2_fapar1_fbpar1_me1_folder,
                        "images/fapar1_fbpar1")
