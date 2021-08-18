@@ -139,6 +139,7 @@ def find_ksaw_properties(phi_vs_t_file):
     ax2.set_xlabel("z")
     ax2.set_ylabel("Im(phi)")
     ax1.set_ylabel("Re(phi)")
+    fig.suptitle(phi_vs_t_file)
     for ax in [ax1, ax2]:
         ax.grid(True)
     plt.show()
@@ -152,6 +153,7 @@ def find_ksaw_properties(phi_vs_t_file):
     ax2.set_ylabel("Im(phi)")
     ax1.set_ylabel("Re(phi)")
     ax1.legend(loc="best")
+    fig.suptitle(phi_vs_t_file)
     for ax in [ax1, ax2]:
         ax.grid(True)
     plt.show()

@@ -413,14 +413,14 @@ def compare_omega_for_fbpar0_zero_drive():
     make_comparison_plots([
                         sim_st_b001_fbpar0_no_drive,
                         sim_st_b001_fbpar0_no_drive_mid_vres,
-                        # sim_st_b001_fbpar0_no_drive_higher_vres,
+                        #sim_st_b001_fbpar0_no_drive_higher_vres,
                         sim_st_b001_fbpar0_no_drive_lower_dt,
                         sim_gs2_b001_fbpar0,
                            ],
                           [
                            "stella, zero drive",
                            "stella, zero drive, mid vres",
-                          # "stella, zero drive, higher vres",
+                           #"stella, zero drive, higher vres",
                            "stella, zero drive, lower dt",
                            "GS2",
                            ],
@@ -673,12 +673,13 @@ if __name__ == "__main__":
     # analyse_fapar0_changing_vpares()
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
-    plot_fapar0()
-    plot_fbpar0()
-    compare_omega_for_fbpar0_changing_streaming_and_drive()
+    # plot_fapar0()
+    # plot_fbpar0()
+    # compare_omega_for_fbpar0_changing_streaming_and_drive()
     # analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
     #compare_omega_for_fbpar0_different_terms_off()
-    #compare_omega_for_fbpar0_zero_drive_change_upwind()
+    compare_omega_for_fbpar0_zero_drive()
+    # compare_omega_for_fbpar0_zero_drive_change_upwind()
     #compare_omega_for_fbpar0_changing_streaming_and_drive()
