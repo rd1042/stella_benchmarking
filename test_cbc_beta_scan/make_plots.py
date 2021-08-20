@@ -37,7 +37,12 @@ sim_st_b003_fbpar0 = "stella_beta0.003_fbpar0/input"
 sim_st_b004_fbpar0 = "stella_beta0.004_fbpar0/input"
 sim_st_b005_fbpar0 = "stella_beta0.005_fbpar0/input"
 sim_st_b01_fbpar0 = "stella_beta0.010_fbpar0/input"
+#######
 sim_st_b001_fbpar0 = "stella_beta0.001_fbpar0/input"
+sim_st_b001_fbpar0_np2 = "stella_beta0.001_fbpar0/input_np2"
+sim_st_b001_fbpar0_np6 = "stella_beta0.001_fbpar0/input_np6"
+sim_st_b001_fbpar0_nzed32 = "stella_beta0.001_fbpar0/input_nzed32"
+sim_st_b001_fbpar0_nzed128 = "stella_beta0.001_fbpar0/input_nzed128"
 sim_st_b001_fbpar0_no_drive = "stella_beta0.001_fbpar0/input_zero_drive"
 sim_st_b001_fbpar0_no_drive_no_stream_no_mirror = "stella_beta0.001_fbpar0/input_zero_drive_zero_streaming_zero_mirror"
 sim_st_b001_fbpar0_no_stream_no_mirror = "stella_beta0.001_fbpar0/input_zero_streaming_zero_mirror"
@@ -52,8 +57,15 @@ sim_st_b001_fbpar0_no_drive_lower_dt = "stella_beta0.001_fbpar0/input_zero_drive
 # NB has diamagnetic but no curvature drifts
 sim_st_b001_fbpar0_no_mag_drift = "stella_beta0.001_fbpar0/input_no_drifts"
 sim_st_b001_fbpar0_no_mirror = "stella_beta0.001_fbpar0/input_no_mirror"
+sim_st_b001_fbpar0_no_streaming = "stella_beta0.001_fbpar0/input_no_streaming"
+sim_st_b001_fbpar0_no_zed_upwind = "stella_beta0.001_fbpar0/input_no_zed_upwinding" ## Doesn't actually do anything
+sim_st_b001_fbpar0_centered_dgdz = "stella_beta0.001_fbpar0/input_centered_dgdz"
+sim_st_b001_fbpar0_centered_dgdvpa = "stella_beta0.001_fbpar0/input_centered_dgdz_and_dgdvpa"
+sim_st_b001_fbpar0_centered_dgdvpa_dgdvpa = "stella_beta0.001_fbpar0/input_centered_dgdz_and_dgdvpa"
+sim_st_b001_fbpar0_centered_dgdvpa_dgdvpa_numapar = "stella_beta0.001_fbpar0/input_centered_dgdz_and_dgdvpa_num_apar_fac"
 sim_st_b001_fbpar0_equal_masses = "stella_beta0.001_fbpar0_equal_masses/input"
 sim_st_b001_fbpar0_flipflop = "stella_beta0.001_fbpar0/input_np5_flipflop"
+###################
 # gs2
 sim_gs2_b00001_fbpar0 = "gs2_beta_scan_fbpar0/_0.00001"
 sim_gs2_b001_fbpar0 = "gs2_beta_scan_fbpar0/_0.0010"
@@ -88,6 +100,7 @@ def analyse_fbpar0_beta0001_results():
                            sim_st_b001_fbpar0_no_mirror,
                            sim_st_b001_fbpar0_equal_masses,
                            sim_st_b001_fbpar0_flipflop,
+                           sim_st_b001_fbpar0_no_streaming,
                            sim_gs2_b001_fbpar0
                            ],
                           [
@@ -97,6 +110,7 @@ def analyse_fbpar0_beta0001_results():
                            "stella, no mirror term",
                            "stella, m_e=1",
                            "stella, flip-flop",
+                           "stella, no streaming",
                            "GS2"
                            ],
                           "images/termsoff_beta_0.001_fbpar0",
@@ -107,11 +121,83 @@ def analyse_fbpar0_beta0001_results():
                                      "stella",
                                      "stella",
                                      "stella",
+                                     "stella",
+                                    # "stella",
                                      "gs2"
                                      ],
                            plot_apar=True,
-                           plot_format=".png"
+                           plot_format=".eps"
                            )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_np2,
+                            sim_st_b001_fbpar0_np6,
+                            sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella",
+                           "stella, nperiod=2",
+                           "stella, nperiod=6",
+                           "GS2"
+                           ],
+                          "images/beta_0.001_fbpar0_nperiod_scan",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_nzed32,
+                            sim_st_b001_fbpar0_nzed128,
+                            sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella",
+                           "stella, nzed=32",
+                           "stella, nzed=128",
+                           "GS2"
+                           ],
+                          "images/beta_0.001_fbpar0_nzed_scan",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_centered_dgdz,
+                            sim_st_b001_fbpar0_centered_dgdvpa_dgdvpa,
+                            #sim_st_b001_fbpar0_centered_dgdvpa_dgdvpa_numapar,
+                            sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella, dg/dz third-order-upwind",
+                           "stella, dg/dz centered on proc0",
+                           "stella, dg/dz centered on all procs",
+                           #"stella, dg/dz centered, dg/dvpa centered, num.",
+                           "GS2"
+                           ],
+                          "images/beta_0.001_fbpar0_dgdz_centering",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     #"stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+
     return
 
 def plot_fbpar0_beta0001_equal_masses():
@@ -657,8 +743,11 @@ def plot_fbpar0():
 def make_all_plots():
     """ """
     plot_fbpar0()
-    plot_fapar_fbpar_on()
+    #plot_fapar_fbpar_on()
     plot_fapar0()
+    compare_omega_for_fbpar0_zero_drive()
+    compare_omega_for_fbpar0_zero_drive_change_upwind()
+    analyse_fbpar0_beta0001_results()
     return
 
 if __name__ == "__main__":
@@ -671,15 +760,15 @@ if __name__ == "__main__":
     # analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
-    #make_all_plots()
+    # make_all_plots()
     #plot_gzvs_for_fbpar0()
     # plot_fapar0()
     # plot_fbpar0()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
-    # analyse_fbpar0_beta0001_results()
+    analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
     #compare_omega_for_fbpar0_different_terms_off()
-    compare_omega_for_fbpar0_zero_drive()
+    # compare_omega_for_fbpar0_zero_drive()
     # compare_omega_for_fbpar0_zero_drive_change_upwind()
     #compare_omega_for_fbpar0_changing_streaming_and_drive()
