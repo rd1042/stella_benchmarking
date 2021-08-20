@@ -81,7 +81,7 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 50000
+ nstep = 5000
  center_dgdz = .true.
 /
 &species_knobs
