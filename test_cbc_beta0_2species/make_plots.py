@@ -55,6 +55,19 @@ stella_adiabatic_m05_longname = "stella_adiabatic/input5_mi0.5"
 stella_adiabatic_m2_longname = "stella_adiabatic/input5_mi2"
 stella_adiabatic_m10_longname = "stella_adiabatic/input5_mi10"
 
+# Adiabatic stella, leapfrog drifts
+stella_adiabatic_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5"
+stella_adiabatic_m001_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5_mi0.01"
+stella_adiabatic_m01_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5_mi0.1"
+stella_adiabatic_m05_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5_mi0.5"
+stella_adiabatic_m2_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5_mi2"
+stella_adiabatic_m10_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drifts/input5_mi10"
+
+# stella 2 species, leapfrog drifts
+stella_nperiod5_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5"
+stella_nperiod3_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input"
+stella_dt0005_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5_dt0005"
+
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_rmaj10_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj10"
 gs2_rmaj20_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj20"
@@ -473,7 +486,6 @@ def plot_g_for_stella_sim():
     plot_gzvs(master_outnc_longname2, which="gvpa", plot_gauss_squared=True, stretch_electron_vpa=False)
     return
 
-
 def plot_flip_flop_option():
     """ """
     make_comparison_plots([
@@ -529,7 +541,6 @@ def plot_rmaj_scan():
                     "gs2",
                     ],
                     plot_format=".png")
-
 
 def plot_stella_gs2_nperiod5():
     """ """
@@ -805,6 +816,100 @@ def debug_flip_flop():
 
     return
 
+def compare_stella_leapfrog_gs2():
+    """ """
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            stella_nperiod5_leapfrog_drifts_longname,
+            gs2_basecase_longname,
+                    ],
+                    [
+                    "stella (Lie)",
+                    "stella (Leapfrog drifts)",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_stella_leapfrog",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".eps")
+
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            stella_nperiod3_leapfrog_drifts_longname,
+            stella_nperiod5_leapfrog_drifts_longname,
+            stella_dt0005_leapfrog_drifts_longname,
+            gs2_basecase_longname,
+                    ],
+                    [
+                    "stella (Lie)",
+                    "stella (Leapfrog drifts)",
+                    "stella (Leapfrog drifts, np=3)",
+                    "stella (Leapfrog drifts, dt=5E-3)",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_2species_stella_leapfrog",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".eps")
+    return
+
+def compare_stella_leapfrog_gs2_adiabatic():
+    """ """
+
+    make_comparison_plots([
+                stella_adiabatic_longname,
+                stella_adiabatic_leapfrog_drifts_longname,
+                gs2_adiabatic_longname,
+                    ],
+                    [
+                    "stella (Lie)",
+                    "stella (Leapfrog drifts)",
+                    "GS2",
+                    ],
+                    "./test_cbc_beta0_adiabatic_stella_leapfrog",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".eps")
+
+    make_comparison_plots([
+                stella_adiabatic_m01_longname,
+                stella_adiabatic_m01_leapfrog_drifts_longname,
+                gs2_adiabatic_m001_longname,
+                stella_adiabatic_m10_longname,
+                stella_adiabatic_m10_leapfrog_drifts_longname,
+                gs2_adiabatic_m10_longname
+                    ],
+                    [
+                    "stella m=0.1 (Lie)",
+                    "stella m=0.1 (Leapfrog drifts)",
+                    "GS2 m=0.1",
+                    "stella m=10 (Lie)",
+                    "stella m=10 (Leapfrog drifts)",
+                    "GS2 m=10",
+                    ],
+                    "./test_cbc_beta0_adiabatic_stella_leapfrog_mass_scan",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "gs2",
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".eps")
+
+    return
 
 if __name__ == "__main__":
     #plot_g_for_stella_sim()
@@ -821,9 +926,11 @@ if __name__ == "__main__":
     #plot_me_scan()
     #plot_rmaj_scan()
     #compare_stella_to_gs2()
-    plot_noupwind_different_numerical_schemes()
-    plot_noupwind_dt_variation()
-    plot_phit_noupwind_flip_flop()
+    # plot_noupwind_different_numerical_schemes()
+    # plot_noupwind_dt_variation()
+    # plot_phit_noupwind_flip_flop()
+    compare_stella_leapfrog_gs2()
+    compare_stella_leapfrog_gs2_adiabatic()
     #debug_flip_flop()
     #plot_noupwind_flipflop()
     #plot_stella_gs2_nperiod5()

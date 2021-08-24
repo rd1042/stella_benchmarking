@@ -11,8 +11,8 @@ import sys
 import pickle
 
 ## Define linestyles
-linestyles1=cycle(["-", "--", "-.", ":"])
-linestyles2=cycle(["-", "--", "-.", ":"])
+linestyles1=cycle(["-", "--", "-.", ":", (0, (3, 1, 1, 1, 1, 1))])
+linestyles2=cycle(["-", "--", "-.", ":", (0, (3, 1, 1, 1, 1, 1))])
 
 
 def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
