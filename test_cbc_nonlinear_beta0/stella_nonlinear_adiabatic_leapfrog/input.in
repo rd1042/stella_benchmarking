@@ -5,9 +5,9 @@
 &init_g_knobs
  chop_side = F
  phiinit = 1.0
- restart_file = "restart.nc"
+ !restart_file = "restart.nc"
  restart_dir = "restart"
- ginit_option = "many"
+ ginit_option = "default" ! Changed from "many"
  width0 = 1.0
 /
 &millergeo_parameters
@@ -89,8 +89,8 @@
  write_gvmus = .true.
  write_moments = .true.
  write_gzvs = .true.
- flux_norm = .false.
- write_fluxes_kxky = .true.
+ !flux_norm = .false.
+ !write_fluxes_kxky = .true.
 /
 &layouts_knobs
  xyzs_layout = 'yxzs'

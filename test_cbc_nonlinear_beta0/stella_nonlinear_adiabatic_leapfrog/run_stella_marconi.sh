@@ -28,7 +28,7 @@ module load mkl/2018--binary
 #module unload hdf5/1.10.4--intel--pe-xe-2018--binary
 
 
-EXEFILE=~/stella/stella
+EXEFILE=~/stella_leapfrog/stella
 #
 OUTFILE=$SLURM_JOBID"_"$SLURM_JOB_NAME"_stella.out"
 ERRFILE=$SLURM_JOBID"_"$SLURM_JOB_NAME"_stella.err"
