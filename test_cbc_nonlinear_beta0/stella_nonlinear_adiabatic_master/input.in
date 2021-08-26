@@ -4,7 +4,7 @@
 / 
 &init_g_knobs
  chop_side = F
- phiinit = 1.0
+ phiinit = 0.001 ! 1.0
  !restart_file = "restart.nc"
  restart_dir = "restart"
  ginit_option = "default" ! Bob: Changed from "many"
@@ -60,10 +60,10 @@
  zed_equal_arc = T
 /
 &vpamu_grids_parameters
- nvgrid = 24
+ nvgrid = 12 ! 24
  nmu = 12
- vpa_max = 3.0
- vperp_max = 3.0
+ vpa_max = 2.5 ! 3.0
+ vperp_max = 2.5 ! 3.0
 /
 &knobs
  fphi = 1.0

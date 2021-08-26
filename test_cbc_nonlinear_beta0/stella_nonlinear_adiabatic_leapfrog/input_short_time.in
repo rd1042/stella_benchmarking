@@ -4,9 +4,9 @@
 / 
 &init_g_knobs
  chop_side = F
- phiinit = 1.0
+ phiinit = 0.001 ! 1.0
  !restart_file = "restart.nc"
- restart_dir = "restart"
+ restart_dir = "restart_short_time"
  ginit_option = "default" ! Changed from "many"
  width0 = 1.0
 /
@@ -60,10 +60,10 @@
  zed_equal_arc = T
 /
 &vpamu_grids_parameters
- nvgrid = 24
+ nvgrid = 12 ! 24
  nmu = 12
- vpa_max = 3.0
- vperp_max = 3.0
+ vpa_max = 2.5 ! 3.0
+ vperp_max = 2.5 ! 3.0
 /
 &knobs
  fphi = 1.0
@@ -72,7 +72,7 @@
  !delt_option = "check_restart"   ! Bob: Want to change . . .	
  !t_end = 1000   ! Bob: Want to change . . .
  delt = 0.05  ! Bob: Added this
- nstep = 100
+ nstep = 200
  cfl_cushion = 0.50
  mat_read = .false.
  mat_gen = .false.
@@ -81,14 +81,14 @@
 /
 &stella_diagnostics_knobs
  nwrite = 1   
- nsave = 1000   
+ nsave = 50   
  save_for_restart = .true.
  write_omega = .true.
  write_kspectra = .true.
  write_phi_vs_time = .true.
- write_gvmus = .true.
- write_moments = .true.
- write_gzvs = .true.
+ write_gvmus = .false.
+ write_moments = .false.
+ write_gzvs = .false.
  !flux_norm = .false.
  !write_fluxes_kxky = .true.
 /
