@@ -93,85 +93,85 @@ def analyse_fbpar0_beta0001_results():
     """Compare sims, all with fbpar=0, fapar=1, beta=0.001, for which
     we try turning on and off different knobs."""
 
-    # make_comparison_plots([
-    #                        sim_st_b001_fbpar0,
-    #                        sim_st_b001_fbpar0_no_drive,
-    #                        sim_st_b001_fbpar0_no_mag_drift,
-    #                        sim_st_b001_fbpar0_no_mirror,
-    #                        sim_st_b001_fbpar0_equal_masses,
-    #                        sim_st_b001_fbpar0_flipflop,
-    #                        sim_st_b001_fbpar0_no_streaming,
-    #                        sim_gs2_b001_fbpar0
-    #                        ],
-    #                       [
-    #                        "stella",
-    #                        "stella, zero gradients",
-    #                        "stella, no magnetic drifts",
-    #                        "stella, no mirror term",
-    #                        "stella, m_e=1",
-    #                        "stella, flip-flop",
-    #                        "stella, no streaming",
-    #                        "GS2"
-    #                        ],
-    #                       "images/termsoff_beta_0.001_fbpar0",
-    #                       sim_types=[
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                 # "stella",
-    #                                  "gs2"
-    #                                  ],
-    #                        plot_apar=True,
-    #                        plot_format=".eps"
-    #                        )
-    # make_comparison_plots([
-    #                        sim_st_b001_fbpar0,
-    #                         sim_st_b001_fbpar0_np2,
-    #                         sim_st_b001_fbpar0_np6,
-    #                         sim_gs2_b001_fbpar0
-    #                        ],
-    #                       [
-    #                        "stella",
-    #                        "stella, nperiod=2",
-    #                        "stella, nperiod=6",
-    #                        "GS2"
-    #                        ],
-    #                       "images/beta_0.001_fbpar0_nperiod_scan",
-    #                       sim_types=[
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "gs2"
-    #                                  ],
-    #                        plot_apar=True,
-    #                        plot_format=".eps"
-    #                        )
-    # make_comparison_plots([
-    #                        sim_st_b001_fbpar0,
-    #                         sim_st_b001_fbpar0_nzed32,
-    #                         sim_st_b001_fbpar0_nzed128,
-    #                         sim_gs2_b001_fbpar0
-    #                        ],
-    #                       [
-    #                        "stella",
-    #                        "stella, nzed=32",
-    #                        "stella, nzed=128",
-    #                        "GS2"
-    #                        ],
-    #                       "images/beta_0.001_fbpar0_nzed_scan",
-    #                       sim_types=[
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "stella",
-    #                                  "gs2"
-    #                                  ],
-    #                        plot_apar=True,
-    #                        plot_format=".png"
-    #                        )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                           sim_st_b001_fbpar0_no_drive,
+                           sim_st_b001_fbpar0_no_mag_drift,
+                           sim_st_b001_fbpar0_no_mirror,
+                           sim_st_b001_fbpar0_equal_masses,
+                           sim_st_b001_fbpar0_flipflop,
+                           sim_st_b001_fbpar0_no_streaming,
+                           sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella",
+                           "stella, zero gradients",
+                           "stella, no magnetic drifts",
+                           "stella, no mirror term",
+                           "stella, m_e=1",
+                           "stella, flip-flop",
+                           "stella, no streaming",
+                           "GS2"
+                           ],
+                          "images/termsoff_beta_0.001_fbpar0",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                    # "stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_np2,
+                            sim_st_b001_fbpar0_np6,
+                            sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella",
+                           "stella, nperiod=2",
+                           "stella, nperiod=6",
+                           "GS2"
+                           ],
+                          "images/beta_0.001_fbpar0_nperiod_scan",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".eps"
+                           )
+    make_comparison_plots([
+                           sim_st_b001_fbpar0,
+                            sim_st_b001_fbpar0_nzed32,
+                            sim_st_b001_fbpar0_nzed128,
+                            sim_gs2_b001_fbpar0
+                           ],
+                          [
+                           "stella",
+                           "stella, nzed=32",
+                           "stella, nzed=128",
+                           "GS2"
+                           ],
+                          "images/beta_0.001_fbpar0_nzed_scan",
+                          sim_types=[
+                                     "stella",
+                                     "stella",
+                                     "stella",
+                                     "gs2"
+                                     ],
+                           plot_apar=True,
+                           plot_format=".png"
+                           )
     make_comparison_plots([
                            sim_st_b001_fbpar0,
                             sim_st_b001_fbpar0_centered_dgdz,
@@ -197,6 +197,7 @@ def analyse_fbpar0_beta0001_results():
                            plot_apar=True,
                            plot_format=".png"
                            )
+    compare_omega_for_fbpar0_changing_streaming_and_drive()
 
     return
 
@@ -659,6 +660,7 @@ def plot_fapar_fbpar_on():
                         0.03,
                         ]
     make_beta_scan_plots(stella_sim_longnames,
+                            [],
                          stella_beta_vals,
                          IMAGE_DIR + "test_cbc_beta_scan",
                          gs2_pickle=pickle_gs2)
@@ -743,11 +745,12 @@ def plot_fbpar0():
 def make_all_plots():
     """ """
     plot_fbpar0()
-    #plot_fapar_fbpar_on()
+    plot_fapar_fbpar_on()
     plot_fapar0()
     compare_omega_for_fbpar0_zero_drive()
     compare_omega_for_fbpar0_zero_drive_change_upwind()
     analyse_fbpar0_beta0001_results()
+
     return
 
 if __name__ == "__main__":
@@ -760,12 +763,12 @@ if __name__ == "__main__":
     # analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
-    # make_all_plots()
+    make_all_plots()
     #plot_gzvs_for_fbpar0()
     # plot_fapar0()
     # plot_fbpar0()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
-    analyse_fbpar0_beta0001_results()
+    #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
     #plot_g_for_fbpar0_different_terms_off()
     #compare_omega_for_fbpar0_different_terms_off()

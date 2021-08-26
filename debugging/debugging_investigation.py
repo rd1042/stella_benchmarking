@@ -69,15 +69,35 @@ def plot_phi_t(outnc_longname, save_folder, step=1):
 
     return
 
+
+def plot_for_marconi_sims():
+    """ """
+    low_res_folder = "low_res_marconi"
+    high_res_folder = "high_res_marconi"
+    low_res_fapar0_folder = "low_res_marconi_fapar0"
+    high_res_fapar0_folder = "high_res_marconi_fapar0"
+    low_res_outnc = low_res_folder + "/input_low_res_marconi.out.nc"
+    high_res_outnc = high_res_folder + "/input_high_res_marconi.out.nc"
+    low_res_outnc_fapar0 = low_res_fapar0_folder + "/input_low_res_marconi_fapar0.out.nc"
+    high_res_outnc_fapar0 = high_res_fapar0_folder + "/input_high_res_marconi_fapar0.out.nc"
+
+    plot_phi_t(low_res_outnc, low_res_folder, step=10)
+    plot_phi_t(high_res_outnc, high_res_folder, step=10)
+    plot_phi_t(low_res_outnc_fapar0, low_res_fapar0_folder, step=10)
+    plot_phi_t(high_res_outnc_fapar0, high_res_fapar0_folder, step=10)
+
+    return
+
 if __name__ == "__main__":
 
     print("Hello world")
     sim_st_b001_fbpar0_no_drive_outnc = sim_st_b001_fbpar0_no_drive + ".out.nc"
     print("sim_st_b001_fbpar0_no_drive_outnc = ", sim_st_b001_fbpar0_no_drive_outnc)
-    sim_debugging_outnc = sim_debugging + ".out.nc"
-    sim_debugging_default_res_outnc = sim_debugging_default_res + ".out.nc"
-    sim_debugging_folder = "images_input_debugging"
-    debug_save_folder_fapar0 = "images_debugging_fapar0"
-    debug_default_res_folder = "images_debugging_default_res"
-    plot_phi_t(sim_debugging_outnc, sim_debugging_folder, step=10)
-    plot_phi_t(sim_debugging_default_res_outnc, debug_default_res_folder, step=10)
+    # sim_debugging_outnc = sim_debugging + ".out.nc"
+    # sim_debugging_default_res_outnc = sim_debugging_default_res + ".out.nc"
+    # sim_debugging_folder = "images_input_debugging"
+    # debug_save_folder_fapar0 = "images_debugging_fapar0"
+    # debug_default_res_folder = "images_debugging_default_res"
+    # plot_phi_t(sim_debugging_outnc, sim_debugging_folder, step=10)
+    # plot_phi_t(sim_debugging_default_res_outnc, debug_default_res_folder, step=10)
+    plot_for_marconi_sims()

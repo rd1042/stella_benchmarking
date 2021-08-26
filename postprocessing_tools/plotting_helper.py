@@ -290,32 +290,37 @@ def make_beta_scan_plots(stella_longnames, gs2_longnames, beta_vals, save_name,
 
     for sim_idx, stella_longname in enumerate(stella_longnames):
         ## Plot of omega(t)
-        make_comparison_plots([stella_longname, gs2_longnames[sim_idx]],
-                              ["stella beta = " + str(beta_vals[sim_idx]),
-                              "GS2 beta = " + str(beta_vals[sim_idx])
-                              ],
-                              (save_name + "_beta = " + str(beta_vals[sim_idx])),
-                              sim_types=["stella", "gs2"],
-                              plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
+        if len(gs2_longnames) == len(stella_longnames):
+            make_comparison_plots([stella_longname, gs2_longnames[sim_idx]],
+                                  ["stella beta = " + str(beta_vals[sim_idx]),
+                                  "GS2 beta = " + str(beta_vals[sim_idx])
+                                  ],
+                                  (save_name + "_beta = " + str(beta_vals[sim_idx])),
+                                  sim_types=["stella", "gs2"],
+                                  plot_apar=plot_apar, plot_bpar=plot_bpar, plot_format=plot_format)
 
         time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
-        freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
-        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
-              and np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)):
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)):
             stella_gamma_vals.append(gammaom_final)
             stella_freq_vals.append(freqom_final)
-            gs2_gamma_vals.append(gammaom_final_gs2)
-            gs2_freq_vals.append(freqom_final_gs2)
             final_beta_vals.append(beta_vals[sim_idx])
+        if len(gs2_longnames) == len(stella_longnames):
+            freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+
+            if (np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)):
+                gs2_gamma_vals.append(gammaom_final_gs2)
+                gs2_freq_vals.append(freqom_final_gs2)
 
     ax21.plot(final_beta_vals, stella_freq_vals, label="stella")
     ax22.plot(final_beta_vals, stella_gamma_vals, label="stella")
-    ax21.plot(final_beta_vals, gs2_freq_vals, label="GS2")
-    ax22.plot(final_beta_vals, gs2_gamma_vals, label="GS2")
     ax21.scatter(final_beta_vals, stella_freq_vals, c="black", s=15., marker="x")
     ax22.scatter(final_beta_vals, stella_gamma_vals, c="black", s=15., marker="x")
-    ax21.scatter(final_beta_vals, gs2_freq_vals, c="red", s=15., marker="x")
-    ax22.scatter(final_beta_vals, gs2_gamma_vals, c="red", s=15., marker="x")
+    if len(gs2_longnames) == len(stella_longnames):
+        ax21.plot(final_beta_vals, gs2_freq_vals, label="GS2")
+        ax22.plot(final_beta_vals, gs2_gamma_vals, label="GS2")
+        ax21.scatter(final_beta_vals, gs2_freq_vals, c="red", s=15., marker="x")
+        ax22.scatter(final_beta_vals, gs2_gamma_vals, c="red", s=15., marker="x")
+
     if gs2_pickle is not None:
         myfile = open(gs2_pickle, 'rb')
         gs2_dict = pickle.load(myfile)  # contains 'beta', 'frequency', 'growth rate'
