@@ -11,10 +11,12 @@ import re
 
 ## Define folder names here
 # stella
-stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_me1_beta_scan"
-stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_me1_beta_scan"
-stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_me1_beta_scan"
-
+# stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_me1_beta_scan"
+# stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_me1_beta_scan"
+# stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_me1_beta_scan"
+stella_fapar0_fbpar1_folder = "stella_fapar0_fbpar1_beta_scan"
+stella_fapar1_fbpar0_folder = "stella_fapar1_fbpar0_beta_scan"
+stella_fapar1_fbpar1_folder = "stella_fapar1_fbpar1_beta_scan"
 
 # gs2
 gs2_fapar0_fbpar1_me1_folder = "gs2_fapar0_fbpar1_me1_beta_scan"
@@ -81,5 +83,18 @@ def plot_different_beta_scans():
 
     return
 
+def plot_stella_scan_vs_gs2_pickle():
+    """ """
+
+    stella_beta, stella_longnames = get_sim_longnames(stella_fapar1_fbpar1_folder)
+    print("stella_longnames = ", stella_longnames)
+    print("stella_beta = ", stella_beta)
+    sys.exit()
+    make_beta_scan_plots(stella_longnames, [], stella_beta, "images/beta_scan_fbpar1_fbpar1",
+                        gs2_pickle="gs2_beta_scan/omega_values.pickle")
+    return
+
+
 if __name__ == "__main__":
-    plot_different_beta_scans()
+    # plot_different_beta_scans()
+    plot_stella_scan_vs_gs2_pickle()

@@ -12,9 +12,9 @@ import shutil
 # stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_me1_beta_scan"
 # stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_me1_beta_scan"
 # stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_me1_beta_scan"
-stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_beta_scan"
-stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_beta_scan"
-stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_beta_scan"
+stella_fapar0_fbpar1_folder = "stella_fapar0_fbpar1_beta_scan"
+stella_fapar1_fbpar0_folder = "stella_fapar1_fbpar0_beta_scan"
+stella_fapar1_fbpar1_folder = "stella_fapar1_fbpar1_beta_scan"
 
 
 # gs2
@@ -152,9 +152,9 @@ def make_beta_scans_for_stella_2spec():
     # construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
     # construct_beta_scan(stella_fapar1_fbpar1_me1_folder, beta_vals, "stella")
     # construct_beta_scan(stella_fapar0_fbpar1_me1_folder, beta_vals, "stella")
-    construct_beta_scan(stella_fapar0_fbpar1_me1_folder, beta_vals, "stella")
-    construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
-    construct_beta_scan(stella_fapar1_fbpar1_me1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar0_fbpar1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar1_fbpar0_folder, beta_vals, "stella")
+    construct_beta_scan(stella_fapar1_fbpar1_folder, beta_vals, "stella")
 
     return
 

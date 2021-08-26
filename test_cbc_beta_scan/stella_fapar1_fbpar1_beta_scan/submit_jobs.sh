@@ -2,7 +2,7 @@
 
 for runscript in `ls run*.sh`
 do
-  #echo $subfolder
+  echo $subfolder
   #script=$subfolder + "/run_gs2.sh"
   echo $runscript
   sbatch $runscript
