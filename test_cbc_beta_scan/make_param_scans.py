@@ -9,9 +9,12 @@ import shutil
 
 ## Define folder names here
 # stella
-stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_me1_beta_scan"
-stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_me1_beta_scan"
-stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_me1_beta_scan"
+# stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_me1_beta_scan"
+# stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_me1_beta_scan"
+# stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_me1_beta_scan"
+stella_fapar0_fbpar1_me1_folder = "stella_fapar0_fbpar1_beta_scan"
+stella_fapar1_fbpar0_me1_folder = "stella_fapar1_fbpar0_beta_scan"
+stella_fapar1_fbpar1_me1_folder = "stella_fapar1_fbpar1_beta_scan"
 
 
 # gs2
@@ -135,8 +138,29 @@ def make_beta_scans_for_me1():
 
     return
 
+def make_beta_scans_for_stella_2spec():
+    """Construct simulations scanning beta for stella; 2 species, normal electron mass.
+    The test cases are:
+    (1) fapar=0, fbpar=1
+    (2) fapar=1, fbpar=0
+    (3) fapar=1, fbpar=1 """
+
+
+    beta_vals = np.linspace(0, 0.04, 21)
+
+    ##
+    # construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar1_fbpar1_me1_folder, beta_vals, "stella")
+    # construct_beta_scan(stella_fapar0_fbpar1_me1_folder, beta_vals, "stella")
+    construct_beta_scan(stella_fapar0_fbpar1_me1_folder, beta_vals, "stella")
+    construct_beta_scan(stella_fapar1_fbpar0_me1_folder, beta_vals, "stella")
+    construct_beta_scan(stella_fapar1_fbpar1_me1_folder, beta_vals, "stella")
+
+    return
+
 
 
 if __name__ == "__main__":
     print("Hello world")
-    make_beta_scans_for_me1()
+    # make_beta_scans_for_me1()
+    make_beta_scans_for_stella_2spec()

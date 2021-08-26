@@ -659,6 +659,20 @@ def plot_fapar_fbpar_on():
                         0.025,
                         0.03,
                         ]
+    stella_labels = [
+                        "beta=0.",
+                        "beta=0.005",
+                        "beta=0.01",
+                        "beta=0.015",
+                        "beta=0.02",
+                        "beta=0.025",
+                        "beta=0.03",
+                        ]
+    make_comparison_plots(stella_sim_longnames,
+                          stella_labels,
+                          "images/omega_beta_scan/fapar1_fbpar1_beta_scan",
+                          plot_apar=True, plot_bpar=True, plot_format=".eps")
+
     make_beta_scan_plots(stella_sim_longnames,
                             [],
                          stella_beta_vals,
@@ -687,9 +701,16 @@ def plot_fapar0():
                  "0.002",
                  "0.01"
                  ]
-    make_comparison_plots_many(stella_sim_longnames,
-                               gs2_sim_longnames,
-                               beta_strs, "fapar=0/", plot_apar=False, plot_bpar=True)
+    # make_comparison_plots_many(stella_sim_longnames,
+    #                            gs2_sim_longnames,
+    #                            beta_strs, "fapar=0/", plot_apar=False, plot_bpar=True)
+
+    make_beta_scan_plots(stella_sim_longnames,
+                         gs2_sim_longnames,
+                         beta_strs,
+                         IMAGE_DIR + "test_cbc_beta_scan_fapar0",
+                         )
+
     return
 
 
@@ -738,9 +759,15 @@ def plot_fbpar0():
                  "0.005",
                  "0.01"
                  ]
-    make_comparison_plots_many(stella_sim_longnames,
-                               gs2_sim_longnames,
-                               beta_strs, "fbpar=0/", plot_apar=True, plot_bpar=False)
+    # make_comparison_plots_many(stella_sim_longnames,
+    #                            gs2_sim_longnames,
+    #                            beta_strs, "fbpar=0/", plot_apar=True, plot_bpar=False)
+    make_beta_scan_plots(stella_sim_longnames,
+                         gs2_sim_longnames,
+                         beta_strs,
+                         IMAGE_DIR + "test_cbc_beta_scan_fbpar0",
+                             )
+    return
 
 def make_all_plots():
     """ """
@@ -763,10 +790,11 @@ if __name__ == "__main__":
     # analyse_fapar0_results()
     # plot_gvmus_for_fbpar0()
     # analyse_fapar0_changing_vpares()
-    make_all_plots()
+    #make_all_plots()
     #plot_gzvs_for_fbpar0()
     # plot_fapar0()
-    # plot_fbpar0()
+    #plot_fbpar0()
+    plot_fapar_fbpar_on()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
     #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()

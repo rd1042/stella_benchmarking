@@ -2,7 +2,7 @@
 
 from extract_sim_data import get_omega_data, get_phiz_data, get_aparz_data, get_bparz_data
 from extract_sim_data import find_apar_phi_ratio, find_bpar_phi_ratio
-from extract_sim_data import get_gs2_omega_from_plaintext
+from extract_sim_data import get_gs2_omega_from_plaintext, get_omega_data_gs2_outnc
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf, extract_data_from_ncdf_with_xarray
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,6 +123,7 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
     1) omega(t)
     2) Normalised |phi|(z)
     """
+    print("sim_longnames = ", sim_longnames)
     ## Plot of omega(t)
     fig1 = plt.figure(figsize=[10, 12])
     ax11 = fig1.add_subplot(211)
@@ -305,7 +306,11 @@ def make_beta_scan_plots(stella_longnames, gs2_longnames, beta_vals, save_name,
             stella_freq_vals.append(freqom_final)
             final_beta_vals.append(beta_vals[sim_idx])
         if len(gs2_longnames) == len(stella_longnames):
-            freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+            try:
+                freqom_final_gs2, gammaom_final_gs2 = get_gs2_omega_from_plaintext(gs2_longnames[sim_idx])
+            except FileNotFoundError:
+                t, freqom_final_gs2, gammaom_final_gs2, freq, gam, gam_stable = get_omega_data_gs2_outnc(gs2_longnames[sim_idx])
+
 
             if (np.isfinite(freqom_final_gs2) and np.isfinite(gammaom_final_gs2)):
                 gs2_gamma_vals.append(gammaom_final_gs2)
