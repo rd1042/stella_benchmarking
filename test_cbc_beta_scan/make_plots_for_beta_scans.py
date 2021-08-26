@@ -87,9 +87,9 @@ def plot_stella_scan_vs_gs2_pickle():
     """ """
 
     stella_beta, stella_longnames = get_sim_longnames(stella_fapar1_fbpar1_folder)
-    print("stella_longnames = ", stella_longnames)
-    print("stella_beta = ", stella_beta)
-    sys.exit()
+    # print("stella_longnames = ", stella_longnames)
+    # print("stella_beta = ", stella_beta)
+    # sys.exit()
     make_beta_scan_plots(stella_longnames, [], stella_beta, "images/beta_scan_fbpar1_fbpar1",
                         gs2_pickle="gs2_beta_scan/omega_values.pickle")
     return

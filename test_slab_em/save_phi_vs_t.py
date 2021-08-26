@@ -39,7 +39,18 @@ def save_phi_vs_t_mandell_sims():
         save_sim_phi_vs_t(sim_longname)
     return
 
+def save_phi_vs_t_mandell_sims2():
+    """ """
+    infile_longnames = glob.glob("mandell_sims_supermassive_ions/*.out.nc")
+    print("infile_longnames = ", infile_longnames)
+    for infile_longname in infile_longnames:
+        sim_longname = re.split(".out.nc", infile_longname)[0]
+        print("sim_longname = ", sim_longname)
+        save_sim_phi_vs_t(sim_longname)
+    return
+
 
 
 if __name__ == "__main__":
-    save_phi_vs_t_mandell_sims()
+    #save_phi_vs_t_mandell_sims()
+    save_phi_vs_t_mandell_sims2()
