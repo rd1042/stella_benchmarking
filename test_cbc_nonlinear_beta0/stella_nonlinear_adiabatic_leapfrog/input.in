@@ -80,11 +80,11 @@
  leapfrog_nonlinear = .true.
 /
 &stella_diagnostics_knobs
- nwrite = 100   
+ nwrite = 15   
  nsave = 5000   
  save_for_restart = .true.
- write_omega = .true.
- write_kspectra = .true.
+ write_omega = .false.
+ write_kspectra = .false.
  write_phi_vs_time = .true.
  write_gvmus = .false.
  write_moments = .false.

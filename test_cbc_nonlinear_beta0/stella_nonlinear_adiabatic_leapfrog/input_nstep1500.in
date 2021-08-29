@@ -6,8 +6,8 @@
  chop_side = F
  phiinit = 0.001 ! 1.0
  !restart_file = "restart.nc"
- restart_dir = "restart"
- ginit_option = "default" ! Changed from "many"
+ restart_dir = "restart_nstep1500_from_restart"
+ ginit_option = "many" ! "default" ! Changed from "many"
  width0 = 1.0
 /
 &millergeo_parameters
@@ -69,10 +69,10 @@
  fphi = 1.0
  fapar = 0.0
  fbpar = 0.0
- !delt_option = "check_restart"   ! Bob: Want to change . . .	
+ delt_option = "check_restart"   ! Bob: Want to change . . .	
  !t_end = 1000   ! Bob: Want to change . . .
  delt = 0.05  ! Bob: Added this
- nstep = 1500
+ nstep = 15200
  cfl_cushion = 0.50
  mat_read = .false.
  mat_gen = .false.
@@ -80,9 +80,9 @@
  leapfrog_nonlinear = .true.
 /
 &stella_diagnostics_knobs
- nwrite = 50   
- nsave = 500   
- save_for_restart = .true.
+ nwrite = 1   
+ nsave = 50   
+ save_for_restart = .false.
  write_omega = .true.
  write_kspectra = .true.
  write_phi_vs_time = .true.
