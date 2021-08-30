@@ -72,20 +72,20 @@
  !delt_option = "check_restart"   ! Bob: Want to change . . .	
  !t_end = 1000   ! Bob: Want to change . . .
  delt = 0.05  ! Bob: Added this
- nstep = 20000
- cfl_cushion = 0.50
+ nstep = 40000
+ cfl_cushion = 0.25 ! 0.50
  mat_read = .false.
  mat_gen = .false.
  LU_option = 'local'
  leapfrog_nonlinear = .true.
 /
 &stella_diagnostics_knobs
- nwrite = 15   
+ nwrite = 55   
  nsave = 5000   
  save_for_restart = .true.
  write_omega = .false.
- write_kspectra = .false.
- write_phi_vs_time = .true.
+ write_kspectra = .true.
+ write_phi_vs_time = .false.
  write_gvmus = .false.
  write_moments = .false.
  write_gzvs = .false.
