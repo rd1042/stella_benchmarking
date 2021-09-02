@@ -3,6 +3,7 @@
 import sys
 sys.path.append("../postprocessing_tools")
 from plotting_helper import make_beta_scan_plots, make_comparison_plots, plot_gmvus, plot_gzvs
+from plotting_helper import make_comparison_plots_for_poster
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 from extract_sim_data import find_bpar_phi_ratio, find_apar_phi_ratio
 import matplotlib.pyplot as plt
@@ -75,15 +76,23 @@ sim_gs2_b003_fbpar0 = "gs2_beta_scan_fbpar0/_0.0030"
 sim_gs2_b004_fbpar0 = "gs2_beta_scan_fbpar0/_0.0040"
 sim_gs2_b005_fbpar0 = "gs2_beta_scan_fbpar0/_0.0050"
 sim_gs2_b01_fbpar0 = "gs2_beta_scan_fbpar0/_0.0100"
+sim_gs2_b03 = "gs2_beta0.03/_0.0300"
+sim_gs2_b01 = "gs2_beta0.01/_0.0100"
+sim_gs2_b03_fbpar0 = "gs2_beta0.03_fbpar0/_0.0300"
+sim_gs2_b03_fapar0 = "gs2_beta0.03_fapar0/_0.0300"
 
 ## fapar=1, fbpar=1
 sim_st_b0 = "stella_beta0.000/input"
 sim_st_b005 = "stella_beta0.005/input"
 sim_st_b01 = "stella_beta0.010/input"
+sim_st_b01_fbpar0_new = "stella_fapar1_fbpar0_beta_scan/beta_0.01000"
 sim_st_b015 = "stella_beta0.015/input"
 sim_st_b02 = "stella_beta0.020/input"
 sim_st_b025 = "stella_beta0.025/input"
-sim_st_b03 = "stella_beta0.030/input"
+#sim_st_b03 = "stella_beta0.030/input"
+sim_st_b03 = "stella_beta0.03/beta_0.03000"
+sim_st_b03_fapar0 = "stella_beta0.03_fapar0/beta_0.03000"
+sim_st_b03_fbpar0 = "stella_beta0.03_fbpar0/beta_0.03000"
 
 ## The pickled files summarising G2 beta scans
 pickle_gs2 = "gs2_beta_scan/omega_values.pickle"
@@ -198,6 +207,47 @@ def analyse_fbpar0_beta0001_results():
                            plot_format=".png"
                            )
     compare_omega_for_fbpar0_changing_streaming_and_drive()
+
+    return
+
+def analyse_results_for_poster():
+    """Compare sims, all with fbpar=1, fapar=1, beta=0.01, for which
+    we try turning on and off different knobs."""
+
+    make_comparison_plots_for_poster([
+                           sim_st_b01,
+                           sim_gs2_b01
+                           ],
+                          [
+                           "stella",
+                           "GS2"
+                           ],
+                          "images/beta_0.01_poster.eps",
+                          sim_types=[
+                                     "stella",
+                                     "gs2"
+                                     ],
+
+                           )
+
+    make_comparison_plots_for_poster([
+                            sim_st_b03,
+                            sim_gs2_b03,
+                         ],
+                        [
+                         "stella",
+                         "gs2",
+                         ],
+                        IMAGE_DIR + "beta=0.03_poster.eps",
+                        sim_types=[
+                                   "stella",
+                                   "gs2",
+                                   ],
+
+                         )
+
+
+    #compare_omega_for_fbpar0_changing_streaming_and_drive()
 
     return
 
@@ -351,7 +401,7 @@ def analyse_fapar0_changing_vpares():
     # plot_gmvus("stella_beta0.010_fapar0_higher_vpa/input.out.nc", which="gvpa")
     return
 
-def plot_geometry():
+def plot_g():
     """ """
     stella_outnc_longname = "stella_beta0.001_fbpar0/input.out.nc"
     gs2_outnc_longname = "gs2_beta_scan_fbpar0/_0.0010.out.nc"
@@ -397,26 +447,36 @@ def plot_geometry():
     #
     # plt.show()
 
-    ## Code to compare geometry between stella and gs2
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(211)
-    # ax2 = fig.add_subplot(212)
-    # ax1.plot(z, gds2)
-    # ax1.plot(z, gds21)
-    # ax1.plot(z, gds22)
-    # ax2.plot(z, bmag)
-    # ax2.plot(z, gradpar)
-    #
-    # theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(gs2_outnc_longname,
-    #                                 'theta', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
-    # ax1.plot(theta, gds2, linestyle="-.")
-    # ax1.plot(theta, gds21, linestyle="-.")
-    # ax1.plot(theta, gds22, linestyle="-.")
-    # ax2.plot(theta, bmag, linestyle="-.")
-    # ax2.plot(theta, gradpar, linestyle="-.")
-    #
-    #
-    # plt.show()
+    return
+
+def plot_geometry():
+    """ """
+    stella_outnc_longname = "stella_beta0.001_fbpar0/input.out.nc"
+    gs2_outnc_longname = "gs2_beta_scan_fbpar0/_0.0010.out.nc"
+
+    z, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(stella_outnc_longname,
+                                    'zed', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+
+    # Code to compare geometry between stella and gs2
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+    ax1.plot(z, gds2)
+    ax1.plot(z, gds21)
+    ax1.plot(z, gds22)
+    ax2.plot(z, bmag)
+    ax2.plot(z, gradpar)
+
+    theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(gs2_outnc_longname,
+                                    'theta', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+    ax1.plot(theta, gds2, linestyle="-.")
+    ax1.plot(theta, gds21, linestyle="-.")
+    ax1.plot(theta, gds22, linestyle="-.")
+    ax2.plot(theta, bmag, linestyle="-.")
+    ax2.plot(theta, gradpar, linestyle="-.")
+
+
+    plt.show()
 
     return
 
@@ -582,6 +642,106 @@ def compare_omega_for_fbpar0_changing_streaming_and_drive():
                          plot_bpar=False,
                          plot_format=".png", show_fig=True
                          )
+
+def compare_beta03():
+    """ """
+    make_comparison_plots([
+                            sim_st_b03,
+                            sim_gs2_b03,
+                         ],
+                        [
+                         "stella",
+                         "gs2",
+                         ],
+                        IMAGE_DIR + "beta=0.03",
+                        sim_types=[
+                                   "stella",
+                                   "gs2",
+                                   ],
+                         plot_apar=True,
+                         plot_bpar=True,
+                         plot_format=".png", show_fig=False
+                         )
+
+def compare_beta03():
+    """ """
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212, sharex=ax1)
+
+    sim_gs2_b03_outnc = sim_gs2_b03 + ".out.nc"
+    theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(sim_gs2_b03_outnc,
+                                    'theta', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+    ax1.plot(theta/np.pi, gds2, c="black")
+    ax1.plot(theta/np.pi, gds21, ls="--", c="black")
+    ax1.plot(theta/np.pi, gds22, ls="-.", c="black")
+    ax2.plot(theta/np.pi, bmag, c="black")
+    ax2.plot(theta/np.pi, gradpar, ls="--", c="black")
+
+    sim_st_b03_outnc = sim_st_b03 + ".out.nc"
+    theta, gds2, gds21, gds22, bmag, gradpar = extract_data_from_ncdf(sim_st_b03_outnc,
+                                    'zed', 'gds2', 'gds21', 'gds22', 'bmag', 'gradpar')
+    ax1.plot(theta/np.pi, gds2, c="red")
+    ax1.plot(theta/np.pi, gds21, ls="--", c="red")
+    ax1.plot(theta/np.pi, gds22, ls="-.", c="red")
+    ax2.plot(theta/np.pi, bmag, c="red")
+    ax2.plot(theta/np.pi, gradpar, ls="--", c="red")
+
+    plt.show()
+
+    make_comparison_plots([
+                            sim_st_b03,
+                            sim_gs2_b03,
+                         ],
+                        [
+                         "stella",
+                         "gs2",
+                         ],
+                        IMAGE_DIR + "beta=0.03",
+                        sim_types=[
+                                   "stella",
+                                   "gs2",
+                                   ],
+                         plot_apar=True,
+                         plot_bpar=True,
+                         plot_format=".png", show_fig=False
+                         )
+    make_comparison_plots([
+                            sim_st_b03_fbpar0,
+                            sim_gs2_b03_fbpar0,
+                         ],
+                        [
+                         "stella",
+                         "gs2",
+                         ],
+                        IMAGE_DIR + "beta=0.03_fbpar0",
+                        sim_types=[
+                                   "stella",
+                                   "gs2",
+                                   ],
+                         plot_apar=True,
+                         plot_bpar=False,
+                         plot_format=".png", show_fig=False
+                         )
+    make_comparison_plots([
+                            sim_st_b03_fapar0,
+                            sim_gs2_b03_fapar0,
+                         ],
+                        [
+                         "stella",
+                         "gs2",
+                         ],
+                        IMAGE_DIR + "beta=0.03_fapar0",
+                        sim_types=[
+                                   "stella",
+                                   "gs2",
+                                   ],
+                         plot_apar=False,
+                         plot_bpar=True,
+                         plot_format=".png", show_fig=False
+                         )
+    return
 
 def plot_g_for_fbpar0_different_terms_off():
     """Take a look at the distribrution function for
@@ -785,6 +945,7 @@ if __name__ == "__main__":
 
     #analyse_fbpar0_results()
     # plot_beta_scans()
+    analyse_results_for_poster()
     # plot_geometry()
     # make_low_beta_fbpar0_plots()
     # analyse_fapar0_results()
@@ -794,7 +955,9 @@ if __name__ == "__main__":
     #plot_gzvs_for_fbpar0()
     # plot_fapar0()
     #plot_fbpar0()
-    plot_fapar_fbpar_on()
+    # plot_fapar_fbpar_on()
+    #plot_geometry()
+    #compare_beta03()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
     #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()

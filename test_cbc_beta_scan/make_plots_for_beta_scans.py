@@ -3,6 +3,7 @@
 import sys
 sys.path.append("../postprocessing_tools")
 from plotting_helper import make_comparison_plots, plot_gmvus, plot_gzvs, make_beta_scan_plots
+from plotting_helper import make_beta_scan_plots_for_poster
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -94,7 +95,21 @@ def plot_stella_scan_vs_gs2_pickle():
                         gs2_pickle="gs2_beta_scan/omega_values.pickle")
     return
 
+def plot_stella_scan_vs_gs2_pickle_for_poster():
+    """ """
+
+    stella_beta, stella_longnames = get_sim_longnames(stella_fapar1_fbpar1_folder)
+    # print("stella_longnames = ", stella_longnames)
+    # print("stella_beta = ", stella_beta)
+    # sys.exit()
+    make_beta_scan_plots_for_poster(stella_longnames, stella_beta, "images/beta_scan_fbpar1_fbpar1_poster.png",
+                        gs2_pickle="gs2_beta_scan/omega_values.pickle")
+    return
+
+
+
 
 if __name__ == "__main__":
     # plot_different_beta_scans()
-    plot_stella_scan_vs_gs2_pickle()
+    # plot_stella_scan_vs_gs2_pickle()
+    plot_stella_scan_vs_gs2_pickle_for_poster()

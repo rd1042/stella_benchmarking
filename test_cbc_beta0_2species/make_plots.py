@@ -3,6 +3,7 @@
 import sys
 sys.path.append("../postprocessing_tools")
 from plotting_helper import make_comparison_plots, plot_gmvus, plot_gzvs
+from plotting_helper import make_comparison_plots_leapfrog_poster
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,6 +68,7 @@ stella_adiabatic_m10_leapfrog_drifts_longname = "stella_adiabatic_leapfrog_drift
 stella_nperiod5_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5"
 stella_nperiod3_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input"
 stella_dt0005_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5_dt0005"
+stella_dt00025_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5_dt00025"
 
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_rmaj10_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj10"
@@ -818,47 +820,64 @@ def debug_flip_flop():
 
 def compare_stella_leapfrog_gs2():
     """ """
-    make_comparison_plots([
-            stella_nperiod5_longname,
-            stella_nperiod5_leapfrog_drifts_longname,
-            gs2_basecase_longname,
-                    ],
-                    [
-                    "stella (Lie)",
-                    "stella (Leapfrog drifts)",
-                    "GS2",
-                    ],
-                    "./test_cbc_beta0_2species_stella_leapfrog",
-                    sim_types=[
-                    "stella",
-                    "stella",
-                    "gs2",
-                    ],
-                    plot_format=".eps")
 
     make_comparison_plots([
             stella_nperiod5_longname,
-            stella_nperiod3_leapfrog_drifts_longname,
             stella_nperiod5_leapfrog_drifts_longname,
-            stella_dt0005_leapfrog_drifts_longname,
+            #stella_nperiod3_leapfrog_drifts_longname,
+            #stella_dt0005_leapfrog_drifts_longname,
+            #stella_dt00025_leapfrog_drifts_longname,
             gs2_basecase_longname,
                     ],
                     [
                     "stella (Lie)",
                     "stella (Leapfrog drifts)",
-                    "stella (Leapfrog drifts, np=3)",
-                    "stella (Leapfrog drifts, dt=5E-3)",
+                    #"stella (Leapfrog drifts, np=3)",
+                    #"stella (Leapfrog drifts, dt=5E-3)",
+                    #"stella (Leapfrog drifts, dt=2.5E-3)",
                     "GS2",
                     ],
                     "./test_cbc_beta0_2species_stella_leapfrog",
                     sim_types=[
                     "stella",
                     "stella",
-                    "stella",
-                    "stella",
+                    #"stella",
+                    #"stella",
+                    #"stella",
                     "gs2",
                     ],
                     plot_format=".eps")
+    return
+
+def compare_stella_leapfrog_gs2_poster():
+    """ """
+
+    make_comparison_plots_leapfrog_poster([
+            stella_nperiod5_longname,
+            stella_nperiod5_leapfrog_drifts_longname,
+            #stella_nperiod3_leapfrog_drifts_longname,
+            #stella_dt0005_leapfrog_drifts_longname,
+            #stella_dt00025_leapfrog_drifts_longname,
+            gs2_basecase_longname,
+                    ],
+                    [
+                    "stella (Lie splitting)",
+                    "stella (Multipstep splitting)",
+                    #"stella (Leapfrog drifts, np=3)",
+                    #"stella (Leapfrog drifts, dt=5E-3)",
+                    #"stella (Leapfrog drifts, dt=2.5E-3)",
+                    "GS2",
+                    ],
+                    "./poster_leapfrog",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    #"stella",
+                    #"stella",
+                    #"stella",
+                    "gs2",
+                    ],
+                    )
     return
 
 def compare_stella_leapfrog_gs2_adiabatic():
@@ -929,8 +948,9 @@ if __name__ == "__main__":
     # plot_noupwind_different_numerical_schemes()
     # plot_noupwind_dt_variation()
     # plot_phit_noupwind_flip_flop()
-    compare_stella_leapfrog_gs2()
-    compare_stella_leapfrog_gs2_adiabatic()
+    #compare_stella_leapfrog_gs2()
+    compare_stella_leapfrog_gs2_poster()
+    #compare_stella_leapfrog_gs2_adiabatic()
     #debug_flip_flop()
     #plot_noupwind_flipflop()
     #plot_stella_gs2_nperiod5()

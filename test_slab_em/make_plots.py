@@ -170,6 +170,15 @@ def benchmark_stella_vs_mandell():
         find_ksaw_properties(file_longname)
     return
 
+def benchmark_stella_vs_mandell2():
+    """ """
+    phi_vs_t_longnames = glob.glob("mandell_sims_supermassive_ions/*.pickle")
+
+    for file_longname in phi_vs_t_longnames:
+        print("file_longname = ", file_longname)
+        find_ksaw_properties(file_longname)
+    return
+
 def examine_second_sim():
     """ """
     examine_sim_output(mandell_beta1_kperp1_long_t_marconi)
@@ -179,4 +188,5 @@ if __name__ == "__main__":
     print("Hello world")
     # examine_first_sim()
     # examine_second_sim()
-    benchmark_stella_vs_mandell()
+    # benchmark_stella_vs_mandell()
+    benchmark_stella_vs_mandell2()

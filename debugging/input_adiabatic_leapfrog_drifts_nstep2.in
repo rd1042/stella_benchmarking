@@ -1,7 +1,7 @@
 &zgrid_parameters
- nzed = 64 ! 64
+ nzed = 24
  ntubes = 1
- nperiod = 2 ! 4
+ nperiod = 4
  boundary_option="default"
 /
 
@@ -35,15 +35,15 @@
 
 &parameters
  zeff = 1.0
- beta = 0.001
+ beta = 0.00
  vnew_ref = 0.01
  rhostar = 0.01
 /
 
 &vpamu_grids_parameters
- nvgrid = 8 ! 36
- nmu = 8 ! 24
- vpa_max = 2.5
+ nvgrid = 12
+ nmu = 8
+ vpa_max = 2.5 
  vperp_max = 2.5
 /
 
@@ -66,7 +66,7 @@
 
 &init_g_knobs
  chop_side = F
- phiinit=   0.001
+ phiinit=   0.01
  restart_file = "nc/example.nc"
  ginit_option= "default"
  width0 = 1.0
@@ -74,18 +74,17 @@
 
 &knobs
  fphi =   1.0
- fapar =  1.0
+ fapar =  0.0
  fbpar = 0.0
- stream_implicit = .false. 
- mirror_implicit = .false.
  zed_upwind = 0.02
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 500
+ nstep = 2
+ leapfrog_drifts = .true.
 /
 &species_knobs
- nspec= 2
+ nspec= 1
  species_option = 'stella'
 /
 &species_parameters_1
@@ -93,19 +92,9 @@
  mass=   1.0
  dens=   1.0
  temp=   1.0
- tprim = 0.0 ! 2.537 ! Changed from 2.49
- fprim = 0.0 ! 0.809 ! Changed from 0.8
+ tprim = 2.537 ! Changed from 2.49
+ fprim = 0.809 ! Changed from 0.8
  type='ion'
-/
-
-&species_parameters_2
- z=     -1.0
- mass=   0.00028 ! Changed from 2.7e-4
- dens=   1.0
- temp=   1.0
- tprim = 0.0 ! 2.537 ! Changed from 2.49
- fprim = 0.0 ! 0.809 ! Changed from 0.8
- type='electron'
 /
 
 &stella_diagnostics_knobs
@@ -113,7 +102,7 @@
  nsave = 3000 
  save_for_restart = .false.
  write_omega = .true.
- write_phi_vs_time = .true.
+ write_phi_vs_time = .false.
  write_gvmus = .false.
  write_gzvs = .false.
 /

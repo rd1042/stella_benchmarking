@@ -38,7 +38,8 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
 
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
-def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_format=".eps"):
+def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_format=".eps",
+                linewidth=1.0, linestyleoveride=False):
     """ """
 
     theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
@@ -59,12 +60,16 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_for
     ## Normalise s.t. max(abs_phi) = 1
     abs_phi = abs_phi/np.max(abs_phi)
     # Plot
-    linestyle=next(linestyles2)
-    ax1.plot(theta/np.pi, abs_phi, label=sim_label, ls=linestyle)
+    if not linestyleoveride:
+        linestyle=next(linestyles2)
+    else:
+        linestyle = linestyleoveride
+    ax1.plot(theta/np.pi, abs_phi, label=sim_label, ls=linestyle, lw=linewidth)
 
     return
 
-def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
+def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", linewidth=1.0,
+             linestyleoveride=False):
     """ """
 
     theta, real_apar, imag_apar = get_aparz_data(sim_longname, sim_type)
@@ -85,8 +90,11 @@ def plot_apar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     ## Normalise s.t. max(abs_apar) = 1
     abs_apar = abs_apar/np.max(abs_apar)
     # Plot
-    linestyle=next(linestyles2)
-    ax1.plot(theta/np.pi, abs_apar, label=sim_label, ls=linestyle)
+    if not linestyleoveride:
+        linestyle=next(linestyles2)
+    else:
+        linestyle = linestyleoveride
+    ax1.plot(theta/np.pi, abs_apar, label=sim_label, ls=linestyle, lw=linewidth)
 
     return
 
@@ -112,6 +120,7 @@ def plot_bpar_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella"):
     abs_bpar = abs_bpar/np.max(abs_bpar)
     # Plot
     linestyle=next(linestyles2)
+
     ax1.plot(theta/np.pi, abs_bpar, label=sim_label, ls=linestyle)
 
     return
@@ -221,6 +230,199 @@ def make_comparison_plots(sim_longnames, sim_labels, save_name, sim_types=[],
         if not show_fig:
             fig4.savefig(save_name + "_bpar" + plot_format)
             plt.close(fig4)
+    return
+
+def make_comparison_plots_for_poster(sim_longnames, sim_labels, save_name, sim_types=[],
+                          ):
+    """Compare multiple simulations which have a single common input. Create the following
+    plots:
+    1) omega(t)
+    2) Normalised |phi|(z)
+    """
+
+    mylinewidth = 4.
+    myaxlabelsize = 50.
+    mylegendsize = 26.
+    mylabelsize = 40.
+    mymarkersize = 20.
+
+    ## Plot of omega(t)
+    fig1 = plt.figure(figsize=[10, 12])
+    ax11 = fig1.add_subplot(211)
+    ax12 = fig1.add_subplot(212, sharex=ax11)
+
+    ## Plot of |phi|(t)
+    fig2 = plt.figure(figsize=[8, 8])
+    ax21 = fig2.add_subplot(111)
+    fig3 = plt.figure(figsize=[8, 8])
+    ax31 = fig3.add_subplot(111)
+    gamma_vals = []
+    freq_vals = []
+
+    gamma_llims = []
+    gamma_ulims = []
+    freq_llims = []
+    freq_ulims = []
+
+    [stella_longname, gs2_longname] = sim_longnames
+    linestyleoverides = ["-", "-."]
+    for sim_idx, sim_longname in enumerate(sim_longnames):
+        sim_label = sim_labels[sim_idx]
+        # Find out the sim types - if sim_types kwarg not specified,
+        # assume all stella
+        if len(sim_types) == 0:
+            sim_type="stella"
+        elif len(sim_types) == len(sim_longnames):
+            sim_type = sim_types[sim_idx]
+        else:
+            print("Error! len(sim_longnames), len(sim_types) = ", len(sim_longnames), len(sim_types) )
+            sys.exit()
+        gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
+            freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
+        plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type, linewidth=mylinewidth, linestyleoveride=linestyleoverides[sim_idx])
+        apar_ratio = find_apar_phi_ratio(sim_longname, sim_type)
+        print("sim_longname, apar ratio = ", sim_longname, apar_ratio)
+        plot_apar_z_for_sim(ax31, sim_longname, sim_label, sim_type=sim_type, linewidth=mylinewidth, linestyleoveride=linestyleoverides[sim_idx])
+
+
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
+                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
+            gamma_llims.append(gamma_llim)
+            gamma_ulims.append(gamma_ulim)
+            freq_llims.append(freq_llim)
+            freq_ulims.append(freq_ulim)
+            gamma_vals.append(gammaom_final)
+            freq_vals.append(freqom_final)
+
+    ## Set lims based on sim data
+    gamma_llim = np.min(np.array(gamma_llims))/1.1
+    gamma_ulim = np.max(np.array(gamma_ulims))*1.1
+    freq_llim = np.min(np.array(freq_llims))/1.1
+    freq_ulim = np.max(np.array(freq_ulims))*1.1
+    ax11.set_ylim(freq_llim, freq_ulim)
+    ax12.set_ylim(gamma_llim, gamma_ulim)
+    ax21.set_ylim(-0.05, 1.05)
+    ax12.set_xlabel(r"$t$", fontsize=myaxlabelsize)
+    ax11.set_ylabel(r"$\omega$", fontsize=myaxlabelsize)
+    ax12.set_ylabel(r"$\gamma$", fontsize=myaxlabelsize)
+    ax21.set_xlabel(r"$\theta/\pi$", fontsize=myaxlabelsize)
+    ax21.set_ylabel(r"$\vert \phi \vert$", fontsize=myaxlabelsize)
+    axes = [ax11, ax12, ax21]
+    axes.append(ax31)
+    ax31.set_ylim(-0.05, 1.05)
+    ax31.set_xlabel(r"$\theta/\pi$", fontsize=myaxlabelsize)
+    ax31.set_ylabel(r"$\vert A_\parallel \vert$", fontsize=myaxlabelsize)
+
+    ax21.legend(loc="upper right", fontsize=mylegendsize)
+
+
+    for ax in axes:
+        ax.grid(True)
+        #ax.legend(loc="best")
+        ax.tick_params(axis='both', which='major', labelsize=mylabelsize, direction="in")
+        ax.tick_params(axis='both', which='minor', direction="in")
+
+    for fig in [fig1, fig2, fig3]:
+        fig.tight_layout()
+
+    fig1.savefig(save_name + "_omega" + ".eps")
+    fig2.savefig(save_name + "_phi" + ".eps")
+    plt.close(fig1)
+    plt.close(fig2)
+    fig3.savefig(save_name + "_apar" + ".eps")
+    plt.close(fig3)
+    return
+
+def make_comparison_plots_leapfrog_poster(sim_longnames, sim_labels, save_name, sim_types=[],
+                          ):
+    """Compare multiple simulations which have a single common input. Create the following
+    plots:
+    1) omega(t)
+    2) Normalised |phi|(z)
+    """
+
+    mylinewidth = 3.
+    myaxlabelsize = 50.
+    mylegendsize = 20.
+    mylabelsize = 40.
+    mymarkersize = 20.
+
+    ## Plot of omega(t)
+    fig1 = plt.figure(figsize=[10, 12])
+    ax11 = fig1.add_subplot(211)
+    ax12 = fig1.add_subplot(212, sharex=ax11)
+
+    ## Plot of |phi|(t)
+    fig2 = plt.figure(figsize=[12, 12])
+    ax21 = fig2.add_subplot(111)
+    gamma_vals = []
+    freq_vals = []
+
+    gamma_llims = []
+    gamma_ulims = []
+    freq_llims = []
+    freq_ulims = []
+
+    linestyleoverides = ["-", "--", "-."]
+    for sim_idx, sim_longname in enumerate(sim_longnames):
+        sim_label = sim_labels[sim_idx]
+        # Find out the sim types - if sim_types kwarg not specified,
+        # assume all stella
+        if len(sim_types) == 0:
+            sim_type="stella"
+        elif len(sim_types) == len(sim_longnames):
+            sim_type = sim_types[sim_idx]
+        else:
+            print("Error! len(sim_longnames), len(sim_types) = ", len(sim_longnames), len(sim_types) )
+            sys.exit()
+        gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
+            freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
+        plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type, linewidth=mylinewidth, linestyleoveride=linestyleoverides[sim_idx])
+
+
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
+                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
+            gamma_llims.append(gamma_llim)
+            gamma_ulims.append(gamma_ulim)
+            freq_llims.append(freq_llim)
+            freq_ulims.append(freq_ulim)
+            gamma_vals.append(gammaom_final)
+            freq_vals.append(freqom_final)
+
+    ## Set lims based on sim data
+    gamma_llim = np.min(np.array(gamma_llims))/1.1
+    gamma_ulim = np.max(np.array(gamma_ulims))*1.1
+    freq_llim = np.min(np.array(freq_llims))/1.1
+    freq_ulim = np.max(np.array(freq_ulims))*1.1
+    ax11.set_ylim(freq_llim, freq_ulim)
+    ax12.set_ylim(gamma_llim, gamma_ulim)
+    ax21.set_ylim(-0.05, 1.05)
+    ax21.set_xlim(-6, 6)
+    ax12.set_xlabel(r"$t$", fontsize=myaxlabelsize)
+    ax11.set_ylabel(r"$\omega$", fontsize=myaxlabelsize)
+    ax12.set_ylabel(r"$\gamma$", fontsize=myaxlabelsize)
+    ax21.set_xlabel(r"$\theta/\pi$", fontsize=myaxlabelsize)
+    ax21.set_ylabel(r"$\vert \phi \vert$", fontsize=myaxlabelsize)
+    axes = [ax11, ax12, ax21]
+
+    ax21.legend(loc="upper right", fontsize=mylegendsize)
+
+
+    for ax in axes:
+        ax.grid(True)
+        #ax.legend(loc="best")
+        ax.tick_params(axis='both', which='major', labelsize=mylabelsize, direction="in")
+        ax.tick_params(axis='both', which='minor', direction="in")
+
+    for fig in [fig1, fig2]:
+        fig.tight_layout()
+
+    fig1.savefig(save_name + "_omega" + ".eps")
+    fig2.savefig(save_name + "_phi" + ".eps")
+    plt.close(fig1)
+    plt.close(fig2)
     return
 
 
@@ -353,6 +555,74 @@ def make_beta_scan_plots(stella_longnames, gs2_longnames, beta_vals, save_name,
 
     return
 
+
+def make_beta_scan_plots_for_poster(stella_longnames, beta_vals, save_name,
+                         gs2_pickle=None):
+    """Construct beta scans in the case where we have a set of stella sims and a
+    set of GS2 sims."""
+    mylinewidth = 6.
+    myaxlabelsize = 60.
+    mylegendsize = 40.
+    mylabelsize = 40.
+    mymarkersize = 20.
+
+    ## Plot of omega(beta)
+    fig2 = plt.figure(figsize=[14, 12])
+    ax21 = fig2.add_subplot(211)
+    ax22 = fig2.add_subplot(212, sharex=ax21)
+    gamma_vals = []
+    freq_vals = []
+    final_beta_vals = []
+
+    stella_gamma_vals = []
+    stella_freq_vals = []
+    gs2_gamma_vals = []
+    gs2_freq_vals = []
+
+    for sim_idx, stella_longname in enumerate(stella_longnames):
+        ## Plot of omega(t)
+
+        time, freqom_final, gammaom_final, freqom, gammaom, gamma_stable = get_omega_data(stella_longname, "stella")
+        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)):
+            stella_gamma_vals.append(gammaom_final)
+            stella_freq_vals.append(freqom_final)
+            final_beta_vals.append(beta_vals[sim_idx])
+
+    ax21.plot(final_beta_vals, stella_freq_vals, label="stella", lw=mylinewidth)
+    ax22.plot(final_beta_vals, stella_gamma_vals, label="stella", lw=mylinewidth)
+    # ax21.scatter(final_beta_vals, stella_freq_vals, c="black", s=mymarkersize, marker="x")
+    # ax22.scatter(final_beta_vals, stella_gamma_vals, c="black", s=mymarkersize, marker="x")
+
+    myfile = open(gs2_pickle, 'rb')
+    gs2_dict = pickle.load(myfile)  # contains 'beta', 'frequency', 'growth rate'
+    myfile.close()
+    gs2_beta = gs2_dict['beta']; gs2_frequency=gs2_dict['frequency']; gs2_growth_rate = gs2_dict['growth rate']
+    # Sort the beta vals into ascending order
+    gs2_beta = np.array(gs2_beta).flatten()
+    sort_idxs = np.argsort(gs2_beta)
+    gs2_beta = np.array(gs2_beta)[sort_idxs]
+    gs2_frequency = np.array(gs2_frequency)[sort_idxs]
+    gs2_growth_rate = np.array(gs2_growth_rate)[sort_idxs]
+    ax21.plot(gs2_beta, gs2_frequency, label="GS2", lw=mylinewidth)
+    ax22.plot(gs2_beta, gs2_growth_rate, label="GS2", lw=mylinewidth)
+
+    ax21.set_ylabel(r"$\omega(a/v_{th,r})$", fontsize=myaxlabelsize)
+    ax22.set_ylabel(r"$\gamma(a/v_{th,r})$", fontsize=myaxlabelsize)
+    ax22.set_xlabel(r"$\beta$", fontsize=myaxlabelsize)
+
+    ax22.legend(loc="best", fontsize=mylegendsize)
+    for ax in [ax21, ax22]:
+        ax.set_xlim([-0.001, 0.05])
+        ax.grid(True)
+        ax.tick_params(axis='both', which='major', labelsize=mylabelsize, direction="in")
+        ax.tick_params(axis='both', which='minor', direction="in")
+
+    fig2.tight_layout()
+    fig2.savefig(save_name)
+    plt.close(fig2)
+
+    return
+
 def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
                          gs2_pickle=None,  plot_apar=False, plot_bpar=False, plot_format=".eps"):
     """Construct ky scans in the case where we have a set of stella sims and a
@@ -443,7 +713,6 @@ def make_ky_scan_plots(stella_longnames, gs2_longnames, ky_vals, save_name,
     plt.close(fig2)
 
     return
-
 
 def plot_gmvus(stella_outnc_longname, which="gvpa", plot_gauss_squared=False,
                 stretch_electron_vpa=False):
