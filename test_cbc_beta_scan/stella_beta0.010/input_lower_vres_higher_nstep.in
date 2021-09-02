@@ -35,14 +35,14 @@
 
 &parameters
  zeff = 1.0
- beta = 0.0140
+ beta = 0.01
  vnew_ref = 0.01
  rhostar = 0.01
 /
 
 &vpamu_grids_parameters
- nvgrid = 24
- nmu = 12
+ nvgrid = 24 ! 36
+ nmu = 16 ! 24
  vpa_max = 3.0
 /
 
@@ -66,10 +66,10 @@
 &init_g_knobs
  chop_side = F
  phiinit=   0.001
- restart_file = "nc/example.nc"
+ !restart_file = "nc/example.nc"
+ restart_dir = "restart"
  ginit_option= "default"
  width0 = 1.0
- restart_dir = "beta0.014_restart"
 /
 
 &knobs
@@ -82,7 +82,7 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 100000
+ nstep = 120000
 /
 &species_knobs
  nspec= 2
@@ -110,7 +110,7 @@
 
 &stella_diagnostics_knobs
  nwrite = 800
- nsave = 20000 
+ nsave = 10000 
  save_for_restart = .true.
  write_omega = .true.
  write_phi_vs_time = .false.

@@ -35,7 +35,7 @@
 
 &parameters
  zeff = 1.0
- beta = 0.0140
+ beta = 0.04400
  vnew_ref = 0.01
  rhostar = 0.01
 /
@@ -69,7 +69,6 @@
  restart_file = "nc/example.nc"
  ginit_option= "default"
  width0 = 1.0
- restart_dir = "beta0.014_restart"
 /
 
 &knobs
@@ -82,7 +81,7 @@
  time_upwind = 0.02
  vpa_upwind = 0.02
  delt = 0.03
- nstep = 100000
+ nstep = 30000
 /
 &species_knobs
  nspec= 2
@@ -109,9 +108,9 @@
 /
 
 &stella_diagnostics_knobs
- nwrite = 800
- nsave = 20000 
- save_for_restart = .true.
+ nwrite = 200
+ nsave = 10000 
+ save_for_restart = .false.
  write_omega = .true.
  write_phi_vs_time = .false.
  write_gvmus = .false.
