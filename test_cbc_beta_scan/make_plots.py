@@ -214,21 +214,21 @@ def analyse_results_for_poster():
     """Compare sims, all with fbpar=1, fapar=1, beta=0.01, for which
     we try turning on and off different knobs."""
 
-    make_comparison_plots_for_poster([
-                           sim_st_b01,
-                           sim_gs2_b01
-                           ],
-                          [
-                           "stella",
-                           "GS2"
-                           ],
-                          "images/beta_0.01_poster.eps",
-                          sim_types=[
-                                     "stella",
-                                     "gs2"
-                                     ],
-
-                           )
+    # make_comparison_plots_for_poster([
+    #                        sim_st_b01,
+    #                        sim_gs2_b01
+    #                        ],
+    #                       [
+    #                        "stella",
+    #                        "GS2"
+    #                        ],
+    #                       "images/beta_0.01_poster",
+    #                       sim_types=[
+    #                                  "stella",
+    #                                  "gs2"
+    #                                  ],
+    #
+    #                        )
 
     make_comparison_plots_for_poster([
                             sim_st_b03,
@@ -238,7 +238,7 @@ def analyse_results_for_poster():
                          "stella",
                          "gs2",
                          ],
-                        IMAGE_DIR + "beta=0.03_poster.eps",
+                        IMAGE_DIR + "beta=0.03_poster",
                         sim_types=[
                                    "stella",
                                    "gs2",

@@ -39,7 +39,7 @@ def plot_omega_t_for_sim(ax1, ax2, sim_longname, sim_label, sim_type="stella"):
     return gammaom_final, freqom_final, gamma_llim, gamma_ulim, freq_llim, freq_ulim
 
 def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_format=".eps",
-                linewidth=1.0, linestyleoveride=False):
+                linewidth=1.0, linestyleoveride=False, color=False):
     """ """
 
     theta, real_phi, imag_phi = get_phiz_data(sim_longname, sim_type)
@@ -64,7 +64,10 @@ def plot_phi_z_for_sim(ax1, sim_longname, sim_label, sim_type="stella", plot_for
         linestyle=next(linestyles2)
     else:
         linestyle = linestyleoveride
-    ax1.plot(theta/np.pi, abs_phi, label=sim_label, ls=linestyle, lw=linewidth)
+    if not color:
+        ax1.plot(theta/np.pi, abs_phi, label=sim_label, ls=linestyle, lw=linewidth)
+    else:
+        ax1.plot(theta/np.pi, abs_phi, label=sim_label, ls=linestyle, lw=linewidth,c=color)
 
     return
 
@@ -240,9 +243,9 @@ def make_comparison_plots_for_poster(sim_longnames, sim_labels, save_name, sim_t
     2) Normalised |phi|(z)
     """
 
-    mylinewidth = 4.
+    mylinewidth = 6.
     myaxlabelsize = 50.
-    mylegendsize = 26.
+    mylegendsize = 35.
     mylabelsize = 40.
     mymarkersize = 20.
 
@@ -314,11 +317,12 @@ def make_comparison_plots_for_poster(sim_longnames, sim_labels, save_name, sim_t
     ax31.set_xlabel(r"$\theta/\pi$", fontsize=myaxlabelsize)
     ax31.set_ylabel(r"$\vert A_\parallel \vert$", fontsize=myaxlabelsize)
 
-    ax21.legend(loc="upper right", fontsize=mylegendsize)
-
+    #ax21.legend(loc="upper right", fontsize=mylegendsize)
+    #ax21.legend(loc="upper left", fontsize=mylegendsize, fancybox=True, framealpha=0.5)
 
     for ax in axes:
         ax.grid(True)
+        ax.set_xlim(-6, 6)
         #ax.legend(loc="best")
         ax.tick_params(axis='both', which='major', labelsize=mylabelsize, direction="in")
         ax.tick_params(axis='both', which='minor', direction="in")
@@ -326,11 +330,11 @@ def make_comparison_plots_for_poster(sim_longnames, sim_labels, save_name, sim_t
     for fig in [fig1, fig2, fig3]:
         fig.tight_layout()
 
-    fig1.savefig(save_name + "_omega" + ".eps")
-    fig2.savefig(save_name + "_phi" + ".eps")
+    fig1.savefig(save_name + "_omega" + ".png")
+    fig2.savefig(save_name + "_phi" + ".png")
     plt.close(fig1)
     plt.close(fig2)
-    fig3.savefig(save_name + "_apar" + ".eps")
+    fig3.savefig(save_name + "_apar" + ".png")
     plt.close(fig3)
     return
 
@@ -342,27 +346,28 @@ def make_comparison_plots_leapfrog_poster(sim_longnames, sim_labels, save_name, 
     2) Normalised |phi|(z)
     """
 
-    mylinewidth = 3.
+    mylinewidths = [15., 9, 7]
+    mycols = ["black", "cyan", "red"]
     myaxlabelsize = 50.
-    mylegendsize = 20.
+    mylegendsize = 35
     mylabelsize = 40.
     mymarkersize = 20.
 
     ## Plot of omega(t)
-    fig1 = plt.figure(figsize=[10, 12])
-    ax11 = fig1.add_subplot(211)
-    ax12 = fig1.add_subplot(212, sharex=ax11)
+    #fig1 = plt.figure(figsize=[10, 12])
+    # ax11 = fig1.add_subplot(211)
+    # ax12 = fig1.add_subplot(212, sharex=ax11)
 
     ## Plot of |phi|(t)
-    fig2 = plt.figure(figsize=[12, 12])
+    fig2 = plt.figure(figsize=[17, 12])
     ax21 = fig2.add_subplot(111)
     gamma_vals = []
     freq_vals = []
 
-    gamma_llims = []
-    gamma_ulims = []
-    freq_llims = []
-    freq_ulims = []
+    # gamma_llims = []
+    # gamma_ulims = []
+    # freq_llims = []
+    # freq_ulims = []
 
     linestyleoverides = ["-", "--", "-."]
     for sim_idx, sim_longname in enumerate(sim_longnames):
@@ -376,38 +381,40 @@ def make_comparison_plots_leapfrog_poster(sim_longnames, sim_labels, save_name, 
         else:
             print("Error! len(sim_longnames), len(sim_types) = ", len(sim_longnames), len(sim_types) )
             sys.exit()
-        gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
-            freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
-        plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type, linewidth=mylinewidth, linestyleoveride=linestyleoverides[sim_idx])
+        # gammaom_final, freqom_final, gamma_llim, gamma_ulim, \
+        #     freq_llim, freq_ulim = plot_omega_t_for_sim(ax11, ax12, sim_longname, sim_label, sim_type=sim_type)
+        #print("Omega = ", freqom_final, gammaom_final )
+        plot_phi_z_for_sim(ax21, sim_longname, sim_label, sim_type=sim_type, linewidth=mylinewidths[sim_idx],
+                    linestyleoveride=linestyleoverides[sim_idx], color=mycols[sim_idx])
 
 
-        if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
-                and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
-                and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
-            gamma_llims.append(gamma_llim)
-            gamma_ulims.append(gamma_ulim)
-            freq_llims.append(freq_llim)
-            freq_ulims.append(freq_ulim)
-            gamma_vals.append(gammaom_final)
-            freq_vals.append(freqom_final)
+        # if (np.isfinite(gammaom_final) and np.isfinite(freqom_final)
+        #         and np.isfinite(gamma_llim) and np.isfinite(gamma_ulim)
+        #         and np.isfinite(freq_llim) and np.isfinite(freq_ulim) ):
+        #     gamma_llims.append(gamma_llim)
+        #     gamma_ulims.append(gamma_ulim)
+        #     freq_llims.append(freq_llim)
+        #     freq_ulims.append(freq_ulim)
+        #     gamma_vals.append(gammaom_final)
+        #     freq_vals.append(freqom_final)
 
     ## Set lims based on sim data
-    gamma_llim = np.min(np.array(gamma_llims))/1.1
-    gamma_ulim = np.max(np.array(gamma_ulims))*1.1
-    freq_llim = np.min(np.array(freq_llims))/1.1
-    freq_ulim = np.max(np.array(freq_ulims))*1.1
-    ax11.set_ylim(freq_llim, freq_ulim)
-    ax12.set_ylim(gamma_llim, gamma_ulim)
-    ax21.set_ylim(-0.05, 1.05)
+    # gamma_llim = np.min(np.array(gamma_llims))/1.1
+    # gamma_ulim = np.max(np.array(gamma_ulims))*1.1
+    # freq_llim = np.min(np.array(freq_llims))/1.1
+    # freq_ulim = np.max(np.array(freq_ulims))*1.1
+    # ax11.set_ylim(freq_llim, freq_ulim)
+    # ax12.set_ylim(gamma_llim, gamma_ulim)
+    ax21.set_ylim(-0.05, 1.19)
     ax21.set_xlim(-6, 6)
-    ax12.set_xlabel(r"$t$", fontsize=myaxlabelsize)
-    ax11.set_ylabel(r"$\omega$", fontsize=myaxlabelsize)
-    ax12.set_ylabel(r"$\gamma$", fontsize=myaxlabelsize)
+    # ax12.set_xlabel(r"$t$", fontsize=myaxlabelsize)
+    # ax11.set_ylabel(r"$\omega$", fontsize=myaxlabelsize)
+    # ax12.set_ylabel(r"$\gamma$", fontsize=myaxlabelsize)
     ax21.set_xlabel(r"$\theta/\pi$", fontsize=myaxlabelsize)
     ax21.set_ylabel(r"$\vert \phi \vert$", fontsize=myaxlabelsize)
-    axes = [ax11, ax12, ax21]
+    axes = [ax21]
 
-    ax21.legend(loc="upper right", fontsize=mylegendsize)
+    ax21.legend(loc="upper left", fontsize=mylegendsize, fancybox=True, framealpha=0.5)
 
 
     for ax in axes:
@@ -416,12 +423,12 @@ def make_comparison_plots_leapfrog_poster(sim_longnames, sim_labels, save_name, 
         ax.tick_params(axis='both', which='major', labelsize=mylabelsize, direction="in")
         ax.tick_params(axis='both', which='minor', direction="in")
 
-    for fig in [fig1, fig2]:
+    for fig in [fig2]:
         fig.tight_layout()
-
-    fig1.savefig(save_name + "_omega" + ".eps")
-    fig2.savefig(save_name + "_phi" + ".eps")
-    plt.close(fig1)
+    #plt.show()
+    #fig1.savefig(save_name + "_omega" + ".eps")
+    fig2.savefig(save_name + "_phi" + ".png")
+    #plt.close(fig1)
     plt.close(fig2)
     return
 

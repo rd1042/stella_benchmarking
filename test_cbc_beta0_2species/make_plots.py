@@ -861,12 +861,12 @@ def compare_stella_leapfrog_gs2_poster():
             gs2_basecase_longname,
                     ],
                     [
-                    "stella (Lie splitting)",
-                    "stella (Multipstep splitting)",
+                    r"Default scheme;$\Omega$=$0.12$+$0.14$i",
+                    r"Multipstep scheme;$\Omega$=$0.12$+$0.14$i",
                     #"stella (Leapfrog drifts, np=3)",
                     #"stella (Leapfrog drifts, dt=5E-3)",
                     #"stella (Leapfrog drifts, dt=2.5E-3)",
-                    "GS2",
+                    r"GS2;$\Omega$=$0.11$+$0.14$i",
                     ],
                     "./poster_leapfrog",
                     sim_types=[
