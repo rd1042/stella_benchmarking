@@ -79,8 +79,8 @@
  zed_upwind = 0.02
  time_upwind = 0.02
  vpa_upwind = 0.02
- delt = 0.1
- nstep = 2000
+ delt = 0.2
+ nstep = 500
  cfl_cushion = 1000.
  delt_adjust = 100000.
 /
@@ -109,7 +109,7 @@
 /
 
 &stella_diagnostics_knobs
- nwrite = 25
+ nwrite = 5
  nsave = 3000 
  save_for_restart = .false.
  write_omega = .true.
