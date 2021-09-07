@@ -2,7 +2,7 @@
 #SBATCH -N 1
 #SBATCH -A FUA35_STELTURB
 #SBATCH -p skl_fua_prod
-#SBATCH --time 20:00:00
+#SBATCH --time 5:00:00
 #SBATCH --job-name=stella
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=bob.davies@york.ac.uk
