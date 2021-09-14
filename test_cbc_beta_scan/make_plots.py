@@ -77,6 +77,7 @@ sim_gs2_b004_fbpar0 = "gs2_beta_scan_fbpar0/_0.0040"
 sim_gs2_b005_fbpar0 = "gs2_beta_scan_fbpar0/_0.0050"
 sim_gs2_b01_fbpar0 = "gs2_beta_scan_fbpar0/_0.0100"
 sim_gs2_b03 = "gs2_beta0.03/_0.0300"
+sim_gs2_b03_hvr = "gs2_beta0.03/_0.0300_higher_vres"
 sim_gs2_b01 = "gs2_beta0.01/_0.0100"
 sim_gs2_b03_fbpar0 = "gs2_beta0.03_fbpar0/_0.0300"
 sim_gs2_b03_fapar0 = "gs2_beta0.03_fapar0/_0.0300"
@@ -233,15 +234,18 @@ def analyse_results_for_poster():
     make_comparison_plots_for_poster([
                             sim_st_b03,
                             sim_gs2_b03,
+                            #sim_gs2_b03_hvr,
                          ],
                         [
                          "stella",
                          "gs2",
+                        # "gs2, hvr",
                          ],
                         IMAGE_DIR + "beta=0.03_poster",
                         sim_types=[
                                    "stella",
                                    "gs2",
+                                   #"gs2",
                                    ],
 
                          )
@@ -648,22 +652,25 @@ def compare_beta03():
     make_comparison_plots([
                             sim_st_b03,
                             sim_gs2_b03,
+                            sim_gs2_b03_hvr,
                          ],
                         [
                          "stella",
                          "gs2",
+                         "gs2, higher vres",
                          ],
                         IMAGE_DIR + "beta=0.03",
                         sim_types=[
                                    "stella",
                                    "gs2",
+                                   "gs2",
                                    ],
                          plot_apar=True,
                          plot_bpar=True,
-                         plot_format=".png", show_fig=False
+                         plot_format=".png", show_fig=True
                          )
 
-def compare_beta03():
+def compare_beta03_detailed():
     """ """
 
     fig = plt.figure()
@@ -945,7 +952,7 @@ if __name__ == "__main__":
 
     #analyse_fbpar0_results()
     # plot_beta_scans()
-    analyse_results_for_poster()
+    #analyse_results_for_poster()
     # plot_geometry()
     # make_low_beta_fbpar0_plots()
     # analyse_fapar0_results()
@@ -958,6 +965,7 @@ if __name__ == "__main__":
     # plot_fapar_fbpar_on()
     #plot_geometry()
     #compare_beta03()
+    compare_beta03_detailed()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
     #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()

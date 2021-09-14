@@ -5,6 +5,7 @@ sys.path.append("../postprocessing_tools")
 from plotting_helper import make_comparison_plots, plot_gmvus, plot_gzvs
 from plotting_helper import make_comparison_plots_leapfrog_poster
 from helper_ncdf import view_ncdf_variables, extract_data_from_ncdf
+from extract_sim_data import get_omega_data
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -78,13 +79,13 @@ stella_nperiod3_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_
 stella_dt0005_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5_dt0005"
 stella_dt00025_leapfrog_drifts_longname = "stella_cmiller_es_2species_leapfrog_drifts/input5_dt00025"
 # stella 2 species, leapfrog drifts, lower resolution, dt scan
-stella_lvr_leapfrog_drifts_dt02_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.2.in"
-stella_lvr_leapfrog_drifts_dt01_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.1.in"
-stella_lvr_leapfrog_drifts_dt007_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.07.in"
-stella_lvr_leapfrog_drifts_dt005_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.05.in"
-stella_lvr_leapfrog_drifts_dt002_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.02.in"
-stella_lvr_leapfrog_drifts_dt001_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.01.in"
-stella_lvr_leapfrog_drifts_dt0001_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.001.in"
+stella_lvr_leapfrog_drifts_dt02_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.2"
+stella_lvr_leapfrog_drifts_dt01_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.1"
+stella_lvr_leapfrog_drifts_dt007_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.07"
+stella_lvr_leapfrog_drifts_dt005_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.05"
+stella_lvr_leapfrog_drifts_dt002_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.02"
+stella_lvr_leapfrog_drifts_dt001_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.01"
+stella_lvr_leapfrog_drifts_dt0001_longname = "stella_cmiller_es_2species_leapfrog_drifts_lower_vres/input_dt0.001"
 
 gs2_basecase_longname = "gs2_electrostatic_new/_0.0000"
 gs2_rmaj10_longname = "gs2_electrostatic_new/beta0_bakdif0_fexpr0.5_rmaj10"
@@ -872,6 +873,7 @@ def compare_dt_scan_lie_vs_leapfrog():
             stella_nperiod5_longname,
             stella_lvr_dt02_longname,
             stella_lvr_dt01_longname,
+            stella_lvr_dt007_longname,
             stella_lvr_dt005_longname,
             stella_lvr_dt002_longname,
             stella_lvr_dt001_longname,
@@ -879,17 +881,19 @@ def compare_dt_scan_lie_vs_leapfrog():
             gs2_basecase_longname,
                     ],
                     [
-                    "stella base case",
-                    "Lie, dt=0.2",
-                    "Lie, dt=0.1",
-                    "Lie, dt=0.05",
-                    "Lie, dt=0.02",
-                    "Lie, dt=0.01",
-                    "Lie, dt=0.001",
+                    "stella, high v-res",
+                    "RK3, dt=0.2",
+                    "RK3, dt=0.1",
+                    "RK3, dt=0.07",
+                    "RK3, dt=0.05",
+                    "RK3, dt=0.02",
+                    "RK3, dt=0.01",
+                    "RK3, dt=0.001",
                     "GS2",
                     ],
-                    "images/dt_scan",
+                    "images/dt_scan_lie",
                     sim_types=[
+                    "stella",
                     "stella",
                     "stella",
                     "stella",
@@ -900,7 +904,94 @@ def compare_dt_scan_lie_vs_leapfrog():
                     "gs2",
                     ],
                     plot_format=".eps", show_fig="True")
+    make_convergence_plot(stella_lvr_dt0001_longname,
+                            [
+                            stella_lvr_dt001_longname,
+                            stella_lvr_dt002_longname,
+                            stella_lvr_dt005_longname,
+                            stella_lvr_dt007_longname
+                            ],
+                            [0.01,
+                            0.02,
+                            0.05,
+                            0.07]
+                            )
+    make_comparison_plots([
+            stella_nperiod5_longname,
+            stella_lvr_leapfrog_drifts_dt02_longname,
+            stella_lvr_leapfrog_drifts_dt01_longname,
+            stella_lvr_leapfrog_drifts_dt007_longname,
+            stella_lvr_leapfrog_drifts_dt005_longname,
+            stella_lvr_leapfrog_drifts_dt002_longname,
+            stella_lvr_leapfrog_drifts_dt001_longname,
+            stella_lvr_leapfrog_drifts_dt0001_longname,
+            gs2_basecase_longname,
+                    ],
+                    [
+                    "stella base case",
+                    "Leapfrog, dt=0.2",
+                    "Leapfrog, dt=0.1",
+                    "Leapfrog, dt=0.07",
+                    "Leapfrog, dt=0.05",
+                    "Leapfrog, dt=0.02",
+                    "Leapfrog, dt=0.01",
+                    "Leapfrog, dt=0.001",
+                    "GS2",
+                    ],
+                    "images/dt_scan_leapfrog",
+                    sim_types=[
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "stella",
+                    "gs2",
+                    ],
+                    plot_format=".eps", show_fig="True")
+    make_convergence_plot(stella_lvr_leapfrog_drifts_dt0001_longname,
+                            [
+                            stella_lvr_leapfrog_drifts_dt001_longname,
+                            stella_lvr_leapfrog_drifts_dt002_longname,
+                            stella_lvr_leapfrog_drifts_dt005_longname,
+                            ],
+                            [0.01,
+                            0.02,
+                            0.05,
+                            ]
+                            )
     return
+
+def make_convergence_plot(converged_sim_longname, unconvergd_sim_list,
+                            dt_list):
+    """ """
+
+    time, freqom_converged, gammaom_converged, freqom, gammaom, gamma_stable = get_omega_data(converged_sim_longname, "stella")
+    freq_list = []
+    gamma_list = []
+    for sim_longname in unconvergd_sim_list:
+        time, freq_final, gamma_final, freqom, gammaom, gamma_stable = get_omega_data(sim_longname, "stella")
+        freq_list.append(freq_final)
+        gamma_list.append(gamma_final)
+    # Get the difference between the Omega values and the "converged" value
+    freq_diff = np.abs(np.array(freq_list) - freqom_converged)/np.abs(freqom_converged)
+    gamma_diff = np.abs(np.array(gamma_list) - gammaom_converged)/np.abs(gammaom_converged)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212, sharex=ax1)
+    ax1.scatter(dt_list, freq_diff)
+    ax2.scatter(dt_list, gamma_diff)
+    ax1.grid(True)
+    ax2.grid(True)
+    ax2.set_xlabel("dt")
+    ax1.set_ylabel(r"$\vert\omega - \omega_{ref}\vert/\omega_{ref} $")
+    ax2.set_ylabel(r"$\vert \gamma - \gamma_{ref}\vert/\gamma_{ref} $")
+    plt.show()
+
+    return
+
 
 def compare_stella_leapfrog_gs2_poster():
     """ """
