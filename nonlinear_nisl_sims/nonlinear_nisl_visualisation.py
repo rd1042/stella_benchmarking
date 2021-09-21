@@ -25,8 +25,38 @@ kx = np.array([0.0000000000000000, 0.32672563597333848, 0.65345127194667696,
 
 x_grid = np.arange(0, xmax, dx )
 y_grid = np.arange(0, ymax, dy )
+x_grid_upsampled = np.arange(0, xmax, dx/2 )
+y_grid_upsampled = np.arange(0, ymax, dy/2 )
 x_idxs = np.arange(0, nx, 1, dtype="int")
 y_idxs = np.arange(0, ny, 1, dtype="int")
+
+## Get the idxs in 2D
+x_idxs_2d = np.zeros((ny,nx), dtype="int")
+y_idxs_2d = np.zeros((ny,nx), dtype="int")
+x_grid_2d = np.zeros((ny,nx))
+y_grid_2d = np.zeros((ny,nx))
+x_grid_2d_upsampled = np.zeros((2*ny,2*nx))
+y_grid_2d_upsampled = np.zeros((2*ny,2*nx))
+
+
+for yidx in range(0, ny):
+    x_idxs_2d[yidx, :] = x_idxs
+    x_grid_2d[yidx, :] = x_grid
+
+for xidx in range(0, nx):
+    y_idxs_2d[:,xidx] = y_idxs
+    y_grid_2d[:,xidx] = y_grid
+
+for yidx in range(0, 2*ny):
+    x_grid_2d_upsampled[yidx, :] = x_grid_upsampled
+
+for xidx in range(0, 2*nx):
+    y_grid_2d_upsampled[:,xidx] = y_grid_upsampled
+#
+# print("x_grid = ", x_grid)
+# print("y_grid = ", y_grid)
+# print("x_grid_2d = ", x_grid_2d)
+# print("y_grid_2d = ", y_grid_2d)
 
 def get_array_for_real_plaintext(plaintext_block):
     """ """
@@ -87,7 +117,7 @@ def get_arrays_from_nonlinear_data():
         vchiold_y_array, vchiold_x_array]
 
 
-def create_upsamled_grid(data_array):
+def create_upsampled_grid(data_array):
     """Given a data array, return an upsampled version of the array.
     Original array samples on an x, y grid:
     *   *   *   *   *
@@ -153,6 +183,17 @@ def create_upsamled_grid(data_array):
 
     return data_array_upsampled
 
+
+def update_p_and_q(p_array, q_array, vchiold_x_array_upsampled, vchiold_y_array_upsampled,
+                    yidx_for_upsampled_array, xidx_for_upsampled_array):
+    """ """
+    p_array = np.rint(2 * dt/dx * vchiold_x_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
+    q_array = np.rint(2 * dt/dy * vchiold_y_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
+    # Find p_ij, q_ij again, check if the values have changed
+    xidx_for_upsampled_array = (2*x_idxs_2d - p_array)%(2*nx)
+    yidx_for_upsampled_array = (2*y_idxs_2d - q_array)%(2*ny)
+    return p_array, q_array, yidx_for_upsampled_array, xidx_for_upsampled_array
+
 def nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
                 vchiold_y_array, vchiold_x_array):
     """ """
@@ -183,38 +224,56 @@ def nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
     # vchiold_x,y
     # #####################################################################
 
-    ### New idea
-    # Idea: instead of
-    #
-    # print("x_grid = ", x_grid)
-    # print("y_grid = ", y_grid)
+
+
+
+
+
+
+    # p=0 means shift non-upsampled xidx by 0, and shift upsampled xidx by 0
+    # p=1 means shift non-upsampled xidx by 1, and shift upsampled xidx by 1
+    #     (because upsampled x is being shifted by p*dx/2, but is sampled
+    #      every dx/2)
+
+
     p_array = np.zeros((ny, nx), dtype="int")
     q_array = np.zeros((ny, nx), dtype="int")
 
     # Upsample - double the number of points in the vchi, gold, golder grids.
-    golderyx_array_upsampled = create_upsamled_grid(golderyx_array)
-    # # fig = plt.figure()
-    # # plt.show()
-    # sys.exit()
-    dgold_dy_array_upsampled = create_upsamled_grid(dgold_dy_array)
-    dgold_dx_array_upsampled = create_upsamled_grid(dgold_dx_array)
-    vchiold_x_array_upsampled = create_upsamled_grid(vchiold_x_array)
-    vchiold_y_array_upsampled = create_upsamled_grid(vchiold_y_array)
-    fig = plt.figure()
-    ax1 = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
-    ax1.imshow(dgold_dy_array)
-    ax2.imshow(dgold_dy_array_upsampled)
-    ax1.set_ylabel("x idx")
-    ax2.set_ylabel("x idx")
-    ax1.set_xlabel("y idx")
-    ax2.set_xlabel("y idx")
+    # golderyx_array_upsampled = create_upsampled_grid(golderyx_array)
+
+    dgold_dy_array_upsampled = create_upsampled_grid(dgold_dy_array)
+    dgold_dx_array_upsampled = create_upsampled_grid(dgold_dx_array)
+    vchiold_x_array_upsampled = create_upsampled_grid(vchiold_x_array)
+    vchiold_y_array_upsampled = create_upsampled_grid(vchiold_y_array)
+    # To get the arrival points:
+    # xnew = (xold + (2*dt*vchiold_x))%xmax
+    # ynew = (yold + (2*dt*vchiold_y))%ymax
+
+    # As a diagnostic, plot the regular grid and the arrival locations.
+    marker_size = 20.
+
+    xnew = (x_grid_2d_upsampled - (dt*vchiold_x_array_upsampled))%xmax
+    ynew = (y_grid_2d_upsampled - (dt*vchiold_y_array_upsampled))%ymax
+
+    fig = plt.figure(figsize=[12, 8])
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+    ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+    ax1.scatter(xnew.flatten(), ynew.flatten(), s=marker_size, label="arrival points")
+    ax1.set_xlabel(r"$x$")
+    ax1.set_ylabel(r"$y$")
+    ax1.grid(True)
+    ax1.set_xlim([-1, 23])
+    ax1.legend(loc="upper right")
     plt.show()
+    # sys.exit()
+
 
     upsampled_xidxs = np.arange(0, 2*nx, 1, dtype="int")
     upsampled_yidxs = np.arange(0, 2*ny, 1, dtype="int")
-    usampled_xidxs_2d = np.zeros((2*ny, 2*nx))
-    usampled_yidxs_2d = np.zeros((2*ny, 2*nx))
+    # usampled_xidxs_2d = np.zeros((2*ny, 2*nx))
+    # usampled_yidxs_2d = np.zeros((2*ny, 2*nx))
 
     # Update p, q;
     # (b) p_ij = NINT(2 dt/dx vchiold_x[x_i - p*dx/2, y_j - q*dy/2])
@@ -223,18 +282,94 @@ def nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
     # The idxs are different between the "normal" (i.e. non-upsampled) arrays
     # and the upsampled arrays. Get the correct upsampled idx for
     # (x_i - p*dx/2), (y_j - q*dy/2) here.
-    xidx_array = upsampled_xidxs - p_array
-    yidx_array = upsampled_yidxs - q_array
-    print("xidx_array = ", xidx_array)
+    #
+    # Each (x,y) gridpoint has an integer value of phalf and qhalf; from this
+    # we want to get the idxs fro the upsampled quantities; the t^n quantities
+    # have twice as many gridpoints, so for a particular (xidx, yidx, phalf, qhalf)
+    # the corresponding idxs of the upsampled data points are
+    # xidx_for_upsampled_data = 2*(xidx - pidx/2) = 2*xidx - pidx
+    # yidx_for_upsampled_data = 2*(yidx - qidx/2) = 2*yidx - qidx
+    yidx = 5 ; xidx = 6
 
-    # Find p_ij, q_ij again, check if the values have changed
+    xidx_for_upsampled_array = (2*x_idxs_2d - p_array)%(2*nx)
+    yidx_for_upsampled_array = (2*y_idxs_2d - q_array)%(2*ny)
+    # We've got the idxs - update p, q
+    for counter in range(0, 1000, 1):
+        #print("counter = ", counter)
+        p_array, q_array, yidx_for_upsampled_array, xidx_for_upsampled_array = update_p_and_q(
+                    p_array, q_array, vchiold_x_array_upsampled, vchiold_y_array_upsampled,
+                    yidx_for_upsampled_array, xidx_for_upsampled_array)
+        # print("xidx_for_upsampled_array[yidx, xidx], yidx_for_upsampled_array[yidx, xidx] = ",
+        #         xidx_for_upsampled_array[yidx, xidx], yidx_for_upsampled_array[yidx, xidx])
+        # print("p_array[yidx, xidx], q_array[yidx, xidx] = ", p_array[yidx, xidx], q_array[yidx, xidx])
 
+    xidx_for_norm_array = (x_idxs_2d - p_array)%nx
+    yidx_for_norm_array = (y_idxs_2d - q_array)%ny
+    print("p_array = ", p_array)  # For the stella-given quantities, vchi small so p=q=0 everywhere.
+    print("q_array = ", q_array)
 
     # Calculate the residual velocities
+    vchiresidual_x = vchiold_x_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array] - p_array*dx/(2*dt)
+    vchiresidual_y = vchiold_y_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array] - q_array*dy/(2*dt)
 
+    # print("vchiold_x, p, q, p_array*dx/(2*dt), vchiresidual_x = ",
+    #         vchiold_x_array_upsampled[yidx_for_upsampled_array[yidx,xidx], xidx_for_upsampled_array[yidx,xidx]],
+    #         p_array[yidx, xidx], q_array[yidx, xidx], p_array[yidx, xidx]*dx/(2*dt),
+    #         vchiresidual_x[yidx, xidx])
+
+    # for yidx in y_idxs:
+    #     for xidx in x_idxs:
+    #
+    #         print("vchiold_x, p, q, p_array*dx/(2*dt), vchiresidual_x = ",
+    #                 vchiold_x_array_upsampled[yidx_for_upsampled_array[yidx,xidx], xidx_for_upsampled_array[yidx,xidx]],
+    #                 p_array[yidx, xidx], q_array[yidx, xidx], p_array[yidx, xidx]*dx/(2*dt),
+    #                 vchiresidual_x[yidx, xidx])
+    Courant_num_array = (vchiold_x_array*dt/dx + vchiold_y_array*dt/dy)
+    Courant_residual_array = (vchiresidual_x*dt/dx + vchiresidual_y*dt/dy)
+    print("max Courant no = ", np.max(abs(Courant_num_array)))
+    print("max residual Courant no = ", np.max(abs(Courant_residual_array)))
+    #print("dx/dt, max(vchiresidual_x), dy/dt, max(vchiresidual_y) = ", dx/dt, np.max(vchiresidual_x), dy/dt, np.max(vchiresidual_y))
     # Calculate rhs_ij
+    #  rhs_ij = - (vresidual_x_ij*dgold_dx[x_i - p_ij*dx/2, y_j - * q_ij*dy/2]
+    #            + vresidual_y_ij*dgold_dy[x_i - p_ij*dx/2, y_j - * q_ij*dy/2])
+    rhs_array = - (vchiresidual_x * dgold_dy_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]
+                    + vchiresidual_y * dgold_dx_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array] )
 
     # Calculate gnew
+    gnewyx_array = golderyx_array[yidx_for_norm_array, xidx_for_norm_array] + rhs_array
+
+    #print("gnew = ", gnew)
+
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(121)
+    # ax2 = fig.add_subplot(122)
+    # ax1.imshow(dgold_dy_array)
+    # ax2.imshow(dgold_dy_array_upsampled)
+    # ax1.set_ylabel("x idx")
+    # ax2.set_ylabel("x idx")
+    # ax1.set_xlabel("y idx")
+    # ax2.set_xlabel("y idx")
+    # plt.show()
+    #
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    ax1.imshow(golderyx_array)
+    ax2.imshow(gnewyx_array)
+    ax1.set_ylabel("x idx")
+    ax2.set_ylabel("x idx")
+    ax1.set_xlabel("y idx")
+    ax2.set_xlabel("y idx")
+    plt.show()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.plot(y_grid, golderyx_array[:,5])
+    ax1.plot(y_grid, gnewyx_array[:,5])
+    print("x_grid[5] = ", x_grid[5] )
+    ax1.set_ylabel("g")
+    ax1.set_xlabel("y")
+    plt.show()
 
     return
 
@@ -243,6 +378,11 @@ if __name__ == "__main__":
 
     [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
         vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()#
+
+    ## Let's try artificially increasing vchi to exceed the CFL condition.
+    scaling_fac = 100
+    vchiold_x_array = vchiold_x_array * scaling_fac
+    vchiold_y_array = vchiold_y_array * scaling_fac
 
     nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
                 vchiold_y_array, vchiold_x_array)
