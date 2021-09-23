@@ -127,12 +127,12 @@ def create_upsampled_grid(data_array):
     *   *   *   *   *
 
     We want to sample at midpoints:
-    * & * & * & * & * &
     & & & & & & & & & &
     * & * & * & * & * &
     & & & & & & & & & &
     * & * & * & * & * &
     & & & & & & & & & &
+    * & * & * & * & * &
 
     where & denotes a new sampling point. The final & in x, y should be an
     interpolation of the final * and the first * (periodic).
@@ -183,20 +183,22 @@ def create_upsampled_grid(data_array):
 
     return data_array_upsampled
 
-
-def update_p_and_q(p_array, q_array, vchiold_x_array_upsampled, vchiold_y_array_upsampled,
-                    yidx_for_upsampled_array, xidx_for_upsampled_array):
-    """ """
-    p_array = np.rint(2 * dt/dx * vchiold_x_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
-    q_array = np.rint(2 * dt/dy * vchiold_y_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
-    # Find p_ij, q_ij again, check if the values have changed
-    xidx_for_upsampled_array = (2*x_idxs_2d - p_array)%(2*nx)
-    yidx_for_upsampled_array = (2*y_idxs_2d - q_array)%(2*ny)
-    return p_array, q_array, yidx_for_upsampled_array, xidx_for_upsampled_array
-
-def nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
                 vchiold_y_array, vchiold_x_array):
-    """ """
+    """The NISL step according to Ritchie; here we don't calculate the (approximate)
+    departure point, but instead (attempt to) find the trajectory from t^n which arrives
+    closest to our gridpoint at t^(n+1)"""
+
+    def update_p_and_q(p_array, q_array, vchiold_x_array_upsampled, vchiold_y_array_upsampled,
+                        yidx_for_upsampled_array, xidx_for_upsampled_array):
+        """Update guess for p, q, and the idxs corresponding to the upsampled
+        array."""
+        p_array = np.rint(2 * dt/dx * vchiold_x_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
+        q_array = np.rint(2 * dt/dy * vchiold_y_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array]).astype("int")
+        xidx_for_upsampled_array = (2*x_idxs_2d - p_array)%(2*nx)
+        yidx_for_upsampled_array = (2*y_idxs_2d - q_array)%(2*ny)
+        return p_array, q_array, yidx_for_upsampled_array, xidx_for_upsampled_array
+
     #######################################################################
     # gnew(x_i, y_j) = golder[x_i - p_ij*dx, y_j - * q_ij*dy]
     #                       + rhs_ij
@@ -373,6 +375,222 @@ def nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
 
     return
 
+def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+                vchiold_y_array, vchiold_x_array):
+    """Take a NISL step, but finding the "actual" (approximate) departure point.
+    Guaranteed to have good stability properties """
+
+    very_small_dt = 1e-8
+
+    p_array = np.zeros((ny, nx), dtype="int")
+    q_array = np.zeros((ny, nx), dtype="int")
+
+    # Upsample - double the number of points in the vchi, gold, golder grids.
+    # golderyx_array_upsampled = create_upsampled_grid(golderyx_array)
+
+    dgold_dy_array_upsampled = create_upsampled_grid(dgold_dy_array)
+    dgold_dx_array_upsampled = create_upsampled_grid(dgold_dx_array)
+    vchiold_x_array_upsampled = create_upsampled_grid(vchiold_x_array)
+    vchiold_y_array_upsampled = create_upsampled_grid(vchiold_y_array)
+
+
+    def get_approx_departure_point(yidx, xidx):
+        """ """
+        upsampled_xidx = 2*xidx
+        upsampled_yidx = 2*yidx
+
+        # location of the gridpoint (=arrival point)
+        x = x_grid[xidx]; y=y_grid[yidx]
+        # Normalised values; these are integer at cell boundaries.
+        time_remaining = 2*dt
+        xhistory = []
+        yhistory = []
+        xhistory.append(x); yhistory.append(y)
+
+        while time_remaining > 0:
+            ### TODO: Find something sensible to do if the velocities are
+            ### divergent (pushing between boxes)
+            # Velocity with which we move (although we'll actually be moving
+            # back in time.)
+            u_x = vchiold_x_array_upsampled[upsampled_yidx, upsampled_xidx]
+            u_y = vchiold_y_array_upsampled[upsampled_yidx, upsampled_xidx]
+
+            # Take a step in (x,y) based on the velocity at [x, y, t^n].
+            xnorm = (2*x/dx - 0.5); ynorm = (2*y/dy - 0.5)
+            if u_x > 0 :
+                xboundary = ((np.floor(xnorm) + 0.5) * dx/2)%xmax
+            else:
+                xboundary = ((np.ceil(xnorm)  + 0.5) * dx/2)%xmax
+            if u_y > 0 :
+                yboundary = ((np.floor(ynorm) + 0.5) * dy/2)%ymax
+            else:
+                yboundary = ((np.ceil(ynorm)  + 0.5) * dy/2)%ymax
+
+            print("upsampled_xidx, upsampled_yidx = ", upsampled_xidx, upsampled_yidx )
+            print("xnorm, u_x, xboundary, ynorm, u_y, yboundary = ", xnorm, u_x, xboundary, ynorm, u_y, yboundary)
+            # Calculate the time required to reach the nearest boundaries in y and x
+            # Careful though - if our velocities are too small we'll get <>dist_dt=inf
+            min_vx_magnitude = (dx/dt)*0.1   # We know for sure that the trajectory won't make it into the next cell
+            min_vy_magnitude = (dy/dt)*0.1   # We know for sure that the trajectory won't make it into the next cell
+
+            ## Make sure these aren't negative!
+            if abs(u_y) < min_vy_magnitude:
+                ydist_dt = 10*dt    # This ensures ydist_dt > time_remaining
+            else:
+                ydist_dt = -(yboundary - y)/u_y
+            if abs(u_x) < min_vx_magnitude:
+                xdist_dt = 10*dt # This ensures xdist_dt > time_remaining
+            else:
+                xdist_dt = -(xboundary - x)/u_x
+
+            print("ydist_dt, xdist_dt = ", ydist_dt, xdist_dt )
+
+            if (ydist_dt > time_remaining) and (xdist_dt > time_remaining):
+                print("STOPPING before next boundary")
+                # Update location
+                y = (y - u_y * time_remaining)%ymax
+                x = (x - u_x * time_remaining)%xmax
+                time_remaining = 0
+            else:
+                if ydist_dt < xdist_dt:
+                    print("Hit y!")
+                    # Hit the boundary in y
+                    y = (yboundary - u_y*very_small_dt )%ymax   # slightly overstep, so we're definitely in the next cell
+                    x = (x - u_x * (ydist_dt + very_small_dt))%xmax
+
+                    # Update the values of u_x, u_y
+                    if u_y > 0:
+                        # +ve u_y, so going back in time we're going in the -ve y direction; our new cell is
+                        # below the old cell
+                        upsampled_yidx = (upsampled_yidx - 1)%(2*ny)
+                    else:
+                        # -ve u_y, so going back in time we're going in the +ve y direction; our new cell is
+                        # below the old cell
+                        upsampled_yidx = (upsampled_yidx + 1)%(2*ny)
+
+                    # Update time_remaining. Include the "very small dt" contribution
+                    time_remaining = time_remaining - (ydist_dt + very_small_dt)
+                else:
+                    print("Hit x!")
+                    # Hit the boundary in x
+                    x = (xboundary - u_x*very_small_dt)%xmax    # slightly overstep, so we're definitely in the next cell
+                    y = (y - u_y * (xdist_dt + very_small_dt))%ymax
+
+                    # Update the values of u_x, u_y
+                    if u_x > 0:
+                        # +ve u_x, so going back in time we're going in the -ve x direction; our new cell is
+                        # to the left of the old cell
+                        upsampled_xidx = (upsampled_xidx - 1)%(2*nx)
+                    else:
+                        # -ve u_y, so going back in time we're going in the +ve y direction; our new cell is
+                        # below the old cell
+                        upsampled_xidx = (upsampled_xidx + 1)%(2*nx)
+                    # Update time_remaining. Include the "very small dt" contribution
+                    time_remaining = time_remaining - (xdist_dt + very_small_dt)
+
+            xhistory.append(x); yhistory.append(y)
+
+            ########################################################################
+            ##### DIAGNOSTIC PLOTS #################################################
+            ########################################################################
+            ### The "vanilla" plot - show paths and gridpoints.
+            # marker_size = 20.
+            # fig = plt.figure(figsize=[12, 8])
+            # ax1 = fig.add_subplot(111)
+            # ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+            # ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+            # ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
+            # for hist_idx in range(0, len(xhistory)-1):
+            #     ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
+            # ax1.set_xlabel(r"$x$")
+            # ax1.set_ylabel(r"$y$")
+            # ax1.grid(True)
+            # #ax1.set_xlim([-1, 23])
+            # ax1.legend(loc="upper right")
+            # plt.show()
+
+            ### A more complicated plot - show paths and gridpoints, and boundaries and
+            ### cell velocities.
+            x_grid_upsampled_boundaries = x_grid_upsampled + dx/4
+            y_grid_upsampled_boundaries = y_grid_upsampled + dy/4
+
+            # To make the horizontal lines: make 1 horizontal line per
+            # y_grid_upsampled_boundaries, starting at x=0 and ending at max(x_grid_upsampled_boundaries)
+            horizontal_lines = []
+            for diag_yval in y_grid_upsampled_boundaries:
+                horizontal_line_xvals = [0, max(x_grid_upsampled_boundaries)]
+                horizontal_line_yvals = [diag_yval, diag_yval]
+                horizontal_lines.append([horizontal_line_xvals, horizontal_line_yvals])
+
+            # To make the vertical lines: make 1 vertical line per
+            # x_grid_upsampled_boundaries, starting at y=0 and ending at max(y_grid_upsampled_boundaries)
+            vertical_lines = []
+            for diag_xval in x_grid_upsampled_boundaries:
+                vertical_line_xvals = [diag_xval, diag_xval]
+                vertical_line_yvals = [0, max(y_grid_upsampled_boundaries)]
+                vertical_lines.append([vertical_line_xvals, vertical_line_yvals])
+
+            # Normalise velocities such that the largest veloccity occupies a cell length/height.
+            # That is, want max(unorm_x) = dx/2 and max(unorm_y) = dy/2
+            x_scaling_fac = dx/2 / np.max(abs(vchiold_x_array_upsampled))
+            unorm_x = vchiold_x_array_upsampled * x_scaling_fac
+            y_scaling_fac = dy/2 / np.max(abs(vchiold_y_array_upsampled))
+            unorm_y = vchiold_y_array_upsampled * y_scaling_fac
+
+            # Want to represent these velocities with an arrow, which is centered on
+            # the gridpoint. So the starting point of the arrow should be [x - unorm_x/2, y - unorm_y/2]
+            arrows = [] # Each item in arrows is a list describing a single arrow; [x, y, delta_x, delta_y]
+            for diag_upsampled_xidx in range(0, 2*nx):
+                for diag_upsampled_yidx in range(0, 2*ny):
+                    arrow_x = x_grid_2d_upsampled[diag_upsampled_yidx, diag_upsampled_xidx] - unorm_x[diag_upsampled_yidx, diag_upsampled_xidx]/2
+                    arrow_y = y_grid_2d_upsampled[diag_upsampled_yidx, diag_upsampled_xidx] - unorm_y[diag_upsampled_yidx, diag_upsampled_xidx]/2
+                    arrow_dx = unorm_x[diag_upsampled_yidx, diag_upsampled_xidx]
+                    arrow_dy = unorm_y[diag_upsampled_yidx, diag_upsampled_xidx]
+                    arrows.append([arrow_x, arrow_y, arrow_dx, arrow_dy])
+
+
+            marker_size = 20.
+            arrow_head_width = 0.1
+            fig = plt.figure(figsize=[12, 8])
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+            ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+            ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
+            for horizontal_line in horizontal_lines:
+                ax1.plot(horizontal_line[0], horizontal_line[1], ls="--", c="gray")
+            for vertical_line in vertical_lines:
+                ax1.plot(vertical_line[0], vertical_line[1], ls="--", c="gray")
+            for arrow in arrows:
+                ax1.arrow(arrow[0], arrow[1], arrow[2], arrow[3], color="blue", length_includes_head = True, head_width=arrow_head_width)
+            for hist_idx in range(0, len(xhistory)-1):
+                ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
+            ax1.set_xlabel(r"$x$")
+            ax1.set_ylabel(r"$y$")
+            ax1.grid(True)
+            #ax1.set_xlim([-1, 23])
+            ax1.legend(loc="upper right")
+            plt.show()
+
+        ########################################################################
+
+        return y, x
+
+
+    approx_departure_points_x = np.zeros((ny, nx))
+    approx_departure_points_y = np.zeros((ny, nx))
+
+    # Find the approximate departure point
+    for yidx in range(0, ny):
+        for xidx in [0,1]:#range(0, nx):
+            y, x = get_approx_departure_point(yidx, xidx)
+            approx_departure_points_x[yidx, xidx] = x
+            approx_departure_points_y[yidx, xidx] = y
+            print("y, x = ", y, x)
+        sys.exit()
+
+
+
+    return
 
 if __name__ == "__main__":
 
@@ -384,7 +602,7 @@ if __name__ == "__main__":
     vchiold_x_array = vchiold_x_array * scaling_fac
     vchiold_y_array = vchiold_y_array * scaling_fac
 
-    nisl_step(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+    nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
                 vchiold_y_array, vchiold_x_array)
     # print("len(golder_array) = ", len(golder_array))
     # print("len(golderyx_array) = ", len(golderyx_array))
