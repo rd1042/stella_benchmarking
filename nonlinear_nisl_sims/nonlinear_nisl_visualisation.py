@@ -407,33 +407,44 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
         yhistory = []
         xhistory.append(x); yhistory.append(y)
 
-        while time_remaining > 0:
+        # Velocities in the initial cell - put here rather than in the loop,
+        # because need to update velocities carefully (the "divergent velocities")
+        # problem.
+        # NB these are the velocities of the cells, but we'll actually be moving
+        # back in time.
+        u_x = vchiold_x_array_upsampled[upsampled_yidx, upsampled_xidx]
+        u_y = vchiold_y_array_upsampled[upsampled_yidx, upsampled_xidx]
+
+        max_iterations = max((100*np.mean(abs(vchiold_x_array_upsampled))*dt/dx) , (100*np.mean(abs(vchiold_y_array_upsampled))*dt/dy))
+        #print("max_iterations = ", max_iterations)
+        counter=0
+        while time_remaining > 0 and counter < max_iterations:
+            counter +=1
             ### TODO: Find something sensible to do if the velocities are
             ### divergent (pushing between boxes)
             # Velocity with which we move (although we'll actually be moving
             # back in time.)
-            u_x = vchiold_x_array_upsampled[upsampled_yidx, upsampled_xidx]
-            u_y = vchiold_y_array_upsampled[upsampled_yidx, upsampled_xidx]
 
             # Take a step in (x,y) based on the velocity at [x, y, t^n].
             xnorm = (2*x/dx - 0.5); ynorm = (2*y/dy - 0.5)
+            # We don't %xmax, ymax here because then we'd have to worry about the
+            # sign of <>dist_dt
             if u_x > 0 :
-                xboundary = ((np.floor(xnorm) + 0.5) * dx/2)%xmax
+                xboundary = ((np.floor(xnorm) + 0.5) * dx/2)
             else:
-                xboundary = ((np.ceil(xnorm)  + 0.5) * dx/2)%xmax
+                xboundary = ((np.ceil(xnorm)  + 0.5) * dx/2)
             if u_y > 0 :
-                yboundary = ((np.floor(ynorm) + 0.5) * dy/2)%ymax
+                yboundary = ((np.floor(ynorm) + 0.5) * dy/2)
             else:
-                yboundary = ((np.ceil(ynorm)  + 0.5) * dy/2)%ymax
+                yboundary = ((np.ceil(ynorm)  + 0.5) * dy/2)
 
-            print("upsampled_xidx, upsampled_yidx = ", upsampled_xidx, upsampled_yidx )
-            print("xnorm, u_x, xboundary, ynorm, u_y, yboundary = ", xnorm, u_x, xboundary, ynorm, u_y, yboundary)
+            # print("upsampled_xidx, upsampled_yidx = ", upsampled_xidx, upsampled_yidx )
+            # print("xnorm, u_x, xboundary, ynorm, u_y, yboundary = ", xnorm, u_x, xboundary, ynorm, u_y, yboundary)
             # Calculate the time required to reach the nearest boundaries in y and x
             # Careful though - if our velocities are too small we'll get <>dist_dt=inf
-            min_vx_magnitude = (dx/dt)*0.1   # We know for sure that the trajectory won't make it into the next cell
-            min_vy_magnitude = (dy/dt)*0.1   # We know for sure that the trajectory won't make it into the next cell
+            min_vx_magnitude = (dx/dt)*1e-10   # We know for sure that the trajectory won't make it into the next cell
+            min_vy_magnitude = (dy/dt)*1e-10   # We know for sure that the trajectory won't make it into the next cell
 
-            ## Make sure these aren't negative!
             if abs(u_y) < min_vy_magnitude:
                 ydist_dt = 10*dt    # This ensures ydist_dt > time_remaining
             else:
@@ -443,17 +454,17 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
             else:
                 xdist_dt = -(xboundary - x)/u_x
 
-            print("ydist_dt, xdist_dt = ", ydist_dt, xdist_dt )
+            #print("ydist_dt, xdist_dt = ", ydist_dt, xdist_dt )
 
             if (ydist_dt > time_remaining) and (xdist_dt > time_remaining):
-                print("STOPPING before next boundary")
+                #print("STOPPING before next boundary")
                 # Update location
                 y = (y - u_y * time_remaining)%ymax
                 x = (x - u_x * time_remaining)%xmax
                 time_remaining = 0
             else:
                 if ydist_dt < xdist_dt:
-                    print("Hit y!")
+                    #print("Hit y!")
                     # Hit the boundary in y
                     y = (yboundary - u_y*very_small_dt )%ymax   # slightly overstep, so we're definitely in the next cell
                     x = (x - u_x * (ydist_dt + very_small_dt))%xmax
@@ -468,10 +479,23 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
                         # below the old cell
                         upsampled_yidx = (upsampled_yidx + 1)%(2*ny)
 
+                    # Update the velocities
+                    u_x = vchiold_x_array_upsampled[upsampled_yidx, upsampled_xidx]
+                    # Update u_y, but if the sign is different, we're going to
+                    # bounce back and forth (this indicates the velocity falling
+                    # to zero somewhere between the 2 cell centres). To avoid the "bouncing",
+                    # set velocity to zero.
+                    u_y_new = vchiold_y_array_upsampled[upsampled_yidx, upsampled_xidx]
+                    if (u_y * u_y_new) < 0:
+                        # Opposite signs, so set u_y=0
+                        u_y=0
+                    else:
+                        u_y = u_y_new
+
                     # Update time_remaining. Include the "very small dt" contribution
                     time_remaining = time_remaining - (ydist_dt + very_small_dt)
                 else:
-                    print("Hit x!")
+                    #print("Hit x!")
                     # Hit the boundary in x
                     x = (xboundary - u_x*very_small_dt)%xmax    # slightly overstep, so we're definitely in the next cell
                     y = (y - u_y * (xdist_dt + very_small_dt))%ymax
@@ -485,32 +509,50 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
                         # -ve u_y, so going back in time we're going in the +ve y direction; our new cell is
                         # below the old cell
                         upsampled_xidx = (upsampled_xidx + 1)%(2*nx)
+
+                    # Update velocities
+                    u_y = vchiold_y_array_upsampled[upsampled_yidx, upsampled_xidx]
+                    # Update u_x, but if the sign is different, we're going to
+                    # bounce back and forth (this indicates the velocity falling
+                    # to zero somewhere between the 2 cell centres). To avoid the "bouncing",
+                    # set velocity to zero.
+                    u_x_new = vchiold_x_array_upsampled[upsampled_yidx, upsampled_xidx]
+                    if (u_x * u_x_new) < 0:
+                        # Opposite signs, so set u_y=0
+                        u_x=0
+                    else:
+                        u_x = u_x_new
+
                     # Update time_remaining. Include the "very small dt" contribution
                     time_remaining = time_remaining - (xdist_dt + very_small_dt)
 
+                    # Check whether we've been in the
+
             xhistory.append(x); yhistory.append(y)
 
-            ########################################################################
-            ##### DIAGNOSTIC PLOTS #################################################
-            ########################################################################
-            ### The "vanilla" plot - show paths and gridpoints.
-            # marker_size = 20.
-            # fig = plt.figure(figsize=[12, 8])
-            # ax1 = fig.add_subplot(111)
-            # ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
-            # ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
-            # ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
-            # for hist_idx in range(0, len(xhistory)-1):
-            #     ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
-            # ax1.set_xlabel(r"$x$")
-            # ax1.set_ylabel(r"$y$")
-            # ax1.grid(True)
-            # #ax1.set_xlim([-1, 23])
-            # ax1.legend(loc="upper right")
-            # plt.show()
+        ########################################################################
+        ##### DIAGNOSTIC PLOTS #################################################
+        ########################################################################
+        def basic_diagnostic_plot_trajectories():
+            """The "vanilla" plot - show paths and gridpoints. """
+            marker_size = 20.
+            fig = plt.figure(figsize=[12, 8])
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+            ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+            ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
+            for hist_idx in range(0, len(xhistory)-1):
+                ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
+            ax1.set_xlabel(r"$x$")
+            ax1.set_ylabel(r"$y$")
+            ax1.grid(True)
+            #ax1.set_xlim([-1, 23])
+            ax1.legend(loc="upper right")
+            plt.show()
 
-            ### A more complicated plot - show paths and gridpoints, and boundaries and
-            ### cell velocities.
+        def diagnostic_plot_trajectories():
+            """ A more complicated plot - show paths and gridpoints, and boundaries and
+            cell velocities."""
             x_grid_upsampled_boundaries = x_grid_upsampled + dx/4
             y_grid_upsampled_boundaries = y_grid_upsampled + dy/4
 
@@ -571,6 +613,10 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
             ax1.legend(loc="upper right")
             plt.show()
 
+            return
+
+        #basic_diagnostic_plot_trajectories()
+        #diagnostic_plot_trajectories()
         ########################################################################
 
         return y, x
@@ -581,13 +627,49 @@ def nisl_step_finding_departure_point(golder_array, golderyx_array, dgold_dy_arr
 
     # Find the approximate departure point
     for yidx in range(0, ny):
-        for xidx in [0,1]:#range(0, nx):
+        for xidx in range(0,nx):#range(0, nx):
             y, x = get_approx_departure_point(yidx, xidx)
             approx_departure_points_x[yidx, xidx] = x
             approx_departure_points_y[yidx, xidx] = y
-            print("y, x = ", y, x)
-        sys.exit()
+            #print("y, x = ", y, x)
 
+    ############################################################################
+    ### DIAGNSOTIC PLOT
+    ############################################################################
+
+    def make_diagnostic_plot_departure_points():
+        """ """
+        marker_size = 20.
+        arrow_head_width = 0.1
+        fig = plt.figure(figsize=[12, 8])
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+        ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+        ax1.scatter(approx_departure_points_x.flatten(), approx_departure_points_y.flatten(), s=marker_size,label="departure point")
+        # ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
+        # for horizontal_line in horizontal_lines:
+        #     ax1.plot(horizontal_line[0], horizontal_line[1], ls="--", c="gray")
+        # for vertical_line in vertical_lines:
+        #     ax1.plot(vertical_line[0], vertical_line[1], ls="--", c="gray")
+        # for arrow in arrows:
+        #     ax1.arrow(arrow[0], arrow[1], arrow[2], arrow[3], color="blue", length_includes_head = True, head_width=arrow_head_width)
+        # for hist_idx in range(0, len(xhistory)-1):
+        #     ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
+        ax1.set_xlabel(r"$x$")
+        ax1.set_ylabel(r"$y$")
+        ax1.grid(True)
+        ax1.set_xlim([-0.96, 25])
+        #ax1.set_xlim([-1, 23])
+        ax1.legend(loc="upper right")
+        plt.show()
+
+        return
+
+    # make_diagnostic_plot_departure_points()
+    ############################################################################
+
+    # Now we've got approximate departure points, work out p and q.
+    #p_array = int(np.rint())
 
 
     return
@@ -598,7 +680,7 @@ if __name__ == "__main__":
         vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()#
 
     ## Let's try artificially increasing vchi to exceed the CFL condition.
-    scaling_fac = 100
+    scaling_fac = 10
     vchiold_x_array = vchiold_x_array * scaling_fac
     vchiold_y_array = vchiold_y_array * scaling_fac
 
