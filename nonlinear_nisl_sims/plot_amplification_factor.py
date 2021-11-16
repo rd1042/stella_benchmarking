@@ -49,6 +49,41 @@ def plot_amplification_factor_t_for_leapfrog_rk3_start():
 
     return
 
+def plot_amplification_factor_for_leapfrog_exact_start():
+    """ """
+
+    beta = [0.01, 0.1, 0.2, 0.5, 0.8, 1.3, 2, 3]
+
+    nstep = 200
+    for beta_idx, beta_val in enumerate(beta):
+        print("beta = ", beta_val)
+        # Initialise the array of (complex) G
+        g_array = np.zeros((nstep), dtype="complex")
+
+        # First step is with RK3-SSP-PS
+        # G = 1 - (ibeta) + (ibeta)^2/2 - (ibeta)^3/6
+        #   = 1 - i*beta - beta^2/2 + i*beta^3/6
+        g_array[0] = np.exp(1j*beta_val)
+        print("abs(g_array[0]) = ", abs(g_array[0]))
+
+        # For the rest of the steps, calculate G in a Leapfrog-y way
+        for istep in range(1, nstep):
+            g_array[istep] = (1/g_array[istep-1]) - 2j*beta_val
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(range(1, nstep+1), abs(g_array) )
+        ax1.set_xlabel("istep")
+        ax1.set_ylabel(r"$\vert G \vert$")
+        fig.suptitle(r"$k\cdot U \cdot \Delta t =$" + " {:0.3f}".format(beta_val))
+        fig.tight_layout()
+        save_name = "{:03d}.png".format(beta_idx)
+        plt.savefig(save_name)
+        plt.close()
+
+    return
+
+
 def plot_amplification_factor_t_for_leapfrog_rk3_start_several_rk3_steps():
     """ """
     beta_val = 0.8
@@ -101,7 +136,7 @@ def plot_amplification_factor_t_for_leapfrog_rk3_start_several_rk3_steps():
 
 if __name__ == "__main__":
     print("Hello world")
-    plot_amplification_factor_for_rk3ssp_ps()
+    # plot_amplification_factor_for_rk3ssp_ps()
     # plot_amplification_factor_t_for_leapfrog_rk3_start()
-
+    plot_amplification_factor_for_leapfrog_exact_start()
     # plot_amplification_factor_t_for_leapfrog_rk3_start_several_rk3_steps()

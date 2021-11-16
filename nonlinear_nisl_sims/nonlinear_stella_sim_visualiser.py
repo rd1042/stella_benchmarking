@@ -9,6 +9,7 @@ from extract_sim_data import get_omega_data
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import fft
+import glob
 
 def make_phi2_kxky_modes_pics(outnc_longname):
     """ """
@@ -16,6 +17,9 @@ def make_phi2_kxky_modes_pics(outnc_longname):
     [t, kx, ky, z, phi_vs_t] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi_vs_t")
     # print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, ky
     # print("len(kx, ky, t, z) = ", len(kx), len(ky), len(t), len(z))
+    # print("t = ", t)
+    # print("len(t) = ", len(t))
+    # sys.exit()
     nz_per_mode = len(z)
     z_idx = int(nz_per_mode/2)  # The z idx of z=0
     if z[z_idx] != 0:
@@ -45,6 +49,51 @@ def make_phi2_kxky_modes_pics(outnc_longname):
             counter+=1
             plt.savefig(save_name)
             plt.close()
+
+    return
+
+def make_phi2_kxky_modes_pics_single_mode(outnc_longname):
+    """ """
+    # Get phi(kx, ky, z, t)
+    [t, kx, ky, z, phi_vs_t] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi_vs_t")
+    # print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, ky
+    # print("len(kx, ky, t, z) = ", len(kx), len(ky), len(t), len(z))
+    # print("kx = ", kx)
+    # print("ky = ", ky)
+    # print("t = ", t)
+    # print("len(t) = ", len(t))
+    # sys.exit()
+    nz_per_mode = len(z)
+    z_idx = int(nz_per_mode/2)  # The z idx of z=0
+    if z[z_idx] != 0:
+        print("Error! z[z_idx] = ", z[z_idx])
+        sys.exit()
+
+    # z_idx = 1 # Old
+    counter = 0
+    phi_t_ky_kx = phi_vs_t[:, 0, z_idx, :, :]
+    for ky_idx in [2]: #range(0, len(ky)):
+        for kx_idx in [2]: #range(0, len(kx)):
+            phi_t = phi_t_ky_kx[:, kx_idx, ky_idx]
+
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            # ax2 = fig.add_subplot(312, sharex=ax1)
+            # ax3 = fig.add_subplot(313, sharex=ax1)
+            ax1.plot(t, phi_t.real, label="real(phi)")
+            ax1.plot(t, phi_t.imag, label="im(phi)")
+            ax1.plot(t, abs(phi_t), label="abs(phi)")
+            ax1.scatter(t, phi_t.real, marker="x", c="black")
+            ax1.scatter(t, phi_t.imag, marker="x", c="black")
+            ax1.scatter(t, abs(phi_t), marker="x", c="black")
+
+            ax1.set_xlabel(r"$t$")
+            ax1.set_ylabel(r"$\phi$")
+            ax1.legend(loc="best")
+            fig.suptitle("kx={:.3f}, ky={:.3f}".format(kx[kx_idx], ky[ky_idx]))
+            save_name="images/phi_t_{:02d}.png".format(counter)
+            counter+=1
+            plt.show()
 
     return
 
@@ -328,15 +377,161 @@ def compare_sims_with_different_nwrite():
 
     return
 
+def plot_phi2t_for_folder(folder_name, nwrite):
+    """For a folder of sims, plot phi2(t)
+    Could also try to plot something like |G| (kxmax*U*delt) """
+    filenames = glob.glob(folder_name + "/*.out.nc")
 
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    delt_vals = []
+    amp_factor_vals = []
+    amp_factor_vals2 = []
+    amp_factor_vals3 = []
+    amp_factor_vals4 = []
+    for outnc_longname in filenames:
+        [t, kx, ky, z, phi_vs_t] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi_vs_t")
+        # print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, k
+        # print("kx = ", kx)  #   kx =  [ 0.         0.3334277  0.6668554  1.0002831 -1.0002831 -0.6668554
+        #                     #           -0.3334277]
+        # print("ky = ", ky)  #   ky =  [0.         0.33333333 0.66666667 1.         1.33333333]
+        if len(t) > 1 :
+            delt = (t[1] - t[0]) / nwrite
+            #print("t = ", t)
+            #print("delt = ", delt)
+            # Look at kx=1, ky=1
+            phi = phi_vs_t[:,0,0,4,4]
+            if np.max(abs(phi)) < 1E4:
+                ax1.plot(t, abs(phi), label="delt={:.6f}".format(delt))
+
+            # Find the amplification factor |G| per timestep
+            # First find the "good" bit of phi, where |phi| > 1E-15 but |phi| != NaN
+            abs_phi = abs(phi)
+            good_abs_phi = abs_phi[abs_phi<1E50]
+            good_abs_phi = good_abs_phi[good_abs_phi>1E-10]
+            if len(good_abs_phi) > 1:
+                #print("delt, (good_abs_phi[-1]/good_abs_phi[0] = ", delt, (good_abs_phi[-1]/good_abs_phi[0]))
+                delt_vals.append(delt)
+
+                amp_factor_vals.append((good_abs_phi[-1]/good_abs_phi[-2])**(1/10))
+                amp_factor_vals2.append((good_abs_phi[-2]/good_abs_phi[-3])**(1/10))
+                amp_factor_vals3.append((good_abs_phi[-3]/good_abs_phi[-4])**(1/10))
+                amp_factor_vals4.append((good_abs_phi[-1]/good_abs_phi[1])**(1/(10*len(good_abs_phi))))
+            #print("min, max = ", np.min(good_abs_phi), np.max(good_abs_phi))
+
+    #sys.exit()
+    ax1.grid(True)
+    ax1.legend(loc="best")
+    ax1.set_yscale("log")
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"$t$")
+    ax1.set_ylabel(r"$\vert \phi \vert$")
+    plt.show()
+
+
+    print("delt_vals = ", delt_vals)
+    print("amp_factor_vals = ", amp_factor_vals)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    marker_size = 50
+    ax1.scatter(delt_vals, amp_factor_vals, marker="x", s=marker_size, label="sampling 10 points")
+    ax1.scatter(delt_vals, amp_factor_vals2, marker="x", s=marker_size, label="sampling 10 points")
+    ax1.scatter(delt_vals, amp_factor_vals3, marker="x", s=marker_size, label="sampling 10 points")
+    ax1.scatter(delt_vals, amp_factor_vals4, marker=".", s=200, label="sampling many points")
+    #ax1.set_yscale("log")
+    ax1.legend(loc="best")
+    ax1.set_xlabel(r"$\Delta t \equiv k_x U_x \Delta t$")
+    ax1.set_ylabel(r"$\vert G \vert$")
+    ax1.grid(True)
+    plt.show()
+
+    return
+
+def plot_phi2t_for_rk3_folder(folder_name, nwrite):
+    """For a folder of sims, plot phi2(t)
+    Could also try to plot something like |G| (kxmax*U*delt) """
+    filenames = glob.glob(folder_name + "/*.out.nc")
+
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    delt_vals = []
+    amp_factor_vals = []
+    for outnc_longname in filenames:
+        [t, kx, ky, z, phi_vs_t] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi_vs_t")
+        # print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, k
+        # print("kx = ", kx)  #   kx =  [ 0.         0.3334277  0.6668554  1.0002831 -1.0002831 -0.6668554
+        #                     #           -0.3334277]
+        # print("ky = ", ky)  #   ky =  [0.         0.33333333 0.66666667 1.         1.33333333]
+        delt = (t[1] - t[0]) / nwrite
+        # Look at kx=1, ky=1
+        phi = phi_vs_t[:,0,0,4,4]
+        # if np.max(abs(phi)) < 1E4:
+        #     ax1.plot(t, abs(phi), label="delt={:.6f}".format(delt))
+
+        # Find the amplification factor |G| per timestep
+        # First find the "good" bit of phi, where |phi| > 1E-15 but |phi| != NaN
+        abs_phi = abs(phi)
+        good_abs_phi = abs_phi[abs_phi<1E50]
+        good_abs_phi = good_abs_phi[good_abs_phi>1E-10]
+        if len(good_abs_phi) > 1:
+            #print("delt, (good_abs_phi[-1]/good_abs_phi[0] = ", delt, (good_abs_phi[-1]/good_abs_phi[0]))
+            delt_vals.append(delt)
+
+            amp_factor_vals.append((good_abs_phi[-1]/good_abs_phi[-2])**(1/10))
+        #print("min, max = ", np.min(good_abs_phi), np.max(good_abs_phi))
+
+
+    # ax1.grid(True)
+    # ax1.legend(loc="best")
+    # ax1.set_yscale("log")
+    # ax1.set_xscale("log")
+    # ax1.set_xlabel(r"$t$")
+    # ax1.set_ylabel(r"$\vert \phi \vert$")
+    # plt.show()
+
+    print("delt_vals = ", delt_vals)
+    print("amp_factor_vals = ", amp_factor_vals)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(delt_vals, amp_factor_vals, c="black", marker="x", label="RK3 sims")
+
+    beta_min = np.min(delt_vals)
+    beta_max = np.max(delt_vals)
+    beta_vals = np.linspace(beta_min, beta_max, 1000)
+    amp_factor_analytic = np.sqrt(1 - beta_vals**4 /12 + beta_vals**6/36)
+    ax1.plot(beta_vals, amp_factor_analytic, label="analytic")
+    ax1.set_yscale("log")
+    ax1.set_xlabel(r"$\Delta t \equiv k_x U_x \Delta t$")
+    ax1.set_ylabel(r"$\vert G \vert$")
+    ax1.legend(loc="best")
+    ax1.grid(True)
+    plt.show()
+
+    return
 
 if __name__ == "__main__":
     print("Hello world")
     #make_phi2_kxky_modes_pics("example_rk3_nonlinear_only_vexb1_for_visualisation.out.nc")
     #make_phi2_kxky_modes_pics("example_rk3_nonlinear_only_vexb10_for_visualisation_longer_time.out.nc")
-    examine_initialisation()
+    #examine_initialisation()
     #make_phi2_kxky_modes_pics("example_nisl_nonlinear_only_vexb1_for_visualisation.out.nc")
-    #make_phi2_kxky_modes_pics("example_nisl_nonlinear_only_vexb10_for_visualisation.out.nc")
+
+    ### These two are rather different - why?
+    # Difference occurs between versions 2452dadf9194a5adfffa382993cde5b8c20a956f and  c802eeb323d8f64b1977a8e67183d7e06c453750
+    # Possibly the first step being single-step NISL?
+    # make_phi2_kxky_modes_pics_single_mode("sims/example_nisl_nonlinear_only_vexb10_for_visualisation.out.nc")
+    # make_phi2_kxky_modes_pics_single_mode("sims/example_nisl_nonlinear_only_vexb10_for_visualisation_new.out.nc")
+
+
+    #make_phi2_kxky_modes_pics("sims/example_nisl_nonlinear_only_vexb_x100_single_mode_nwrite1.out.nc")
+
+    #plot_phi2t_for_rk3_folder("sims_rk3_vexb_x1_dt_scan", 10)
+    plot_phi2t_for_folder("sims_nisl_vexb_x1_exact_start_dt_scan", 10)
+
+    #make_phi2_kxky_modes_pics_single_mode("sims/example_nisl_nonlinear_only_vexb_x16_vexb_y0_first_step_exact_nwrite1.out.nc")
+    # make_phi2_kxky_modes_pics("sims/example_nisl_nonlinear_only_vexb_x16_single_mode_first_step_exact_nwrite1.out.nc")
+    #make_phi2_kxky_modes_pics_single_mode("sims/example_nisl_nonlinear_only_vexb_x10_single_mode_first_step_exact_nwrite1.out.nc")
+    #make_phi2_kxky_modes_pics_single_mode("sims/example_nisl_nonlinear_only_vexb_x16_single_mode_nwrite1.out.nc")
     #make_phi2_kxky_modes_pics_for_each_z("example_nisl_nonlinear_only_vexb10_for_visualisation.out.nc")
     #make_phi2_kxky_modes_pics_for_each_z("example_nisl_nonlinear_only_vexb10_for_visualisation_nwrite51.out.nc")
     #make_phi2_kxky_modes_pics_for_each_z("example_nisl_nonlinear_only_vexb10_for_visualisation_nwrite1.out.nc")

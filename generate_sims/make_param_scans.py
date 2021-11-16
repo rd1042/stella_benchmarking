@@ -26,7 +26,6 @@ def construct_beta_scan(folder_name, value_list, sim_type):
     os.system('ls -ltr ' + folder_name)
     return
 
-
 def construct_ky_kx_scan(folder_name, ky_vals, kx_vals, sim_type):
     template_name = folder_name + "/template_input_file"
     template_runscript = folder_name + "/template_run_script.sh"
@@ -105,7 +104,7 @@ def make_input_file(template, template_runscript, parameters, values, beware_int
           else:
               print("Error! Type not recognised. value = ", value)
       else:
-          value_str = ('%.1f' % value)
+          value_str = ('%.8f' % value)
 
       values_str += ("_" + value_str)
 
@@ -136,18 +135,17 @@ def make_input_file(template, template_runscript, parameters, values, beware_int
     new_file.write(filetext)
     new_file.close()
 
-    ## Open and modify run script.
-    template_file = open(template_runscript, 'r+')
-    filetext = template_file.read()
-    template_file.close()
-    filetext = re.sub("input.in", infile_shortname, filetext)
-    new_runscript_name = folder + "/run_beta" + values_str + ".sh"
-    new_file = open(new_runscript_name, "w+")
-    new_file.write(filetext)
-    new_file.close()
+    if template_runscript is not None:
+        ## Open and modify run script.
+        template_file = open(template_runscript, 'r+')
+        filetext = template_file.read()
+        template_file.close()
+        filetext = re.sub("input.in", infile_shortname, filetext)
+        new_runscript_name = folder + "/run_beta" + values_str + ".sh"
+        new_file = open(new_runscript_name, "w+")
+        new_file.write(filetext)
+        new_file.close()
     return
-
-
 
 if __name__ == "__main__":
     print("Hello world")
