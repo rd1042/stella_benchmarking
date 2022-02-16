@@ -95,6 +95,12 @@ sim_st_b03 = "stella_beta0.03/beta_0.03000"
 sim_st_b03_fapar0 = "stella_beta0.03_fapar0/beta_0.03000"
 sim_st_b03_fbpar0 = "stella_beta0.03_fbpar0/beta_0.03000"
 
+### Local sims
+sim_st_gfvmulo_nstep100 = "local_sims/stella_lr_gfvmulo_nstep100"
+sim_st_gf_nstep100 = "local_sims/stella_lr_gf_nstep100"
+sim_st_gfvmulo_nstep1000 = "local_sims/stella_lr_gfvmulo_beta1_nstep1000"
+sim_st_gf_nstep1000 = "local_sims/stella_lr_gf_beta1_nstep1000"
+
 ## The pickled files summarising G2 beta scans
 pickle_gs2 = "gs2_beta_scan/omega_values.pickle"
 pickle_gs2_fbpar0 = "gs2_beta_scan_fbpar0/omega_values.pickle"
@@ -777,7 +783,6 @@ def plot_gzvs_for_fbpar0():
 
     return
 
-
 def make_comparison_plots_many(stella_sim_longnames, gs2_sim_longnames,
                                 beta_strs, prefix, plot_apar = False,
                                 plot_bpar = False, plot_format=".png"):
@@ -880,7 +885,6 @@ def plot_fapar0():
 
     return
 
-
 def plot_fbpar0():
     """ """
     stella_sim_longnames = [
@@ -889,7 +893,7 @@ def plot_fbpar0():
                             sim_st_b0001_fbpar0,
                             sim_st_b0003_fbpar0,
                             sim_st_b0006_fbpar0,
-                            sim_st_b001_fbpar0,
+                            #sim_st_b001_fbpar0,
                             sim_st_b0015_fbpar0,
                             sim_st_b002_fbpar0,
                             sim_st_b003_fbpar0,
@@ -904,7 +908,7 @@ def plot_fbpar0():
                             sim_gs2_b001_fbpar0,
                             sim_gs2_b001_fbpar0,
                             sim_gs2_b001_fbpar0,
-                            sim_gs2_b001_fbpar0,
+                            #sim_gs2_b001_fbpar0,
                             sim_gs2_b001_fbpar0,
                             sim_gs2_b002_fbpar0,
                             sim_gs2_b003_fbpar0,
@@ -936,6 +940,73 @@ def plot_fbpar0():
                              )
     return
 
+def plot_fbpar0_with_gs2_pickle():
+    """ """
+    stella_sim_longnames = [
+                            sim_st_b00001_fbpar0,
+                            sim_st_b00005_fbpar0,
+                            sim_st_b0001_fbpar0,
+                            sim_st_b0003_fbpar0,
+                            sim_st_b0006_fbpar0,
+                            #sim_st_b001_fbpar0,
+                            sim_st_b0015_fbpar0,
+                            sim_st_b002_fbpar0,
+                            sim_st_b003_fbpar0,
+                            sim_st_b004_fbpar0,
+                            sim_st_b005_fbpar0,
+                            sim_st_b01_fbpar0
+                            ]
+
+    gs2_sim_longnames = [
+                        ]
+    beta_strs = [
+                 "0.00001",
+                 "0.00005",
+                 "0.0001",
+                 "0.0003",
+                 "0.0006",
+                 "0.001",
+                 "0.0015",
+                 "0.002",
+                 "0.003",
+                 "0.004",
+                 "0.005",
+                 "0.01"
+                 ]
+    # make_comparison_plots_many(stella_sim_longnames,
+    #                            gs2_sim_longnames,
+    #                            beta_strs, "fbpar=0/", plot_apar=True, plot_bpar=False)
+    make_beta_scan_plots(stella_sim_longnames,
+                         [],
+                         beta_strs,
+                         IMAGE_DIR + "test_cbc_beta_scan_fbpar0",
+                         gs2_pickle=pickle_gs2_fbpar0     )
+    return
+
+def compare_get_fields_subroutines():
+    """ """
+    make_comparison_plots(
+                    [
+                    sim_st_gfvmulo_nstep1000,
+                    sim_st_gf_nstep1000,
+                    ],
+                    [
+                    "get_fields_vmulo",
+                    "get_fields",
+                    ],
+                    IMAGE_DIR ,
+                    sim_types = [
+                            "stella",
+                            "stella",
+                                ],
+                     plot_apar=True,
+                     plot_bpar=True,
+                     plot_format=".png", show_fig=True
+                    )
+
+
+    return
+
 def make_all_plots():
     """ """
     plot_fbpar0()
@@ -961,11 +1032,11 @@ if __name__ == "__main__":
     #make_all_plots()
     #plot_gzvs_for_fbpar0()
     # plot_fapar0()
-    #plot_fbpar0()
+    # plot_fbpar0_with_gs2_pickle()
     # plot_fapar_fbpar_on()
     #plot_geometry()
     #compare_beta03()
-    compare_beta03_detailed()
+    #compare_beta03_detailed()
     # compare_omega_for_fbpar0_changing_streaming_and_drive()
     #analyse_fbpar0_beta0001_results()
     #plot_fbpar0_beta0001_equal_masses()
@@ -974,3 +1045,4 @@ if __name__ == "__main__":
     # compare_omega_for_fbpar0_zero_drive()
     # compare_omega_for_fbpar0_zero_drive_change_upwind()
     #compare_omega_for_fbpar0_changing_streaming_and_drive()
+    compare_get_fields_subroutines()
