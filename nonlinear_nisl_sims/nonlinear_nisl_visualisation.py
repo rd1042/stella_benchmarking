@@ -116,7 +116,6 @@ def get_arrays_from_nonlinear_data():
     return [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
         vchiold_y_array, vchiold_x_array]
 
-
 def create_upsampled_grid(data_array):
     """Given a data array, return an upsampled version of the array.
     Original array samples on an x, y grid:
@@ -856,7 +855,6 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
 
     return
 
-
 def rk2_step(g, dg_dy, dg_dx, vy_array, vx_array):
     """RK2 method consists of:
     fa = fold - h/2 * v*df/dx |(told)  # This is an estimate of f at thalf=told+h/2
@@ -866,7 +864,6 @@ def rk2_step(g, dg_dy, dg_dx, vy_array, vx_array):
     dg_dy_half, dg_dx_half = get_dgdx_and_dgdy(ghalf)
     gnew = g - dt * (dg_dy_half*vy_array + dg_dx_half*vx_array)
     return gnew
-
 
 def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100):
     """Take a series of steps using RK2, collecting some diagnostic quantities

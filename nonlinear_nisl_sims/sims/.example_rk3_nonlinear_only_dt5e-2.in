@@ -29,8 +29,6 @@
  include_drifts = .false.
  include_mirror = .false.
  override_vexb = .false.
- vexb_x = 100
- vexb_y = 100
 /
 
 &parameters
@@ -120,7 +118,7 @@
  nsave = 3000
  save_for_restart = .false.
  write_omega = .true.
- write_phi_vs_time = .false.
+ write_phi_vs_time = .true.
  write_gvmus = .false.
  write_gzvs = .false.
 /
