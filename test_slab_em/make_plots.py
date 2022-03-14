@@ -16,6 +16,14 @@ IMAGE_DIR = "./images/"
 
 basic_em_sim = "stella_sims/input_slab_ky0.1_explicit"
 mandell_beta1_kperp1 = "stella_sims/input_slab_ky0.1_explicit_mandell1"
+mandell_beta1_kperp001_new = "mandell_sims/input_slab_ky0.01_beta1_new"
+mandell_beta1_kperp1_new = "mandell_sims/input_slab_ky1_beta1_new"
+mandell_sf1_kperp1_new = "mandell_sims/input_slab_ky1_sf1_new"
+mandell_sf1_kperp001_new = "mandell_sims/input_slab_ky0.01_sf1_new"
+mandell_sf0002_kperp001_new = "mandell_sims/input_slab_ky0.01_sf0.002_new"
+mandell_sf00002_kperp001_new = "mandell_sims/input_slab_ky0.01_sf0.0002_new"
+mandell_sf000002_kperp001_new = "mandell_sims/input_slab_ky0.01_sf0.00002_new"
+mandell_sf10_kperp001_new = "mandell_sims/input_slab_ky0.01_sf10_new"
 mandell_beta1_kperp1_long_t = "stella_sims/input_slab_ky0.1_explicit_mandell2"
 mandell_beta1_kperp1_long_t_marconi = "mandell_sims/input_slab_ky0.1_beta1"
 
@@ -109,7 +117,7 @@ def examine_first_sim():
     return
 
 
-def find_ksaw_properties(phi_vs_t_file):
+def find_ksaw_properties_from_pickle(phi_vs_t_file):
     """ """
     file = open(phi_vs_t_file, "rb")
     [z, t, phiz_final, phit_mid] = pickle.load(file)
@@ -161,13 +169,106 @@ def find_ksaw_properties(phi_vs_t_file):
 
     return
 
+def find_ksaw_properties_from_outnc(outnc_longname):
+    """ """
+    t, z, phi_vs_t, beta = extract_data_from_ncdf(outnc_longname, "t", 'zed', 'phi_vs_t', 'beta')
+    print("beta=",beta)
+    # print("len(t) = ", len(t))
+    # print("len(z) = ", len(z))
+    # print("phi_vs_t.shape = ", phi_vs_t.shape)  # [n_time, 1 , n_z, 1, 1]
+    phi_vs_t = phi_vs_t[:,0,:,0,0]
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212, sharex=ax1)
+    ax1.plot(z, phi_vs_t[0,:].real, label="t[0]")
+    ax2.plot(z, phi_vs_t[0,:].imag)
+    ax1.plot(z, phi_vs_t[1,:].real, label="t[1]")
+    ax2.plot(z, phi_vs_t[1,:].imag)
+    ax1.plot(z, phi_vs_t[-10,:].real, label="t[-10]")
+    ax2.plot(z, phi_vs_t[-10,:].imag)
+    ax1.plot(z, phi_vs_t[-1,:].real, label="t[-1]")
+    ax2.plot(z, phi_vs_t[-1,:].imag)
+    ax2.set_xlabel("z")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax1.legend(loc="best")
+    for ax in [ax1, ax2]:
+        ax.grid(True)
+    plt.show()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212, sharex=ax1)
+    ax1.plot(t, phi_vs_t[:,int(len(z)*0.5)].real, label=("z=" + str(z[int(len(z)*0.5)]) ))
+    ax2.plot(t, phi_vs_t[:,int(len(z)*0.5)].imag)
+    ax1.plot(t, phi_vs_t[:,int(len(z)*0.2)].real, label=("z=-1.9" ))
+    ax2.plot(t, phi_vs_t[:,int(len(z)*0.2)].imag)
+    ax2.set_xlabel("t")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax1.legend(loc="best")
+    for ax in [ax1, ax2]:
+        ax.grid(True)
+    plt.show()
+
+    return
+
+def compare_sims(outnc_longnames, labels):
+    """ """
+    # print("len(t) = ", len(t))
+    # print("len(z) = ", len(z))
+    # print("phi_vs_t.shape = ", phi_vs_t.shape)  # [n_time, 1 , n_z, 1, 1]
+    # phi_vs_t = phi_vs_t[:,0,:,0,0]
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(211)
+    # ax2 = fig.add_subplot(212, sharex=ax1)
+    # ax1.plot(z, phi_vs_t[0,:].real, label="t[0]")
+    # ax2.plot(z, phi_vs_t[0,:].imag)
+    # ax1.plot(z, phi_vs_t[1,:].real, label="t[1]")
+    # ax2.plot(z, phi_vs_t[1,:].imag)
+    # ax1.plot(z, phi_vs_t[-10,:].real, label="t[-10]")
+    # ax2.plot(z, phi_vs_t[-10,:].imag)
+    # ax1.plot(z, phi_vs_t[-1,:].real, label="t[-1]")
+    # ax2.plot(z, phi_vs_t[-1,:].imag)
+    # ax2.set_xlabel("z")
+    # ax2.set_ylabel("Im(phi)")
+    # ax1.set_ylabel("Re(phi)")
+    # ax1.legend(loc="best")
+    # for ax in [ax1, ax2]:
+    #     ax.grid(True)
+    # plt.show()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212, sharex=ax1)
+    for idx, outnc_longname in enumerate(outnc_longnames):
+        t, z, phi_vs_t, beta = extract_data_from_ncdf(outnc_longname, "t", 'zed', 'phi_vs_t', 'beta')
+        phi_vs_t = phi_vs_t[:,0,:,0,0]
+        print("len(t) = ", len(t))
+        print("len(z) = ", len(z))
+        print("phi_vs_t.shape = ", phi_vs_t.shape)
+        # print("phi_vs_t = ", phi_vs_t)
+        # print("phi_vs_t.imag = ", phi_vs_t.imag)
+        # sys.exit()
+        ax1.plot(t, phi_vs_t[:,int(len(z)*0.5)].real, label=(labels[idx] + "z=" + str(z[int(len(z)*0.5)]) ))
+        ax2.plot(t, phi_vs_t[:,int(len(z)*0.5)].imag)
+    ax2.set_xlabel("t")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax1.legend(loc="best")
+    for ax in [ax1, ax2]:
+        ax.grid(True)
+    plt.show()
+
+    return
+
 def benchmark_stella_vs_mandell():
     """ """
     phi_vs_t_longnames = glob.glob("mandell_sims/*.pickle")
 
     for file_longname in phi_vs_t_longnames:
         print("file_longname = ", file_longname)
-        find_ksaw_properties(file_longname)
+        find_ksaw_properties_from_pickle(file_longname)
     return
 
 def benchmark_stella_vs_mandell2():
@@ -176,7 +277,7 @@ def benchmark_stella_vs_mandell2():
 
     for file_longname in phi_vs_t_longnames:
         print("file_longname = ", file_longname)
-        find_ksaw_properties(file_longname)
+        find_ksaw_properties_from_pickle(file_longname)
     return
 
 def examine_second_sim():
@@ -189,4 +290,25 @@ if __name__ == "__main__":
     # examine_first_sim()
     # examine_second_sim()
     # benchmark_stella_vs_mandell()
-    benchmark_stella_vs_mandell2()
+    # benchmark_stella_vs_mandell2()
+    # find_ksaw_properties_from_outnc(mandell_beta1_kperp001_new + ".out.nc")
+    # find_ksaw_properties_from_outnc(mandell_sf1_kperp001_new + ".out.nc")
+    # find_ksaw_properties_from_outnc("mandell_sims/input_thursday1.out.nc")
+    # find_ksaw_properties_from_outnc("mandell_sims/input_thursday2_dt.out.nc")
+    compare_sims([
+                  #"mandell_sims/input_thursday2_dt.out.nc",
+                  #"mandell_sims/input_thursday5_ky.out.nc",
+                  "mandell_sims/input_thursday8_nions.out.nc",
+                  "mandell_sims/input_thursday12_smions_dt.out.nc",
+                  "mandell_sims/input_thursday13_smions_double_me.out.nc",
+                  "mandell_sims/input_thursday14_smions_half_mi.out.nc",
+                  #"mandell_sims/input_thursday11_smions_2.out.nc",
+                  #"mandell_sims/input_thursday10_shions.out.nc",
+                        ],
+                 ["8",
+                 "12",
+                 "13",
+                 "14",
+                 #"12",
+                 ])
+    # find_ksaw_properties_from_outnc(mandell_sf10_kperp001_new + ".out.nc")
