@@ -7,7 +7,7 @@ import re
 import sys
 import math
 
-nonlinear_file = "input_leapfrog_restarted.nonlinear_quantities"
+nonlinear_file = "sims/leapfrog/input_leapfrog_restarted.nonlinear_quantities"
 naky = 5
 nakx = 7
 ny = 14
@@ -183,7 +183,7 @@ def create_upsampled_grid(data_array):
     return data_array_upsampled
 
 def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
-                vchiold_y_array, vchiold_x_array):
+                vchiold_y_array, vchiold_x_array, with_diagnostics=False):
     """The NISL step according to Ritchie; here we don't calculate the (approximate)
     departure point, but instead (attempt to) find the trajectory from t^n which arrives
     closest to our gridpoint at t^(n+1)"""
@@ -225,17 +225,10 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
     # vchiold_x,y
     # #####################################################################
 
-
-
-
-
-
-
     # p=0 means shift non-upsampled xidx by 0, and shift upsampled xidx by 0
     # p=1 means shift non-upsampled xidx by 1, and shift upsampled xidx by 1
     #     (because upsampled x is being shifted by p*dx/2, but is sampled
     #      every dx/2)
-
 
     p_array = np.zeros((ny, nx), dtype="int")
     q_array = np.zeros((ny, nx), dtype="int")
@@ -252,24 +245,24 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
     # ynew = (yold + (2*dt*vchiold_y))%ymax
 
     # As a diagnostic, plot the regular grid and the arrival locations.
-    marker_size = 20.
+    if with_diagnostics:
+        marker_size = 20.
 
-    xnew = (x_grid_2d_upsampled - (dt*vchiold_x_array_upsampled))%xmax
-    ynew = (y_grid_2d_upsampled - (dt*vchiold_y_array_upsampled))%ymax
+        xnew = (x_grid_2d_upsampled - (dt*vchiold_x_array_upsampled))%xmax
+        ynew = (y_grid_2d_upsampled - (dt*vchiold_y_array_upsampled))%ymax
 
-    fig = plt.figure(figsize=[12, 8])
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
-    ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
-    ax1.scatter(xnew.flatten(), ynew.flatten(), s=marker_size, label="arrival points")
-    ax1.set_xlabel(r"$x$")
-    ax1.set_ylabel(r"$y$")
-    ax1.grid(True)
-    ax1.set_xlim([-1, 23])
-    ax1.legend(loc="upper right")
-    plt.show()
-    # sys.exit()
-
+        fig = plt.figure(figsize=[12, 8])
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+        ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+        ax1.scatter(xnew.flatten(), ynew.flatten(), s=marker_size, label="arrival points")
+        ax1.set_xlabel(r"$x$")
+        ax1.set_ylabel(r"$y$")
+        ax1.grid(True)
+        ax1.set_xlim([-1, 23])
+        ax1.legend(loc="upper right")
+        plt.show()
+        # sys.exit()
 
     upsampled_xidxs = np.arange(0, 2*nx, 1, dtype="int")
     upsampled_yidxs = np.arange(0, 2*ny, 1, dtype="int")
@@ -290,7 +283,6 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
     # the corresponding idxs of the upsampled data points are
     # xidx_for_upsampled_data = 2*(xidx - pidx/2) = 2*xidx - pidx
     # yidx_for_upsampled_data = 2*(yidx - qidx/2) = 2*yidx - qidx
-    yidx = 5 ; xidx = 6
 
     xidx_for_upsampled_array = (2*x_idxs_2d - p_array)%(2*nx)
     yidx_for_upsampled_array = (2*y_idxs_2d - q_array)%(2*ny)
@@ -306,8 +298,9 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
 
     xidx_for_norm_array = (x_idxs_2d - p_array)%nx
     yidx_for_norm_array = (y_idxs_2d - q_array)%ny
-    print("p_array = ", p_array)  # For the stella-given quantities, vchi small so p=q=0 everywhere.
-    print("q_array = ", q_array)
+    if with_diagnostics:
+        print("p_array = ", p_array)  # For the stella-given quantities, vchi small so p=q=0 everywhere.
+        print("q_array = ", q_array)
 
     # Calculate the residual velocities
     vchiresidual_x = vchiold_x_array_upsampled[yidx_for_upsampled_array, xidx_for_upsampled_array] - p_array*dx/(2*dt)
@@ -327,8 +320,9 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
     #                 vchiresidual_x[yidx, xidx])
     Courant_num_array = (vchiold_x_array*dt/dx + vchiold_y_array*dt/dy)
     Courant_residual_array = (vchiresidual_x*dt/dx + vchiresidual_y*dt/dy)
-    print("max Courant no = ", np.max(abs(Courant_num_array)))
-    print("max residual Courant no = ", np.max(abs(Courant_residual_array)))
+    if with_diagnostics:
+        print("max Courant no = ", np.max(abs(Courant_num_array)))
+        print("max residual Courant no = ", np.max(abs(Courant_residual_array)))
     #print("dx/dt, max(vchiresidual_x), dy/dt, max(vchiresidual_y) = ", dx/dt, np.max(vchiresidual_x), dy/dt, np.max(vchiresidual_y))
     # Calculate rhs_ij
     #  rhs_ij = - (vresidual_x_ij*dgold_dx[x_i - p_ij*dx/2, y_j - * q_ij*dy/2]
@@ -339,27 +333,28 @@ def nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_arr
     # Calculate gnew
     gnewyx_array = golderyx_array[yidx_for_norm_array, xidx_for_norm_array] + rhs_array
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
-    ax1.imshow(golderyx_array)
-    ax2.imshow(gnewyx_array)
-    ax1.set_ylabel("x idx")
-    ax2.set_ylabel("x idx")
-    ax1.set_xlabel("y idx")
-    ax2.set_xlabel("y idx")
-    plt.show()
+    if with_diagnostics:
+        fig = plt.figure()
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        ax1.imshow(golderyx_array)
+        ax2.imshow(gnewyx_array)
+        ax1.set_ylabel("x idx")
+        ax2.set_ylabel("x idx")
+        ax1.set_xlabel("y idx")
+        ax2.set_xlabel("y idx")
+        plt.show()
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.plot(y_grid, golderyx_array[:,5])
-    ax1.plot(y_grid, gnewyx_array[:,5])
-    print("x_grid[5] = ", x_grid[5] )
-    ax1.set_ylabel("g")
-    ax1.set_xlabel("y")
-    plt.show()
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(y_grid, golderyx_array[:,5])
+        ax1.plot(y_grid, gnewyx_array[:,5])
+        print("x_grid[5] = ", x_grid[5] )
+        ax1.set_ylabel("g")
+        ax1.set_xlabel("y")
+        plt.show()
 
-    return
+    return gnewyx_array
 
 def get_dgdx_and_dgdy(g):
     """Given g(y,x), calculate dg/dx and dg/dy using a space-centered second order
@@ -737,71 +732,6 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
     sum_g.append(np.sum(gzero))
     sum_gsquared.append(np.sum(gzero*gzero))
 
-    def diagnostic_plot_velocity_field():
-        """ A plot showing cell velocities."""
-        x_grid_boundaries = x_grid + dx/2
-        y_grid_boundaries = y_grid + dy/2
-
-        # To make the horizontal lines: make 1 horizontal line per
-        # y_grid_upsampled_boundaries, starting at x=0 and ending at max(x_grid_upsampled_boundaries)
-        horizontal_lines = []
-        for diag_yval in y_grid_boundaries:
-            horizontal_line_xvals = [0, max(x_grid_boundaries)]
-            horizontal_line_yvals = [diag_yval, diag_yval]
-            horizontal_lines.append([horizontal_line_xvals, horizontal_line_yvals])
-
-        # To make the vertical lines: make 1 vertical line per
-        # x_grid_upsampled_boundaries, starting at y=0 and ending at max(y_grid_upsampled_boundaries)
-        vertical_lines = []
-        for diag_xval in x_grid_boundaries:
-            vertical_line_xvals = [diag_xval, diag_xval]
-            vertical_line_yvals = [0, max(y_grid_boundaries)]
-            vertical_lines.append([vertical_line_xvals, vertical_line_yvals])
-
-        # Normalise velocities such that the largest velocity occupies a cell diagonal.
-        # That is, want max(unorm_x) <= dx/2 and max(unorm_y) <= dy/2, but
-        # want to scale both by the same amount so it's an accurate representation
-        # of the velocity direction.
-        x_scaling_fac = dx / np.max(abs(vchiold_x_array))
-        y_scaling_fac = dy / np.max(abs(vchiold_y_array))
-        scaling_fac = min(x_scaling_fac, y_scaling_fac)
-        unorm_x = vchiold_x_array * scaling_fac
-        unorm_y = vchiold_y_array * scaling_fac
-
-        # Want to represent these velocities with an arrow, which is centered on
-        # the gridpoint. So the starting point of the arrow should be [x - unorm_x/2, y - unorm_y/2]
-        arrows = [] # Each item in arrows is a list describing a single arrow; [x, y, delta_x, delta_y]
-        for diag_xidx in range(0, nx):
-            for diag_yidx in range(0, ny):
-                arrow_x = x_grid_2d[diag_yidx, diag_xidx] - unorm_x[diag_yidx, diag_xidx]/2
-                arrow_y = y_grid_2d[diag_yidx, diag_xidx] - unorm_y[diag_yidx, diag_xidx]/2
-                arrow_dx = unorm_x[diag_yidx, diag_xidx]
-                arrow_dy = unorm_y[diag_yidx, diag_xidx]
-                arrows.append([arrow_x, arrow_y, arrow_dx, arrow_dy])
-
-
-        marker_size = 20.
-        arrow_head_width = 0.1
-        fig = plt.figure(figsize=[12, 8])
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
-        for horizontal_line in horizontal_lines:
-            ax1.plot(horizontal_line[0], horizontal_line[1], ls="--", c="gray")
-        for vertical_line in vertical_lines:
-            ax1.plot(vertical_line[0], vertical_line[1], ls="--", c="gray")
-        for arrow in arrows:
-            ax1.arrow(arrow[0], arrow[1], arrow[2], arrow[3], color="blue", length_includes_head = True, head_width=arrow_head_width)
-        ax1.set_xlabel(r"$x$")
-        ax1.set_ylabel(r"$y$")
-        #ax1.grid(True)
-        #ax1.set_xlim([-1, 23])
-        ax1.legend(loc="upper right")
-        plt.show()
-
-        return
-
-    diagnostic_plot_velocity_field()
-
     for istep in range(0, nstep):
         if istep%50 == 0:
             print("istep = ", istep)
@@ -851,9 +781,9 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
 
         return
 
-    diagnostic_plot_many_steps()
+    # diagnostic_plot_many_steps()
 
-    return
+    return sum_g, sum_gsquared
 
 def rk2_step(g, dg_dy, dg_dx, vy_array, vx_array):
     """RK2 method consists of:
@@ -940,7 +870,7 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
 
         return
 
-    diagnostic_plot_velocity_field()
+    # diagnostic_plot_velocity_field()
 
     for istep in range(0, nstep):
         if istep%50 == 0:
@@ -982,11 +912,124 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
 
         return
 
-    diagnostic_plot_many_steps()
+    # diagnostic_plot_many_steps()
+
+    return sum_g, sum_gsquared
+
+def take_many_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100, schemes=["RK2"]):
+    """Take a series of steps using RK2, collecting some diagnostic quantities
+    for debugging/error-checking. We can't calculate vchi each step easily (would
+    need to implement field equations) so keep velocity constant in time."""
+
+    time_array = np.arange(0, nstep+1) * dt
+
+    Courant_num_array = (vchiold_x_array*dt/dx + vchiold_y_array*dt/dy)
+    print("max Courant no = ", np.max(abs(Courant_num_array)))
+    ## Calculate max. dv/dx,y * dt
+    dvx_dx = (vchiold_x_array - np.roll(vchiold_x_array, -1, axis=1) )/ dx
+    dvy_dx = (vchiold_y_array - np.roll(vchiold_y_array, -1, axis=1) )/ dx
+    dvx_dy = (vchiold_x_array - np.roll(vchiold_x_array, -1, axis=0) )/ dy
+    dvy_dy = (vchiold_y_array - np.roll(vchiold_y_array, -1, axis=0) )/ dy
+
+    max_dvx_dx_dt = np.max(abs(dvx_dx)*dt)
+    max_dvy_dx_dt = np.max(abs(dvy_dx)*dt)
+    max_dvx_dy_dt = np.max(abs(dvx_dy)*dt)
+    max_dvy_dy_dt = np.max(abs(dvy_dy)*dt)
+    print("max dvx/dx * dt = ", max_dvx_dx_dt)
+    print("max dvy/dx * dt = ", max_dvy_dx_dt)
+    print("max dvx/dy * dt = ", max_dvx_dy_dt)
+    print("max dvy/dy * dt = ", max_dvy_dy_dt)
+
+    def diagnostic_plot_velocity_field(ax):
+        """ A plot showing cell velocities."""
+        x_grid_boundaries = x_grid + dx/2
+        y_grid_boundaries = y_grid + dy/2
+
+        # To make the horizontal lines: make 1 horizontal line per
+        # y_grid_upsampled_boundaries, starting at x=0 and ending at max(x_grid_upsampled_boundaries)
+        horizontal_lines = []
+        for diag_yval in y_grid_boundaries:
+            horizontal_line_xvals = [0, max(x_grid_boundaries)]
+            horizontal_line_yvals = [diag_yval, diag_yval]
+            horizontal_lines.append([horizontal_line_xvals, horizontal_line_yvals])
+
+        # To make the vertical lines: make 1 vertical line per
+        # x_grid_upsampled_boundaries, starting at y=0 and ending at max(y_grid_upsampled_boundaries)
+        vertical_lines = []
+        for diag_xval in x_grid_boundaries:
+            vertical_line_xvals = [diag_xval, diag_xval]
+            vertical_line_yvals = [0, max(y_grid_boundaries)]
+            vertical_lines.append([vertical_line_xvals, vertical_line_yvals])
+
+        # Normalise velocities such that the largest velocity occupies a cell diagonal.
+        # That is, want max(unorm_x) <= dx/2 and max(unorm_y) <= dy/2, but
+        # want to scale both by the same amount so it's an accurate representation
+        # of the velocity direction.
+        x_scaling_fac = dx / np.max(abs(vchiold_x_array))
+        y_scaling_fac = dy / np.max(abs(vchiold_y_array))
+        scaling_fac = min(x_scaling_fac, y_scaling_fac)
+        unorm_x = vchiold_x_array * scaling_fac
+        unorm_y = vchiold_y_array * scaling_fac
+
+        # Want to represent these velocities with an arrow, which is centered on
+        # the gridpoint. So the starting point of the arrow should be [x - unorm_x/2, y - unorm_y/2]
+        arrows = [] # Each item in arrows is a list describing a single arrow; [x, y, delta_x, delta_y]
+        for diag_xidx in range(0, nx):
+            for diag_yidx in range(0, ny):
+                arrow_x = x_grid_2d[diag_yidx, diag_xidx] - unorm_x[diag_yidx, diag_xidx]/2
+                arrow_y = y_grid_2d[diag_yidx, diag_xidx] - unorm_y[diag_yidx, diag_xidx]/2
+                arrow_dx = unorm_x[diag_yidx, diag_xidx]
+                arrow_dy = unorm_y[diag_yidx, diag_xidx]
+                arrows.append([arrow_x, arrow_y, arrow_dx, arrow_dy])
+
+
+        marker_size = 20.
+        arrow_head_width = 0.1
+        ax.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+        for horizontal_line in horizontal_lines:
+            ax.plot(horizontal_line[0], horizontal_line[1], ls="--", c="gray")
+        for vertical_line in vertical_lines:
+            ax.plot(vertical_line[0], vertical_line[1], ls="--", c="gray")
+        for arrow in arrows:
+            ax.arrow(arrow[0], arrow[1], arrow[2], arrow[3], color="blue", length_includes_head = True, head_width=arrow_head_width)
+
+        return
+
+    fig = plt.figure(figsize=[18,6])
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(224)
+    my_linewidth = 3
+
+    diagnostic_plot_velocity_field(ax1)
+
+    for scheme in schemes:
+        if scheme == "RK2":
+            sum_g, sum_gsquared = take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,)
+            ax2.plot(time_array, sum_g, label=scheme, ls="-", lw=my_linewidth)
+            ax3.plot(time_array, sum_gsquared, ls="-", lw=my_linewidth)
+
+        elif scheme == "NISL":
+            sum_g, sum_gsquared = take_many_nisl_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,)
+            ax2.plot(time_array, sum_g, label=scheme, ls="--", lw=my_linewidth)
+            ax3.plot(time_array, sum_gsquared, ls="--", lw=my_linewidth)
+
+    ax1.set_xlabel(r"$x$")
+    ax1.set_ylabel(r"$y$")
+    ax1.legend(loc="upper right")
+    ax2.legend(loc="best")
+    ax3.set_xlabel("time idx")
+    ax2.set_ylabel(r"$\sum_{x,y} g(x,y)$")
+    ax3.set_ylabel(r"$\sum_{x,y} g^2$")
+    for ax in [ax2, ax3]:
+        ax.grid(True)
+
+    plt.show()
 
     return
 
-if __name__ == "__main__":
+def benchmark_rk2_vs_nisl_different_velocity_fields():
+    """ """
 
     [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
         vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()
@@ -1032,21 +1075,31 @@ if __name__ == "__main__":
         for yidx in range(0, ny):
             vx_sinusoidal_both[yidx,xidx] = vx_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
             vy_sinusoidal_both[yidx,xidx] = vy_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+    take_many_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000, schemes=["RK2", "NISL"])
+    take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["RK2", "NISL"])
+    take_many_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000, schemes=["RK2", "NISL"])
+    take_many_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000, schemes=["RK2", "NISL"])
+    take_many_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000, schemes=["RK2", "NISL"])
+    take_many_steps(golderyx_array, np.zeros((ny, nx)), vchiold_x_array, nstep=1000, schemes=["RK2", "NISL"])
+    print("Finished")
+
+    return
+
+def test_nisl_step_ritchie():
+    """ """
+
+    [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+        vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()
+
+    gnewyx_array_1 = nisl_step_ritchie(golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+                    vchiold_y_array, vchiold_x_array)
+    gnewyx_array_2 = nisl_step_finding_departure_point(golderyx_array, dgold_dy_array, dgold_dx_array,
+                    vchiold_y_array, vchiold_x_array, n_timesteps=1)
+    print("gnewyx_array_2 - gnewyx_array_1 = ", gnewyx_array_2 - gnewyx_array_1)
+
+if __name__ == "__main__":
+
+    # benchmark_rk2_vs_nisl_different_velocity_fields()
+    test_nisl_step_ritchie()
     #nisl_step_finding_departure_point(golderyx_array, dgold_dy_array, dgold_dx_array,
     #             vchiold_y_array, vchiold_x_array)
-
-    # take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500)
-    # take_many_nisl_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000)
-    # take_many_nisl_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000)
-    # take_many_nisl_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000)
-    #take_many_nisl_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000)
-    #take_many_nisl_steps(golderyx_array, constant_vchi_y, vchiold_x_array, nstep=1000)
-
-    # take_many_rk2_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000)
-    # sys.exit()
-    take_many_rk2_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500)
-    take_many_rk2_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000)
-    take_many_rk2_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000)
-    take_many_rk2_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000)
-    take_many_rk2_steps(golderyx_array, np.zeros((ny, nx)), vchiold_x_array, nstep=1000)
-    print("Finished")

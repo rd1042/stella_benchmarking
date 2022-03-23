@@ -213,30 +213,75 @@ def find_ksaw_properties_from_outnc(outnc_longname):
 
     return
 
-def compare_sims(outnc_longnames, labels):
+def find_ksaw_properties_from_outnc_with_apar(outnc_longname):
     """ """
+    t, z, phi_vs_t, apar_vs_t, beta = extract_data_from_ncdf(outnc_longname, "t", 'zed', 'phi_vs_t', 'apar_vs_t', 'beta')
+    print("beta=",beta)
     # print("len(t) = ", len(t))
     # print("len(z) = ", len(z))
     # print("phi_vs_t.shape = ", phi_vs_t.shape)  # [n_time, 1 , n_z, 1, 1]
-    # phi_vs_t = phi_vs_t[:,0,:,0,0]
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(211)
-    # ax2 = fig.add_subplot(212, sharex=ax1)
-    # ax1.plot(z, phi_vs_t[0,:].real, label="t[0]")
-    # ax2.plot(z, phi_vs_t[0,:].imag)
-    # ax1.plot(z, phi_vs_t[1,:].real, label="t[1]")
-    # ax2.plot(z, phi_vs_t[1,:].imag)
-    # ax1.plot(z, phi_vs_t[-10,:].real, label="t[-10]")
-    # ax2.plot(z, phi_vs_t[-10,:].imag)
-    # ax1.plot(z, phi_vs_t[-1,:].real, label="t[-1]")
-    # ax2.plot(z, phi_vs_t[-1,:].imag)
-    # ax2.set_xlabel("z")
-    # ax2.set_ylabel("Im(phi)")
-    # ax1.set_ylabel("Re(phi)")
-    # ax1.legend(loc="best")
-    # for ax in [ax1, ax2]:
-    #     ax.grid(True)
-    # plt.show()
+    phi_vs_t = phi_vs_t[:,0,:,0,0]
+    apar_vs_t = apar_vs_t[:,0,:,0,0]
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(223, sharex=ax1)
+    ax3 = fig.add_subplot(222)
+    ax4 = fig.add_subplot(224, sharex=ax3)
+    ax1.plot(z, phi_vs_t[0,:].real, label="t[0]")
+    ax2.plot(z, phi_vs_t[0,:].imag)
+    ax1.plot(z, phi_vs_t[1,:].real, label="t[1]")
+    ax2.plot(z, phi_vs_t[1,:].imag)
+    ax1.plot(z, phi_vs_t[-10,:].real, label="t[-10]")
+    ax2.plot(z, phi_vs_t[-10,:].imag)
+    ax1.plot(z, phi_vs_t[-1,:].real, label="t[-1]")
+    ax2.plot(z, phi_vs_t[-1,:].imag)
+    ax3.plot(z, apar_vs_t[0,:].real, label="t[0]")
+    ax4.plot(z, apar_vs_t[0,:].imag)
+    ax3.plot(z, apar_vs_t[1,:].real, label="t[1]")
+    ax4.plot(z, apar_vs_t[1,:].imag)
+    ax3.plot(z, apar_vs_t[-10,:].real, label="t[-10]")
+    ax4.plot(z, apar_vs_t[-10,:].imag)
+    ax3.plot(z, apar_vs_t[-1,:].real, label="t[-1]")
+    ax4.plot(z, apar_vs_t[-1,:].imag)
+    ax2.set_xlabel("z")
+    ax4.set_xlabel("z")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax4.set_ylabel("Im(apar)")
+    ax3.set_ylabel("Re(apar)")
+    ax1.legend(loc="best")
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.grid(True)
+    plt.show()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(223, sharex=ax1)
+    ax3 = fig.add_subplot(222)
+    ax4 = fig.add_subplot(224, sharex=ax3)
+    ax1.plot(t, phi_vs_t[:,int(len(z)*0.5)].real, label=("z=" + str(z[int(len(z)*0.5)]) ))
+    ax2.plot(t, phi_vs_t[:,int(len(z)*0.5)].imag)
+    ax1.plot(t, phi_vs_t[:,int(len(z)*0.2)].real, label=("z=-1.9" ))
+    ax2.plot(t, phi_vs_t[:,int(len(z)*0.2)].imag)
+    ax3.plot(t, apar_vs_t[:,int(len(z)*0.5)].real, label=("z=" + str(z[int(len(z)*0.5)]) ))
+    ax4.plot(t, apar_vs_t[:,int(len(z)*0.5)].imag)
+    ax3.plot(t, apar_vs_t[:,int(len(z)*0.2)].real, label=("z=-1.9" ))
+    ax4.plot(t, apar_vs_t[:,int(len(z)*0.2)].imag)
+    ax2.set_xlabel("t")
+    ax4.set_xlabel("t")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax2.set_ylabel("Im(apar)")
+    ax1.set_ylabel("Re(apar)")
+    ax1.legend(loc="best")
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.grid(True)
+    plt.show()
+
+    return
+
+def compare_sims(outnc_longnames, labels):
+    """ """
 
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
@@ -257,6 +302,73 @@ def compare_sims(outnc_longnames, labels):
     ax1.set_ylabel("Re(phi)")
     ax1.legend(loc="best")
     for ax in [ax1, ax2]:
+        ax.grid(True)
+    plt.show()
+
+    return
+
+def compare_sims_with_apar(outnc_longnames, labels):
+    """ """
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(223, sharex=ax1)
+    ax3 = fig.add_subplot(222)
+    ax4 = fig.add_subplot(224, sharex=ax3)
+    for idx, outnc_longname in enumerate(outnc_longnames):
+        t, z, phi_vs_t, apar_vs_t, beta = extract_data_from_ncdf(outnc_longname, "t", 'zed', 'phi_vs_t', 'apar_vs_t', 'beta')
+        phi_vs_t = phi_vs_t[:,0,:,0,0]
+        apar_vs_t = apar_vs_t[:,0,:,0,0]
+        print("len(t) = ", len(t))
+        print("len(z) = ", len(z))
+        print("phi_vs_t.shape = ", phi_vs_t.shape)
+        # print("phi_vs_t = ", phi_vs_t)
+        # print("phi_vs_t.imag = ", phi_vs_t.imag)
+        # sys.exit()
+        ax1.plot(z, phi_vs_t[0,:].real, label=(labels[idx] + ", t=0"))
+        ax2.plot(z, phi_vs_t[0,:].imag)
+        ax3.plot(z, apar_vs_t[0,:].real, label=(labels[idx] + ", t=0" ))
+        ax4.plot(z, apar_vs_t[0,:].imag)
+    ax2.set_xlabel("z")
+    ax4.set_xlabel("z")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax4.set_ylabel("Im(apar)")
+    ax3.set_ylabel("Re(apar)")
+    ax1.legend(loc="best")
+    ax3.legend(loc="best")
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.grid(True)
+    plt.show()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(223, sharex=ax1)
+    ax3 = fig.add_subplot(222)
+    ax4 = fig.add_subplot(224, sharex=ax3)
+    for idx, outnc_longname in enumerate(outnc_longnames):
+        t, z, phi_vs_t, apar_vs_t, beta = extract_data_from_ncdf(outnc_longname, "t", 'zed', 'phi_vs_t', 'apar_vs_t', 'beta')
+        phi_vs_t = phi_vs_t[:,0,:,0,0]
+        apar_vs_t = apar_vs_t[:,0,:,0,0]
+        print("len(t) = ", len(t))
+        print("len(z) = ", len(z))
+        print("phi_vs_t.shape = ", phi_vs_t.shape)
+        # print("phi_vs_t = ", phi_vs_t)
+        # print("phi_vs_t.imag = ", phi_vs_t.imag)
+        # sys.exit()
+        ax1.plot(t, phi_vs_t[:,int(len(z)*0.5)].real, label=(labels[idx] + ", z=" + str(z[int(len(z)*0.5)]) ))
+        ax2.plot(t, phi_vs_t[:,int(len(z)*0.5)].imag)
+        ax3.plot(t, apar_vs_t[:,int(len(z)*0.25)].real, label=(labels[idx] + ", z=" + str(z[int(len(z)*0.25)]) ))
+        ax4.plot(t, apar_vs_t[:,int(len(z)*0.25)].imag)
+    ax2.set_xlabel("t")
+    ax4.set_xlabel("t")
+    ax2.set_ylabel("Im(phi)")
+    ax1.set_ylabel("Re(phi)")
+    ax4.set_ylabel("Im(apar)")
+    ax3.set_ylabel("Re(apar)")
+    ax1.legend(loc="best")
+    ax3.legend(loc="best")
+    for ax in [ax1, ax2, ax3, ax4]:
         ax.grid(True)
     plt.show()
 
@@ -294,21 +406,54 @@ if __name__ == "__main__":
     # find_ksaw_properties_from_outnc(mandell_beta1_kperp001_new + ".out.nc")
     # find_ksaw_properties_from_outnc(mandell_sf1_kperp001_new + ".out.nc")
     # find_ksaw_properties_from_outnc("mandell_sims/input_thursday1.out.nc")
-    # find_ksaw_properties_from_outnc("mandell_sims/input_thursday2_dt.out.nc")
-    compare_sims([
-                  #"mandell_sims/input_thursday2_dt.out.nc",
-                  #"mandell_sims/input_thursday5_ky.out.nc",
-                  "mandell_sims/input_thursday8_nions.out.nc",
-                  "mandell_sims/input_thursday12_smions_dt.out.nc",
-                  "mandell_sims/input_thursday13_smions_double_me.out.nc",
-                  "mandell_sims/input_thursday14_smions_half_mi.out.nc",
-                  #"mandell_sims/input_thursday11_smions_2.out.nc",
-                  #"mandell_sims/input_thursday10_shions.out.nc",
-                        ],
-                 ["8",
-                 "12",
-                 "13",
-                 "14",
-                 #"12",
-                 ])
+    # find_ksaw_properties_from_outnc_with_apar("mandell_sims/input_thursday17_nions_beta1_write_apar.out.nc")
+    # find_ksaw_properties_from_outnc_with_apar("mandell_sims/input_thursday18_wapar_upar.out.nc")
+    # find_ksaw_properties_from_outnc_with_apar("mandell_sims/input_thursday19_wapar_upar_beta10.out.nc")
+
+    # compare_sims([
+    # #               #"mandell_sims/input_thursday2_dt.out.nc",
+    # #               #"mandell_sims/input_thursday5_ky.out.nc",
+    # #               "mandell_sims/input_thursday8_nions.out.nc",
+    # #               "mandell_sims/input_thursday12_smions_dt.out.nc",
+    #                "mandell_sims/input_thursday15_nions_beta1.out.nc",
+    # #               "mandell_sims/input_thursday15_nions_beta1_light_electrons.out.nc",
+    #                "mandell_sims/input_thursday16_nions_beta1_upar1.out.nc",
+    # #               "mandell_sims/input_thursday13_smions_double_me.out.nc",
+    # #               "mandell_sims/input_thursday14_smions_half_mi.out.nc",
+    # #               #"mandell_sims/input_thursday11_smions_2.out.nc",
+    # #               #"mandell_sims/input_thursday10_shions.out.nc",
+    #                      ],
+    #               [
+    # #               "8",
+    # #              "12",
+    # #              "13",
+    # #              "14",
+    #               "15",
+    # #              "15, light electrons",
+    #               "16",
+    #               ])
+    compare_sims_with_apar([
+                    "mandell_sims/input_thursday17_nions_beta1_write_apar.out.nc",
+                    "mandell_sims/input_thursday18_wapar_upar.out.nc",
+                    "mandell_sims/input_thursday19_2upar_beta1.out.nc",
+                    "mandell_sims/input_thursday20_no_upar_beta10.out.nc",
+                    "mandell_sims/input_thursday21_1upar_beta10.out.nc",
+                    "mandell_sims/input_thursday21_2upar_beta10.out.nc",
+                    "mandell_sims/input_thursday23_2upar_beta1_ky0.02.out.nc",
+                    "mandell_sims/input_thursday23_2upar_beta1_ky0.1.out.nc",
+                    "mandell_sims/input_thursday24_2upar_beta0.01_ky0.1.out.nc",
+                    "mandell_sims/input_thursday22_2upar_beta1_ky1.out.nc",
+                         ],
+                  [
+                  "17",
+                  "18",
+                  "19",
+                  "20",
+                  "21 1",
+                  "21 2",
+                  "23 1",
+                  "23 2",
+                  "24",
+                  "22",
+                  ])
     # find_ksaw_properties_from_outnc(mandell_sf10_kperp001_new + ".out.nc")
