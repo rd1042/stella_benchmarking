@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import re
 import sys
 import math
+from scipy.interpolate import interp2d
+
+
+default_cols = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
 
 nonlinear_file = "sims/leapfrog/input_leapfrog_restarted.nonlinear_quantities"
 naky = 5
@@ -29,7 +34,7 @@ x_grid_upsampled = np.arange(0, xmax, dx/2 )
 y_grid_upsampled = np.arange(0, ymax, dy/2 )
 x_idxs = np.arange(0, nx, 1, dtype="int")
 y_idxs = np.arange(0, ny, 1, dtype="int")
-
+print("x_grid, xmax = ", x_grid, xmax)
 ## Get the idxs in 2D
 x_idxs_2d = np.zeros((ny,nx), dtype="int")
 y_idxs_2d = np.zeros((ny,nx), dtype="int")
@@ -721,7 +726,8 @@ def nisl_step_finding_departure_point(golderyx_array, dgold_dy_array, dgold_dx_a
 
     return gnewyx_array
 
-def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=100):
+def take_many_nisl_steps(golderyx_array, vchiold_y_init, vchiold_x_init, nstep=100,
+                        time_varying_velocity=False, velocity_omega=1):
     """Take a series of steps using NISL, collecting some diagnostic quantities
     for debugging/error-checking. We can't calculate vchi each step easily (would
     need to implement field equations) so keep velocity constant in time."""
@@ -731,17 +737,29 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
     sum_gsquared = []
     sum_g.append(np.sum(gzero))
     sum_gsquared.append(np.sum(gzero*gzero))
+    sum_over_x_gsquared_array = np.zeros((ny, nstep+1))
+    sum_over_y_gsquared_array = np.zeros((nx, nstep+1))
+    sum_over_x_gsquared_array[:,0] = np.sum(gzero*gzero, axis=1)
+    sum_over_y_gsquared_array[:,0] = np.sum(gzero*gzero, axis=0)
 
     for istep in range(0, nstep):
+        if time_varying_velocity:
+            time = istep*dt
+            vchiold_x_array = vchiold_x_init * np.cos(velocity_omega*time)
+            vchiold_y_array = vchiold_y_init * np.cos(velocity_omega*time)
+        else:
+            vchiold_x_array = vchiold_x_init
+            vchiold_y_array = vchiold_y_init
+        ## Some diagnostic info
         if istep%50 == 0:
-            print("istep = ", istep)
+            print("istep = ", istep, "v_x[0,0] = ", vchiold_x_array[0,0])
         if istep == 0:
             print("Single-step iteration")
             ### Single-step scheme
             # Calcaulte dgolder/dx
             dgolder_dy,  dgolder_dx = get_dgdx_and_dgdy(golderyx_array)
             gnewyx_array = nisl_step_finding_departure_point(golderyx_array, dgolder_dy, dgolder_dx,
-            vchiold_y_array, vchiold_x_array, n_timesteps=1)
+                                        vchiold_y_array, vchiold_x_array, n_timesteps=1)
             goldyx_array = gnewyx_array
         else:
             dgold_dy, dgold_dx = get_dgdx_and_dgdy(goldyx_array)
@@ -753,6 +771,8 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
             # Also need to get dgold_dx
         sum_g.append(np.sum(gnewyx_array))
         sum_gsquared.append(np.sum(gnewyx_array*gnewyx_array))
+        sum_over_x_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=1)
+        sum_over_y_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=0)
 
     def diagnostic_plot_many_steps():
         """ """
@@ -783,7 +803,255 @@ def take_many_nisl_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep
 
     # diagnostic_plot_many_steps()
 
-    return sum_g, sum_gsquared
+    return sum_g, sum_gsquared, gnewyx_array, sum_over_x_gsquared_array, sum_over_y_gsquared_array
+
+def isl_step(golderyx_array,
+                vchiold_y_array, vchiold_x_array, n_timesteps=2, interp_kind="linear"):
+    """Take an ISL step, finding trajectory foot & h at the foot
+    using linear interpolation."""
+
+    # Upsample - double the number of points in the vchi, gold, golder grids.
+    # golderyx_array_upsampled = create_upsampled_grid(golderyx_array)
+
+    def get_interpolated_quantity_linear(x, y, f_array):
+        """Given a quantity f evaluated on the x,y grid (f_array), find the value
+        of the function at arbitrary location (x,y). Begin just by using
+        linear interpolation (likely inaccurate but hopefully good stability
+        properties) """
+
+        ## x and y may be beyond-grid. We need to rectify this so that the
+        ## idxs are within-grid, but the distances are unchanged (i.e. can
+        ## be beyond-grid.)
+        ## Find the 4 nearest gridpoints
+        xidx_left = int(np.floor(x/dx)) ; xidx_right = int(np.ceil(x/dx))
+        xidx_left_on_grid = xidx_left%nx ; xidx_right_on_grid = xidx_right%nx
+        yidx_bottom = int(np.floor(y/dy)) ; yidx_top = int(np.ceil(y/dy))
+        yidx_bottom_on_grid = yidx_bottom%ny ; yidx_top_on_grid = yidx_top%ny
+        # print("xidx_left, xidx_right, yidx_bottom, yidx_top = ", xidx_left, xidx_right, yidx_bottom, yidx_top)
+        # print("within-grid xidx_left, xidx_right, yidx_bottom, yidx_top = ",
+        #         xidx_left_on_grid, xidx_right_on_grid, yidx_bottom_on_grid, yidx_top_on_grid)
+        ### There's 2 situations which can occur, in both x and y:
+        # (1) The 2 idxs (left/right or top/bottom) are different, because the value
+        #     of x or y is non-integer
+        # (2) The 2 idxs are the same, because the value of x or y is integer
+        ## Find the value of the quantities at the 4 nearby corners  . . .
+        ## Need to think about BCs . . . .
+        f_lb = f_array[yidx_bottom_on_grid, xidx_left_on_grid]
+        f_lt = f_array[yidx_top_on_grid, xidx_left_on_grid]
+        f_rb = f_array[yidx_bottom_on_grid, xidx_right_on_grid]
+        f_rt = f_array[yidx_top_on_grid, xidx_right_on_grid]
+
+        ## And the weightings of these points . . .
+        # if the 2 idxs are the same, set the weighting of one of them to zero
+        if yidx_bottom == yidx_top:
+            w_bottom = 0
+        else:
+            w_bottom = 1-abs(yidx_bottom - y/dy)
+        w_top = 1-abs(yidx_top - y/dy)
+
+        if xidx_left == xidx_right:
+            w_left = 0
+        else:
+            w_left = 1-abs(xidx_left - x/dx)
+        w_right = 1-abs(xidx_right - x/dx)
+
+        #print("w_bottom, w_top, w_left, w_right = ", w_bottom, w_top, w_left, w_right)
+        w_lb = w_left * w_bottom
+        w_lt = w_left * w_top
+        w_rb = w_right * w_bottom
+        w_rt = w_right * w_top
+        # print("f = ", f_lb, f_lt, f_rb, f_rt)
+        # print("weights = ", w_lb, w_lt, w_rb, w_rt)
+        f_interpolated = f_lb*w_lb + f_lt*w_lt + f_rb*w_rb + f_rt*w_rt
+        #print("f_interpolated = ", f_interpolated)
+        return f_interpolated
+
+    def get_interpolated_quantity_linear_scipy(x, y, f_array):
+        """Given a quantity f evaluated on the x,y grid (f_array), find the value
+        of the function at arbitrary location (x,y) using scipy's interp2d, with
+        linear interpolation """
+
+        linear_fit = interp2d(x_grid, y_grid, f_array, bounds_error=True, kind="linear")
+        x_within_grid = x%(xmax-dx) ; y_within_grid = y%(ymax-dy)
+        f_interpolated = linear_fit(x_within_grid, y_within_grid)
+
+        return f_interpolated
+
+    def get_interpolated_quantity_cubic_scipy(x, y, f_array):
+        """Given a quantity f evaluated on the x,y grid (f_array), find the value
+        of the function at arbitrary location (x,y) using scipy's interp2d, with
+        linear interpolation """
+
+        linear_fit = interp2d(x_grid, y_grid, f_array, bounds_error=True, kind="cubic")
+        x_within_grid = x%(xmax-dx) ; y_within_grid = y%(ymax-dy)
+        f_interpolated = linear_fit(x_within_grid, y_within_grid)
+
+        return f_interpolated
+
+    def get_interpolated_quantity(x, y, f_array):
+        """ """
+        if interp_kind == "linear":
+            return get_interpolated_quantity_linear(x, y, f_array)
+        elif interp_kind == "linear_scipy":
+            return get_interpolated_quantity_linear_scipy(x, y, f_array)
+        elif interp_kind == "cubic_scipy":
+            return get_interpolated_quantity_cubic_scipy(x, y, f_array)
+
+    def get_approx_departure_point_and_g_departure(yidx, xidx):
+        """Find the approximate departure point which takes us from an (in general,
+        off-grid) point at t^{n-1} to the gridpoint labelled by (xidx, yidx) at
+        t^{n+1}.
+        """
+
+        ### Get approx departure point, using the iterative guess approach
+
+        # location of the gridpoint (=arrival point)
+        x_nonperiodic = x_grid[xidx]; y_nonperiodic=y_grid[yidx]
+        # Normalised values; these are integer at cell boundaries.
+        x = x_grid[xidx] ; y = y_grid[yidx]
+        # print("yidx, xidx, y, x = ", yidx, xidx, y, x )
+        max_iterations = 2 ; counter = 0
+        alpha_x = 0 ; alpha_y = 0
+        while counter < max_iterations:
+            counter +=1
+
+            ## The algorithm to iteratively guess the displacement of the
+            ## trajectory foot is:
+            # alpha_x = dt*u_x[x-alpha_x, y-alpha_y, t^n]
+            # alpha_y = dt*u_y[x-alpha_x, y-alpha_y, t^n]
+            ## But also need to account for boundaries
+
+            ## Find u_x, u_y at departure points
+            u_x = get_interpolated_quantity(x-alpha_x, y-alpha_y, vchiold_x_array)
+            u_y = get_interpolated_quantity(x-alpha_x, y-alpha_y, vchiold_y_array)
+
+            ## Update alpha_x, alpha_y
+            alpha_x = dt*u_x ; alpha_y = dt*u_y
+            # print("u_x, u_y = ", u_x, u_y)
+            # Our boundaries are nonperiodic.
+            # if u_x > 0 :
+            #     xboundary = ((np.floor(xnorm) + 0.5) * dx/2)
+            # else:
+            #     xboundary = ((np.ceil(xnorm)  + 0.5) * dx/2)
+            # if u_y > 0 :
+            #     yboundary = ((np.floor(ynorm) + 0.5) * dy/2)
+            # else:
+            #     yboundary = ((np.ceil(ynorm)  + 0.5) * dy/2)
+
+        ## Once we've got alpha_x, alpha_y, need to find golder at (x-2*alpha_x, y-2*alpha_y)
+        if n_timesteps == 1:
+            x_departure = x - alpha_x ; y_departure = y - alpha_y
+        elif n_timesteps ==2:
+            x_departure = x - 2*alpha_x ; y_departure = y - 2*alpha_y
+        else:
+            print("Error! n_timesteps = ", n_timesteps)
+            sys.exit()
+        g_at_departure = get_interpolated_quantity(x_departure, y_departure, golderyx_array)
+        # print("g_at_departure = ", g_at_departure)
+        # sys.exit()
+
+        return x_departure, y_departure, g_at_departure
+
+    # print("vchiold_y_array = ", vchiold_y_array)
+    # print("vchiold_x_array = ", vchiold_x_array)
+    gnewyx_array = np.zeros((ny, nx))
+    approx_departure_points_x = np.zeros((ny, nx))
+    approx_departure_points_y = np.zeros((ny, nx))
+
+    # Find the approximate departure point, and the value of the function g at
+    # the departure points.
+    for yidx in range(0, ny):
+        for xidx in range(0, nx):
+            y, x, g_at_departure = get_approx_departure_point_and_g_departure(yidx, xidx)
+            approx_departure_points_x[yidx, xidx] = x
+            approx_departure_points_y[yidx, xidx] = y
+            gnewyx_array[yidx, xidx] = g_at_departure
+
+    ############################################################################
+    ### DIAGNSOTIC PLOT
+    ############################################################################
+
+    def make_diagnostic_plot_departure_points():
+        """ """
+        marker_size = 20.
+        arrow_head_width = 0.1
+        fig = plt.figure(figsize=[12, 8])
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(x_grid_2d_upsampled.flatten(), y_grid_2d_upsampled.flatten(), marker="x", s=marker_size, label="upsampled grid")
+        ax1.scatter(x_grid_2d.flatten(), y_grid_2d.flatten(), s=60, label="grid")
+        ax1.scatter(approx_departure_points_x.flatten(), approx_departure_points_y.flatten(), s=marker_size,label="departure point")
+        # ax1.scatter(xhistory, yhistory, s=marker_size, label="trajectory")
+        # for horizontal_line in horizontal_lines:
+        #     ax1.plot(horizontal_line[0], horizontal_line[1], ls="--", c="gray")
+        # for vertical_line in vertical_lines:
+        #     ax1.plot(vertical_line[0], vertical_line[1], ls="--", c="gray")
+        # for arrow in arrows:
+        #     ax1.arrow(arrow[0], arrow[1], arrow[2], arrow[3], color="blue", length_includes_head = True, head_width=arrow_head_width)
+        # for hist_idx in range(0, len(xhistory)-1):
+        #     ax1.plot([xhistory[hist_idx], xhistory[hist_idx+1]], [yhistory[hist_idx], yhistory[hist_idx+1]])
+        ax1.set_xlabel(r"$x$")
+        ax1.set_ylabel(r"$y$")
+        ax1.grid(True)
+        #ax1.set_xlim([-0.96, 25])
+        #ax1.set_xlim([-1, 23])
+        ax1.legend(loc="upper right")
+        plt.show()
+
+        return
+
+    #make_diagnostic_plot_departure_points()
+    ############################################################################
+
+    # print("max(golderyx_array) = ", np.max(abs(golderyx_array)))
+    # print("max(gnewyx_array) = ", np.max(abs(gnewyx_array)))
+    return gnewyx_array
+
+def take_many_isl_steps(golderyx_array, vchiold_y_init, vchiold_x_init, nstep=100,
+                        time_varying_velocity=False, velocity_omega=1, interp_kind="linear"):
+    """Take a series of steps using interpolating semi-lagrange. As a quick-and-dirty
+    approach, we're going to use linear interpolation for both the departure
+    point calculations and the calculation of h at the departure point."""
+
+    gzero = golderyx_array
+    sum_g = []
+    sum_gsquared = []
+    sum_g.append(np.sum(gzero))
+    sum_gsquared.append(np.sum(gzero*gzero))
+    sum_over_x_gsquared_array = np.zeros((ny, nstep+1))
+    sum_over_y_gsquared_array = np.zeros((nx, nstep+1))
+    sum_over_x_gsquared_array[:,0] = np.sum(gzero*gzero, axis=1)
+    sum_over_y_gsquared_array[:,0] = np.sum(gzero*gzero, axis=0)
+
+    for istep in range(0, nstep):
+        if time_varying_velocity:
+            time = istep*dt
+            vchiold_x_array = vchiold_x_init * np.cos(velocity_omega*time)
+            vchiold_y_array = vchiold_y_init * np.cos(velocity_omega*time)
+        else:
+            vchiold_x_array = vchiold_x_init
+            vchiold_y_array = vchiold_y_init
+        ## Some diagnostic info
+        if istep%50 == 0:
+            print("istep = ", istep, "v_x[0,0] = ", vchiold_x_array[0,0])
+        if istep == 0:
+            print("Single-step iteration")
+            ### Single-step scheme
+            gnewyx_array = isl_step(golderyx_array,
+                                    vchiold_y_array, vchiold_x_array, n_timesteps=1, interp_kind=interp_kind)
+            goldyx_array = gnewyx_array
+        else:
+            gnewyx_array = isl_step(golderyx_array,
+                                    vchiold_y_array, vchiold_x_array, n_timesteps=2, interp_kind=interp_kind)
+            # Update arrays for g
+            golderyx_array = goldyx_array
+            goldyx_array = gnewyx_array
+            # Also need to get dgold_dx
+        sum_g.append(np.sum(gnewyx_array))
+        sum_gsquared.append(np.sum(gnewyx_array*gnewyx_array))
+        sum_over_x_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=1)
+        sum_over_y_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=0)
+
+    return sum_g, sum_gsquared, gnewyx_array, sum_over_x_gsquared_array, sum_over_y_gsquared_array
 
 def rk2_step(g, dg_dy, dg_dx, vy_array, vx_array):
     """RK2 method consists of:
@@ -795,7 +1063,8 @@ def rk2_step(g, dg_dy, dg_dx, vy_array, vx_array):
     gnew = g - dt * (dg_dy_half*vy_array + dg_dx_half*vx_array)
     return gnew
 
-def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100):
+def take_many_rk2_steps(goldyx_array, vchiold_y_init, vchiold_x_init, nstep=100,
+                        time_varying_velocity=False, velocity_omega=1):
     """Take a series of steps using RK2, collecting some diagnostic quantities
     for debugging/error-checking. We can't calculate vchi each step easily (would
     need to implement field equations) so keep velocity constant in time."""
@@ -805,7 +1074,11 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
     sum_gsquared = []
     sum_g.append(np.sum(gzero))
     sum_gsquared.append(np.sum(gzero*gzero))
-    Courant_num_array = (vchiold_x_array*dt/dx + vchiold_y_array*dt/dy)
+    sum_over_x_gsquared_array = np.zeros((ny, nstep+1))
+    sum_over_y_gsquared_array = np.zeros((nx, nstep+1))
+    sum_over_x_gsquared_array[:,0] = np.sum(gzero*gzero, axis=1)
+    sum_over_y_gsquared_array[:,0] = np.sum(gzero*gzero, axis=0)
+    Courant_num_array = (vchiold_x_init*dt/dx + vchiold_y_init*dt/dy)
     print("max Courant no = ", np.max(abs(Courant_num_array)))
     def diagnostic_plot_velocity_field():
         """ A plot showing cell velocities."""
@@ -835,8 +1108,8 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
         x_scaling_fac = dx / np.max(abs(vchiold_x_array))
         y_scaling_fac = dy / np.max(abs(vchiold_y_array))
         scaling_fac = min(x_scaling_fac, y_scaling_fac)
-        unorm_x = vchiold_x_array * scaling_fac
-        unorm_y = vchiold_y_array * scaling_fac
+        unorm_x = vchiold_x_init * scaling_fac
+        unorm_y = vchiold_y_init * scaling_fac
 
         # Want to represent these velocities with an arrow, which is centered on
         # the gridpoint. So the starting point of the arrow should be [x - unorm_x/2, y - unorm_y/2]
@@ -873,8 +1146,17 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
     # diagnostic_plot_velocity_field()
 
     for istep in range(0, nstep):
+        if time_varying_velocity:
+            time = istep*dt
+            vchiold_x_array = vchiold_x_init * np.cos(velocity_omega*time)
+            vchiold_y_array = vchiold_y_init * np.cos(velocity_omega*time)
+        else:
+            vchiold_x_array = vchiold_x_init
+            vchiold_y_array = vchiold_y_init
+
+        ## Some diagnostic info
         if istep%50 == 0:
-            print("istep = ", istep)
+            print("istep = ", istep, "v_x[0,0] = ", vchiold_x_array[0,0])
 
         # Calcaulte dgolder/dx
         dgold_dy,  dgold_dx = get_dgdx_and_dgdy(goldyx_array)
@@ -884,7 +1166,8 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
 
         sum_g.append(np.sum(gnewyx_array))
         sum_gsquared.append(np.sum(gnewyx_array*gnewyx_array))
-
+        sum_over_x_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=1)
+        sum_over_y_gsquared_array[:,istep+1] = np.sum(gnewyx_array*gnewyx_array, axis=0)
     def diagnostic_plot_many_steps():
         """ """
         # fig = plt.figure()
@@ -914,9 +1197,11 @@ def take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=10
 
     # diagnostic_plot_many_steps()
 
-    return sum_g, sum_gsquared
+    return sum_g, sum_gsquared, gnewyx_array, sum_over_x_gsquared_array, sum_over_y_gsquared_array
 
-def take_many_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100, schemes=["RK2"]):
+def take_many_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100, schemes=["RK2"],
+                        time_varying_velocity=False, velocity_omega=1, figtitle="Blank" ,
+                        save_prefix="images/default", interp_kinds=["linear"]):
     """Take a series of steps using RK2, collecting some diagnostic quantities
     for debugging/error-checking. We can't calculate vchi each step easily (would
     need to implement field equations) so keep velocity constant in time."""
@@ -995,40 +1280,186 @@ def take_many_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=100, s
 
         return
 
+
+    sum_g_list = []
+    sum_gsquared_list = []
+    sum_gxsquared_list = []
+    sum_gysquared_list = []
+    g_array_final_list = []
+    for scheme_idx, scheme in enumerate(schemes):
+        if scheme == "RK2":
+            sum_g, sum_gsquared, g_array_final, sum_over_x_gsquared_array, sum_over_y_gsquared_array = take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,
+                                        time_varying_velocity=time_varying_velocity, velocity_omega=velocity_omega,)
+            sum_g_list.append(sum_g)
+            sum_gsquared_list.append(sum_gsquared)
+            sum_gxsquared_list.append(sum_over_x_gsquared_array)
+            sum_gysquared_list.append(sum_over_y_gsquared_array)
+            g_array_final_list.append(g_array_final)
+
+
+        elif scheme == "NISL":
+            sum_g, sum_gsquared, g_array_final, sum_over_x_gsquared_array, sum_over_y_gsquared_array = take_many_nisl_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,
+                                        time_varying_velocity=time_varying_velocity, velocity_omega=velocity_omega,)
+            sum_g_list.append(sum_g)
+            sum_gsquared_list.append(sum_gsquared)
+            g_array_final_list.append(g_array_final)
+            sum_gxsquared_list.append(sum_over_x_gsquared_array)
+            sum_gysquared_list.append(sum_over_y_gsquared_array)
+        elif scheme == "ISL":
+            sum_g, sum_gsquared, g_array_final, sum_over_x_gsquared_array, sum_over_y_gsquared_array = take_many_isl_steps(
+                                        goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,
+                                        time_varying_velocity=time_varying_velocity, velocity_omega=velocity_omega,
+                                        interp_kind=interp_kinds[scheme_idx])
+            sum_g_list.append(sum_g)
+            sum_gsquared_list.append(sum_gsquared)
+            g_array_final_list.append(g_array_final)
+            sum_gxsquared_list.append(sum_over_x_gsquared_array)
+            sum_gysquared_list.append(sum_over_y_gsquared_array)
+        else:
+            print("scheme not recognised, quitting!")
+            print("scheme = ", scheme)
+            sys.exit()
+
     fig = plt.figure(figsize=[18,6])
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(222)
     ax3 = fig.add_subplot(224)
-    my_linewidth = 3
-
     diagnostic_plot_velocity_field(ax1)
-
-    for scheme in schemes:
-        if scheme == "RK2":
-            sum_g, sum_gsquared = take_many_rk2_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,)
-            ax2.plot(time_array, sum_g, label=scheme, ls="-", lw=my_linewidth)
-            ax3.plot(time_array, sum_gsquared, ls="-", lw=my_linewidth)
-
-        elif scheme == "NISL":
-            sum_g, sum_gsquared = take_many_nisl_steps(goldyx_array, vchiold_y_array, vchiold_x_array, nstep=nstep,)
-            ax2.plot(time_array, sum_g, label=scheme, ls="--", lw=my_linewidth)
-            ax3.plot(time_array, sum_gsquared, ls="--", lw=my_linewidth)
 
     ax1.set_xlabel(r"$x$")
     ax1.set_ylabel(r"$y$")
     ax1.legend(loc="upper right")
-    ax2.legend(loc="best")
-    ax3.set_xlabel("time idx")
-    ax2.set_ylabel(r"$\sum_{x,y} g(x,y)$")
-    ax3.set_ylabel(r"$\sum_{x,y} g^2$")
-    for ax in [ax2, ax3]:
-        ax.grid(True)
+    plt.suptitle(figtitle)
+    plt.savefig(save_prefix + "_a.png")
+    plt.close()
 
-    plt.show()
+    my_linewidth = 3
+    linestyles = ["-", "--", ":"]
+    cols = [default_cols[0], default_cols[1], default_cols[2]]
+
+    fig = plt.figure(figsize=[18,10])
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(223)
+    ax3 = fig.add_subplot(222)
+    ax4 = fig.add_subplot(224)
+
+    for scheme_idx, scheme in enumerate(schemes):
+        ax1.plot(time_array, sum_g_list[scheme_idx], label=scheme, ls=linestyles[scheme_idx], lw=my_linewidth)
+        ax2.plot(time_array, sum_gsquared_list[scheme_idx], ls=linestyles[scheme_idx], lw=my_linewidth)
+
+        sum_over_y_gsquared_array = sum_gysquared_list[scheme_idx]
+        sum_over_x_gsquared_array = sum_gxsquared_list[scheme_idx]
+
+        for xidx in range(0, nx):
+            ax3.plot(time_array, sum_over_y_gsquared_array[xidx,:], c=cols[scheme_idx], ls=linestyles[scheme_idx], alpha=0.8)
+        for xidx in range(0, ny):
+            ax4.plot(time_array, sum_over_x_gsquared_array[xidx,:], c=cols[scheme_idx], ls=linestyles[scheme_idx], alpha=0.8)
+
+    ax1.legend(loc="best")
+    ax2.set_xlabel("time idx")
+    ax4.set_xlabel("time idx")
+    ax1.set_ylabel(r"$\sum_{x,y} g(x,y)$")
+    ax2.set_ylabel(r"$\sum_{x,y} g^2$")
+    ax3.set_ylabel(r"$\sum_{y} g^2$")
+    ax4.set_ylabel(r"$\sum_{x} g^2$")
+
+    for ax in [ax1, ax2, ax3, ax4]:
+        ax.grid(True)
+    for ax in [ax3, ax4]:
+        ax.set_yscale("log")
+    plt.suptitle(figtitle)
+    plt.savefig(save_prefix + "_b.png")
+    plt.close()
+    fig = plt.figure(figsize=[18,6])
+    ax1 = fig.add_subplot(141)
+    ax2 = fig.add_subplot(142)
+    ax3 = fig.add_subplot(143)
+    ax4 = fig.add_subplot(144)
+
+    axes = [ax2, ax3, ax4]
+
+    orig = ax1.imshow(goldyx_array)
+    fig.colorbar(orig, ax=ax1)
+
+    for scheme_idx, scheme in enumerate(schemes):
+        imshow_object = axes[scheme_idx].imshow(g_array_final_list[scheme_idx])
+        fig.colorbar(imshow_object, ax=axes[scheme_idx])
+    ax1.set_ylabel("x idx")
+    ax2.set_ylabel("x idx")
+    ax1.set_xlabel("y idx")
+    ax2.set_xlabel("y idx")
+    plt.suptitle(figtitle)
+    plt.savefig(save_prefix + "_c.png")
+    plt.close()
 
     return
 
-def benchmark_rk2_vs_nisl_different_velocity_fields():
+def benchmark_rk2_vs_nisl_different_velocity_fields_time_constant_spatilly_varying():
+    """ """
+
+    [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+        vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()
+
+    ## Let's try artificially increasing vchi to exceed the CFL condition.
+    scaling_fac = 1
+    vchiold_x_array = vchiold_x_array * scaling_fac
+    vchiold_y_array = vchiold_y_array * scaling_fac
+
+    # ALternative scheme - spatially constant advecting velocity.
+    v_x = dx/dt * 0.123456
+    constant_vchi_x = np.ones((ny, nx)) * v_x
+    v_y = dy/dt * 0.434123
+    constant_vchi_y = np.ones((ny, nx)) * v_y
+
+    # Another alternative - sinusoidally varying velocity
+    vx_sine_amp = 1.0
+    vy_sine_amp = 1.0
+    vx_sinusoidal = np.zeros((ny, nx))
+    vy_sinusoidal = np.zeros((ny, nx))
+    for yidx in range(0, ny):
+        vx_sinusoidal[yidx,:] = vx_sine_amp*np.cos(x_grid*2*np.pi/xmax)
+    for xidx in range(0, nx):
+        vy_sinusoidal[:, xidx] = vy_sine_amp*np.cos(y_grid*2*np.pi/ymax)
+
+    # Another alternative - sinusoidally varying velocity, but the "other way" arounf
+    # Appears to work better (g conserves better)
+    vx_sine_amp_other_way = 1.0
+    vy_sine_amp_other_way = 1.0
+    vx_sinusoidal_other_way = np.zeros((ny, nx))
+    vy_sinusoidal_other_way = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        vx_sinusoidal_other_way[:,xidx] = vx_sine_amp_other_way*np.cos(y_grid*2*np.pi/ymax)
+    for yidx in range(0, ny):
+        vy_sinusoidal_other_way[yidx,:] = vy_sine_amp_other_way*np.cos(x_grid*2*np.pi/xmax)
+
+    # Another alternative - sinusoidally varying velocity, but in both dimensions
+    vx_sine_amp_both = 1.0
+    vy_sine_amp_both = 1.0
+    vx_sinusoidal_both = np.zeros((ny, nx))
+    vy_sinusoidal_both = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        for yidx in range(0, ny):
+            vx_sinusoidal_both[yidx,xidx] = vx_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+            vy_sinusoidal_both[yidx,xidx] = vy_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+    take_many_steps(golderyx_array, constant_vchi_y*0.1, constant_vchi_x*0.1, nstep=1000, schemes=["RK2", "NISL"],
+                    figtitle="v=constant, small", save_prefix="images/constant_v_small")
+    # take_many_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000, schemes=["RK2", "NISL"],
+    #                 figtitle="v=constant", save_prefix="images/constant_v")
+    # take_many_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000, schemes=["RK2", "NISL"],
+    #                 figtitle="v=sinusoidal (1)", save_prefix="images/v_sinusoidal_1")
+    # take_many_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000, schemes=["RK2", "NISL"],
+    #                 figtitle="v=sinusoidal (2)", save_prefix="images/v_sinusoidal_2")
+    # take_many_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000, schemes=["RK2", "NISL"],
+    #                 figtitle="v=sinusoidal (3)", save_prefix="images/v_sinusoidal_3")
+    # take_many_steps(golderyx_array, np.zeros((ny, nx)), vchiold_x_array, nstep=1000, schemes=["RK2", "NISL"],
+    #                 figtitle="vy=0, vx=v_stella", save_prefix="images/vx_chi_vy_0")
+    # take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["RK2", "NISL"],
+    #                 figtitle="v=v_stella", save_prefix="images/vstella")
+    print("Finished")
+
+    return
+
+def benchmark_nisl_different_vmag():
     """ """
 
     [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
@@ -1076,11 +1507,137 @@ def benchmark_rk2_vs_nisl_different_velocity_fields():
             vx_sinusoidal_both[yidx,xidx] = vx_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
             vy_sinusoidal_both[yidx,xidx] = vy_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
     take_many_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000, schemes=["RK2", "NISL"])
-    take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["RK2", "NISL"])
-    take_many_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000, schemes=["RK2", "NISL"])
-    take_many_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000, schemes=["RK2", "NISL"])
-    take_many_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000, schemes=["RK2", "NISL"])
-    take_many_steps(golderyx_array, np.zeros((ny, nx)), vchiold_x_array, nstep=1000, schemes=["RK2", "NISL"])
+    # take_many_steps(golderyx_array, constant_vchi_y*0.2, constant_vchi_x*0.2, nstep=1000, schemes=["RK2", "NISL"])
+    # take_many_steps(golderyx_array, constant_vchi_y*0.05, constant_vchi_x*0.05, nstep=1000, schemes=["RK2", "NISL"])
+    # take_many_steps(golderyx_array, constant_vchi_y*2, constant_vchi_x*2, nstep=1000, schemes=["NISL"])
+    # take_many_steps(golderyx_array, constant_vchi_y*10, constant_vchi_x*10, nstep=1000, schemes=["NISL"])
+    # take_many_steps(golderyx_array, constant_vchi_y*2, constant_vchi_x*2, nstep=1000, schemes=["NISL"], time_varying_velocity=True, velocity_omega=1)
+    # take_many_steps(golderyx_array, constant_vchi_y*2, constant_vchi_x*2, nstep=1000, schemes=["NISL"], time_varying_velocity=True, velocity_omega=10)
+    # take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["RK2", "NISL"], time_varying_velocity=True, velocity_omega=1)
+    # take_many_steps(golderyx_array, vchiold_y_array*3, vchiold_x_array*3, nstep=500, schemes=["RK2", "NISL"], time_varying_velocity=True, velocity_omega=1)
+    # take_many_steps(golderyx_array, vchiold_y_array*3, vchiold_x_array*3, nstep=500, schemes=["RK2", "NISL"], time_varying_velocity=True, velocity_omega=10)
+    # take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["NISL"], time_varying_velocity=False)
+    # take_many_steps(golderyx_array, vchiold_y_array*10, vchiold_x_array*10, nstep=500, schemes=["RK2", "NISL"], time_varying_velocity=False)
+    # take_many_steps(golderyx_array, vchiold_y_array*40, vchiold_x_array*40, nstep=500, schemes=["NISL"], time_varying_velocity=False)
+    # take_many_steps(golderyx_array, vchiold_y_array*40, vchiold_x_array*40, nstep=500, schemes=["NISL"], time_varying_velocity=True, velocity_omega=0.01)
+    # take_many_steps(golderyx_array, vchiold_y_array*40, vchiold_x_array*40, nstep=500, schemes=["NISL"], time_varying_velocity=True, velocity_omega=1)
+    # take_many_steps(golderyx_array, vchiold_y_array*40, vchiold_x_array*40, nstep=500, schemes=["NISL"], time_varying_velocity=True, velocity_omega=10)
+    print("Finished")
+
+    return
+
+def benchmark_isl():
+    """ """
+
+    [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+        vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()
+
+    ## Let's try artificially increasing vchi to exceed the CFL condition.
+    scaling_fac = 1
+    vchiold_x_array = vchiold_x_array * scaling_fac
+    vchiold_y_array = vchiold_y_array * scaling_fac
+
+    # ALternative scheme - spatially constant advecting velocity.
+    v_x = dx/dt * 0.123456
+    constant_vchi_x = np.ones((ny, nx)) * v_x
+    v_y = dy/dt * 0.434123
+    constant_vchi_y = np.ones((ny, nx)) * v_y
+
+    # Another alternative - sinusoidally varying velocity
+    vx_sine_amp = 1.0
+    vy_sine_amp = 1.0
+    vx_sinusoidal = np.zeros((ny, nx))
+    vy_sinusoidal = np.zeros((ny, nx))
+    for yidx in range(0, ny):
+        vx_sinusoidal[yidx,:] = vx_sine_amp*np.cos(x_grid*2*np.pi/xmax)
+    for xidx in range(0, nx):
+        vy_sinusoidal[:, xidx] = vy_sine_amp*np.cos(y_grid*2*np.pi/ymax)
+
+    # Another alternative - sinusoidally varying velocity, but the "other way" arounf
+    # Appears to work better (g conserves better)
+    vx_sine_amp_other_way = 1.0
+    vy_sine_amp_other_way = 1.0
+    vx_sinusoidal_other_way = np.zeros((ny, nx))
+    vy_sinusoidal_other_way = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        vx_sinusoidal_other_way[:,xidx] = vx_sine_amp_other_way*np.cos(y_grid*2*np.pi/ymax)
+    for yidx in range(0, ny):
+        vy_sinusoidal_other_way[yidx,:] = vy_sine_amp_other_way*np.cos(x_grid*2*np.pi/xmax)
+
+    # Another alternative - sinusoidally varying velocity, but in both dimensions
+    vx_sine_amp_both = 1.0
+    vy_sine_amp_both = 1.0
+    vx_sinusoidal_both = np.zeros((ny, nx))
+    vy_sinusoidal_both = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        for yidx in range(0, ny):
+            vx_sinusoidal_both[yidx,xidx] = vx_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+            vy_sinusoidal_both[yidx,xidx] = vy_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+    take_many_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=100, schemes=["RK2", "NISL", "ISL"],
+                    interp_kinds=["linear", "linear_scipy", "cubic_scipy"])
+    print("Finished")
+
+    return
+
+def benchmark_rk2_vs_nisl_different_velocity_fields_spatially_constant_temporally_varying():
+    """ """
+
+    [golder_array, golderyx_array, dgold_dy_array, dgold_dx_array,
+        vchiold_y_array, vchiold_x_array] = get_arrays_from_nonlinear_data()
+
+    ## Let's try artificially increasing vchi to exceed the CFL condition.
+    scaling_fac = 1
+    vchiold_x_array = vchiold_x_array * scaling_fac
+    vchiold_y_array = vchiold_y_array * scaling_fac
+
+    # ALternative scheme - spatially constant advecting velocity.
+    v_x = dx/dt * 0.123456
+    constant_vchi_x = np.ones((ny, nx)) * v_x
+    v_y = dy/dt * 0.434123
+    constant_vchi_y = np.ones((ny, nx)) * v_y
+
+    # Another alternative - sinusoidally varying velocity
+    vx_sine_amp = 1.0
+    vy_sine_amp = 1.0
+    vx_sinusoidal = np.zeros((ny, nx))
+    vy_sinusoidal = np.zeros((ny, nx))
+    for yidx in range(0, ny):
+        vx_sinusoidal[yidx,:] = vx_sine_amp*np.cos(x_grid*2*np.pi/xmax)
+    for xidx in range(0, nx):
+        vy_sinusoidal[:, xidx] = vy_sine_amp*np.cos(y_grid*2*np.pi/ymax)
+
+    # Another alternative - sinusoidally varying velocity, but the "other way" arounf
+    # Appears to work better (g conserves better)
+    vx_sine_amp_other_way = 1.0
+    vy_sine_amp_other_way = 1.0
+    vx_sinusoidal_other_way = np.zeros((ny, nx))
+    vy_sinusoidal_other_way = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        vx_sinusoidal_other_way[:,xidx] = vx_sine_amp_other_way*np.cos(y_grid*2*np.pi/ymax)
+    for yidx in range(0, ny):
+        vy_sinusoidal_other_way[yidx,:] = vy_sine_amp_other_way*np.cos(x_grid*2*np.pi/xmax)
+
+    # Another alternative - sinusoidally varying velocity, but in both dimensions
+    vx_sine_amp_both = 1.0
+    vy_sine_amp_both = 1.0
+    vx_sinusoidal_both = np.zeros((ny, nx))
+    vy_sinusoidal_both = np.zeros((ny, nx))
+    for xidx in range(0, nx):
+        for yidx in range(0, ny):
+            vx_sinusoidal_both[yidx,xidx] = vx_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+            vy_sinusoidal_both[yidx,xidx] = vy_sine_amp_both*np.cos(y_grid[yidx]*2*np.pi/ymax)*np.cos(x_grid[xidx]*2*np.pi/xmax)
+    take_many_steps(golderyx_array, constant_vchi_y, constant_vchi_x, nstep=1000, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
+    take_many_steps(golderyx_array, vchiold_y_array, vchiold_x_array, nstep=500, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
+    take_many_steps(golderyx_array, vy_sinusoidal, vx_sinusoidal, nstep=1000, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
+    take_many_steps(golderyx_array, vy_sinusoidal_both, vx_sinusoidal_both, nstep=1000, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
+    take_many_steps(golderyx_array, vy_sinusoidal_other_way, vx_sinusoidal_other_way, nstep=1000, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
+    take_many_steps(golderyx_array, np.zeros((ny, nx)), vchiold_x_array, nstep=1000, schemes=["RK2", "NISL"],
+                    time_varying_velocity=True, velocity_omega=1)
     print("Finished")
 
     return
@@ -1099,7 +1656,10 @@ def test_nisl_step_ritchie():
 
 if __name__ == "__main__":
 
-    # benchmark_rk2_vs_nisl_different_velocity_fields()
-    test_nisl_step_ritchie()
+    # benchmark_rk2_vs_nisl_different_velocity_fields_time_constant_spatilly_varying()
+    benchmark_isl()
+    # benchmark_rk2_vs_nisl_different_velocity_fields_spatially_constant_temporally_varying()
+    # benchmark_nisl_different_vmag()
+    # test_nisl_step_ritchie()
     #nisl_step_finding_departure_point(golderyx_array, dgold_dy_array, dgold_dx_array,
     #             vchiold_y_array, vchiold_x_array)
