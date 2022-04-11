@@ -397,6 +397,32 @@ def examine_second_sim():
     examine_sim_output(mandell_beta1_kperp1_long_t_marconi)
     return
 
+def examine_gs2_sim():
+    """ """
+    print("Hello world")
+    outnc_longname = "gs2_slab_sims/input.out.nc"
+    view_ncdf_variables(outnc_longname)
+    [shear, theta, t, phi, apar] = extract_data_from_ncdf(outnc_longname, "shat", "theta", "t", "phi_t", "apar_t")
+    print("shear = ", shear)
+    print("theta.shape = ", theta.shape)
+    print("t.shape = ", t.shape)
+    print("phi.shape = ", phi.shape)
+    print("apar.shape = ", apar.shape)
+    phi_for_theta_0 = phi[:,0,0,int(len(theta)/2)]
+    phi_for_t_0 = phi[0,0,0,:]
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    ax1.plot(theta/np.pi, phi_for_t_0.real)
+    ax1.plot(theta/np.pi, phi_for_t_0.imag)
+    ax1.plot(theta/np.pi, abs(phi_for_t_0))
+    ax2.plot(t, phi_for_theta_0.real)
+    ax2.plot(t, phi_for_theta_0.imag)
+    ax2.plot(t, abs(phi_for_theta_0))
+
+    plt.show()
+    return
+
 if __name__ == "__main__":
     print("Hello world")
     # examine_first_sim()
@@ -457,3 +483,4 @@ if __name__ == "__main__":
                   "22",
                   ])
     # find_ksaw_properties_from_outnc(mandell_sf10_kperp001_new + ".out.nc")
+    examine_gs2_sim()
