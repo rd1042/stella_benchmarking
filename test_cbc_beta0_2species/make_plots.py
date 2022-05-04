@@ -27,7 +27,9 @@ if __name__ == "__main__":
     #plot_noupwind_flipflop()
     #plot_stella_gs2_nperiod5()
 
-    mps.compare_dt_scan_lie_vs_leapfrog()
+    # mps.compare_dt_scan_lie_vs_leapfrog()
     ### For the poster
     #compare_stella_leapfrog_gs2()
     #compare_stella_leapfrog_gs2_poster()
+    mps.compare_stella_leapfrog_gs2_poster()
+    mps.compare_stella_leapfrog_gs2_adiabatic()

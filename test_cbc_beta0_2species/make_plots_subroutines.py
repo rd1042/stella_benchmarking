@@ -578,7 +578,6 @@ def plot_stella_gs2_nperiod5():
                     ],
                     plot_format=".png")
 
-
 def plot_me_scan():
     """ """
     make_comparison_plots([
@@ -605,7 +604,6 @@ def plot_me_scan():
                     "gs2"
                     ],
                     plot_format=".png", show_fig=True)
-
 
 def plot_noupwind_different_numerical_schemes():
     """With no upwidning, see what happens when we change the numerical scheme,
@@ -688,7 +686,6 @@ def plot_noupwind_dt_variation():
             ],
                 plot_format=".png", show_fig=True)
     return
-
 
 def plot_noupwind_different_electron_treatment():
     """See what happens if we (1)  """
@@ -992,7 +989,6 @@ def make_convergence_plot(converged_sim_longname, unconvergd_sim_list,
 
     return
 
-
 def compare_stella_leapfrog_gs2_poster():
     """ """
 
@@ -1005,8 +1001,8 @@ def compare_stella_leapfrog_gs2_poster():
             gs2_basecase_longname,
                     ],
                     [
-                    r"Default scheme;$\Omega$=$0.12$+$0.14$i",
-                    r"Multipstep scheme;$\Omega$=$0.12$+$0.14$i",
+                    r"stella;$\Omega$=$0.12$+$0.14$i",
+                    r"stella (Multipstep);$\Omega$=$0.12$+$0.14$i",
                     #"stella (Leapfrog drifts, np=3)",
                     #"stella (Leapfrog drifts, dt=5E-3)",
                     #"stella (Leapfrog drifts, dt=2.5E-3)",

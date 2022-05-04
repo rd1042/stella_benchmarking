@@ -365,6 +365,84 @@ def plot_phiz_for_zonal_mode(outnc_longname):
         plt.show()
     return
 
+def make_phi_ky_modes_pics_multiple_sims(outnc_longnames, sim_labels, sim_cols,
+                    min_phi=1E-5, transparency_val=0.1):
+    """ """
+    t_list = []
+    kx_list = []
+    ky_list = []
+    phi_t_ky_kx_list = []
+
+    for sim_idx, outnc_longname in enumerate(outnc_longnames):
+        print("outnc_longname = ", outnc_longname)
+        # Get phi(kx, ky, z, t)
+        [t, kx, ky, z, phi_vs_t] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi_vs_t")
+        nz_per_mode = len(z)
+        z_idx = int(nz_per_mode/2)  # The z idx of z=0
+        t_list.append(t)
+        kx_list.append(kx)
+        ky_list.append(ky)
+        nz_per_mode = len(z)
+
+        phi_t_ky_kx_list.append(phi_vs_t[:, 0, z_idx, :, :])
+        #print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, ky
+        # print("len(kx, ky, t, z) = ", len(kx), len(ky), len(t), len(z))
+        # print("kx = ", kx)
+        # print("ky = ", ky)
+        # print("t = ", t)
+        # print("len(t) = ", len(t))
+        # sys.exit()
+    ky_vals = sorted(set(np.concatenate(ky_list)))
+    kx_vals = sorted(set(np.concatenate(kx_list)))
+    print("ky_vals = ", ky_vals)
+    print("kx_vals = ", kx_vals)
+    # sys.exit()
+    counter = 0
+    for ky_val in ky_vals :
+        fig = plt.figure(figsize=[16,14])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+        for sim_idx in range(0, len(outnc_longnames)):
+            ky = ky_list[sim_idx]; kx = kx_list[sim_idx]
+            ky_idx = np.argmin(abs(ky-ky_val))
+            max_phi = 0
+            if (abs(ky[ky_idx] - ky_val) < 0.001):
+                t = t_list[sim_idx]
+                phi_kxky = phi_t_ky_kx_list[sim_idx]
+                phi_kx0_t = phi_kxky[:, 0, ky_idx]
+                ax1.plot(t, abs(phi_kx0_t), c=sim_cols[sim_idx], lw=3, alpha=transparency_val, label=sim_labels[sim_idx])
+                kx = kx_list[sim_idx]
+                sorted_kx_idxs = np.argsort(kx)
+                ax2.plot(kx[sorted_kx_idxs], abs(phi_kxky[-1,sorted_kx_idxs,ky_idx]), c=sim_cols[sim_idx], lw=3, label=sim_labels[sim_idx])
+                max_phi = max(max_phi, np.max(abs(phi_kx0_t)))
+                for kx_idx in range(1, len(kx_list[sim_idx])):
+                    phi_t = phi_kxky[:, kx_idx, ky_idx]
+                    ax1.plot(t, abs(phi_t), c=sim_cols[sim_idx], lw=3, alpha=transparency_val)
+                    max_phi = max(max_phi, np.max(abs(phi_t)))
+
+                    # ax2 = fig.add_subplot(312, sharex=ax1)
+                    # ax3 = fig.add_subplot(313, sharex=ax1)
+                    # ax1.scatter(t, phi_t.real, marker="x", c="black")
+                    # ax1.scatter(t, phi_t.imag, marker="x", c="black")
+                    #ax1.scatter(t, abs(phi_t), marker="x", c="black")
+
+        ax1.set_yscale("log")
+        ax2.set_yscale("log")
+        ax1.set_xlabel(r"$t$")
+        ax2.set_xlabel(r"$k_x$")
+        ax1.set_ylabel(r"abs(phi)")
+        ax2.set_ylabel(r"abs(phi(t=tfinal))")
+        ax1.legend(loc="best")
+        ax2.legend(loc="best")
+        ax1.set_ylim(min_phi, max_phi)
+        fig.suptitle("ky={:.3f}".format(ky_val))
+        save_name="images/phi_t_{:02d}.png".format(counter)
+        plt.savefig(save_name)
+        plt.close()
+        counter+=1
+
+    return
+
 def make_phi2_ky_modes_pics_multiple_sims(outnc_longnames, sim_labels, sim_cols):
     """ """
     t_list = []
@@ -438,6 +516,90 @@ def make_phi2_ky_modes_pics_multiple_sims(outnc_longnames, sim_labels, sim_cols)
         plt.savefig(save_name)
         plt.close()
         counter+=1
+
+    return
+
+def make_phi2_ky_modes_pics_multiple_sims_for_talk(outnc_longnames, sim_labels, sim_cols):
+    """ """
+    t_list = []
+    kx_list = []
+    ky_list = []
+    phi2_kxky_list = []
+
+    for sim_idx, outnc_longname in enumerate(outnc_longnames):
+        print("outnc_longname = ", outnc_longname)
+        # Get phi(kx, ky, z, t)
+        [t, kx, ky, z, phi2_kxky] = extract_data_from_ncdf(outnc_longname, "t", 'kx', 'ky', "zed", "phi2_vs_kxky")
+        t_list.append(t)
+        kx_list.append(kx)
+        ky_list.append(ky)
+        nz_per_mode = len(z)
+
+        phi2_kxky_list.append(phi2_kxky)
+        #print("phi_vs_t.shape = ", phi_vs_t.shape)  # time, tube (?), z, kx, ky
+        # print("len(kx, ky, t, z) = ", len(kx), len(ky), len(t), len(z))
+        # print("kx = ", kx)
+        # print("ky = ", ky)
+        # print("t = ", t)
+        # print("len(t) = ", len(t))
+        # sys.exit()
+    ky_vals = sorted(set(np.concatenate(ky_list)))
+    kx_vals = sorted(set(np.concatenate(kx_list)))
+    print("len(kx), len(ky) = ", len(kx), len(ky))
+    print("ky_vals = ", ky_vals)
+    print("kx_vals = ", kx_vals)
+
+    counter = 0
+    transparency_val = 0.1
+    tfinal =   400
+    for ky_val in ky_vals :
+        fig = plt.figure(figsize=[16,14])
+        ax1 = fig.add_subplot(211)
+        ax2 = fig.add_subplot(212)
+        for sim_idx in range(0, len(outnc_longnames)):
+            ky = ky_list[sim_idx]; kx = kx_list[sim_idx]
+            ky_idx = np.argmin(abs(ky-ky_val))
+            max_phi2 = 0
+            if (abs(ky[ky_idx] - ky_val) < 0.001):
+                t = t_list[sim_idx]
+                phi2_kxky = phi2_kxky_list[sim_idx]
+                phi2_t = phi2_kxky[:, 0, ky_idx]
+                ax1.plot([450, 460], [1e-2, 1e-2], c=sim_cols[sim_idx], lw=3, label=sim_labels[sim_idx])
+                kx = kx_list[sim_idx]
+                sorted_kx_idxs = np.argsort(kx)
+                ax2.plot(kx[sorted_kx_idxs], phi2_kxky[-1,sorted_kx_idxs,ky_idx], c=sim_cols[sim_idx], lw=3, label=sim_labels[sim_idx])
+                max_phi2 = max(max_phi2, np.max(phi2_t))
+                for kx_idx in range(0, len(kx_list[sim_idx])):
+                    phi2_t = phi2_kxky[:, kx_idx, ky_idx]
+                    ax1.plot(t, phi2_t, c=sim_cols[sim_idx], lw=3, alpha=transparency_val)
+                    max_phi2 = max(max_phi2, np.max(phi2_t))
+
+                    # ax2 = fig.add_subplot(312, sharex=ax1)
+                    # ax3 = fig.add_subplot(313, sharex=ax1)
+                    # ax1.scatter(t, phi_t.real, marker="x", c="black")
+                    # ax1.scatter(t, phi_t.imag, marker="x", c="black")
+                    #ax1.scatter(t, abs(phi_t), marker="x", c="black")
+
+        ax1.set_yscale("log")
+        ax2.set_yscale("log")
+        ax1.set_xlim(0,tfinal)
+        ax1.set_ylim(1e-9, 1)
+        ax1.set_xlabel(r"$t (r_{LCFS}/v_{th,i})$", fontsize=35)
+        ax2.set_xlabel(r"$k_x \rho_i$", fontsize=35)
+        ax1.set_ylabel(r"$\vert \phi_{k_x} \vert^2$", fontsize=35)
+        ax2.set_ylabel(r"$\vert \phi_{k_x} (t=t_{final})\vert^2$", fontsize=35)
+        ax1.legend(loc="best", fontsize=25)
+        #ax2.legend(loc="best", fontsize=25)
+        ax1.set_ylim(1E-10, max_phi2)
+        for ax in [ax1, ax2]:
+            ax.tick_params(labelsize=25)
+        #fig.suptitle("ky={:.3f}".format(ky_val))
+        plt.tight_layout()
+        save_name="images/phi_t_{:02d}.png".format(counter)
+        plt.savefig(save_name)
+        plt.close()
+        counter+=1
+        # sys.exit()
 
     return
 

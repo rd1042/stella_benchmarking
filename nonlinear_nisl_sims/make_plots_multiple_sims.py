@@ -1,10 +1,16 @@
-""" """
+"""Making plots to compare key quantities from different simulations
+(i.e. different choice of how to treat the nonlinear term)
+Includes sims where we have only the nonlinear term, and sims where we have the
+full GKE being advanced.
+"""
 
 from nonlinear_stella_sim_visualiser import make_phi2_kxky_modes_pics_single_mode_multiple_sims
 from nonlinear_stella_sim_visualiser import make_phi_kxky_modes_pics_multiple_sims
 from nonlinear_stella_sim_visualiser import make_phi_kxky_modes_pics_multiple_sims_all_z
 from nonlinear_stella_sim_visualiser import make_phi2_kxky_modes_pics_multiple_sims
 from nonlinear_stella_sim_visualiser import make_phi2_ky_modes_pics_multiple_sims
+from nonlinear_stella_sim_visualiser import make_phi_ky_modes_pics_multiple_sims
+from nonlinear_stella_sim_visualiser import make_phi2_ky_modes_pics_multiple_sims_for_talk
 from nonlinear_stella_sim_visualiser import plot_phi2t_for_rk3_folder, plot_phi2t_for_folder
 
 if __name__ == "__main__":
@@ -15,7 +21,7 @@ if __name__ == "__main__":
 
     ### Comparing RK3, Leapfrog, NISL with same timestep=0.01. Adiabatic electrons,
     ### nonlinear only
-    # make_phi_kxky_modes_pics_multiple_sims(["sims/rk3/example_rk3_nonlinear_only_dt0.01_nstep10000.out.nc",
+    # make_phi_kxky_modes_pics_multiple_sims(["sims/rk3/example_rk3_nonlinear_only_dt0.01_nstep50000.out.nc",
     #                                 "sims/leapfrog/example_leapfrog_nonlinear_only_dt0.01_nstep10000.out.nc",
     #                                 "sims/nisl/example_nisl_nonlinear_only_dt0.01_nstep10000.out.nc",
     #                                 "sims/nisl/example_nisl_nonlinear_only_dt0.1_nstep10000.out.nc",
@@ -25,6 +31,19 @@ if __name__ == "__main__":
     #                                 "NISL, delt=1E-2",
     #                                 "NISL, delt=1E-1"],
     #                                 ["-", "-.", "--", "--"])
+
+    ### make_phi2_ky_modes_pics_multiple_sims Doesn't work - we've got phi(kx,ky,t), but not phi2
+    # make_phi_ky_modes_pics_multiple_sims(["sims/rk3/example_rk3_nonlinear_only_dt0.01_nstep10000.out.nc",
+    #                                 "sims/leapfrog/example_leapfrog_nonlinear_only_dt0.01_nstep10000.out.nc",
+    #                                 "sims/nisl/example_nisl_nonlinear_only_dt0.01_nstep10000.out.nc",
+    #                                 "sims/nisl/example_nisl_nonlinear_only_dt0.1_nstep10000.out.nc",
+    #                                 ],
+    #                                 ["RK3, delt=1E-2",
+    #                                 "Leapfrog, delt=1E-2",
+    #                                 "NISL, delt=1E-2",
+    #                                 "NISL, delt=1E-1"],
+    #                                 ["black", "red", "blue", "green"],
+    #                                 min_phi=1E-5, transparency_val=0.3)
     # make_phi_kxky_modes_pics_multiple_sims(["sims/rk3/example_rk3_nonlinear_only_dt0.01_nstep10000.out.nc",
     #                                 "sims/leapfrog/example_leapfrog_nonlinear_only_dt0.01_nstep10000.out.nc",
     #                                 "sims/nisl/example_nisl_nonlinear_only_dt0.01_nstep10000.out.nc",
@@ -173,9 +192,9 @@ if __name__ == "__main__":
     #                                          "NISL"],
     #                                          ["black", "red"])
     # Kinetic electrons
-    # make_phi2_ky_modes_pics_multiple_sims(["../test_cbc_nonlinear_beta0/stella_nonlinear_2species_master/input.out.nc",
+    # make_phi2_ky_modes_pics_multiple_sims_for_talk(["../test_cbc_nonlinear_beta0/stella_nonlinear_2species_master/input.out.nc",
     #                                          "../test_cbc_nonlinear_beta0/stella_nonlinear_2species_nisl/input.out.nc"
     #                                          ],
-    #                                          ["RK3",
-    #                                          "NISL"],
+    #                                          ["explicit (RK3) scheme",
+    #                                          "Non-interpolating SL"],
     #                                          ["black", "red"])
